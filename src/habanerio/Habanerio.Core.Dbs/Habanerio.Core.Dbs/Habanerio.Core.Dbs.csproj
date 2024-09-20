@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <AssemblyName>Habanerio.Core.DBs</AssemblyName>
+        <RootNamespace>Habanerio.Core.DBs</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <!--<ProjectName>Habanerio.Core.DBs</ProjectName>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <Title>$(AssemblyName)</Title>
+        <Version>$(VersionPrefix)-beta-1</Version>
+        <PackageOutputPath>$(OutputPath)</PackageOutputPath>
+        <NeutralLanguage>en-CA</NeutralLanguage>
+        <Authors>Jason L</Authors>
+        <Company>Habanerio</Company>-->
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="SonarAnalyzer.CSharp" Version="9.30.0.95878">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\Habanerio.Core\Habanerio.Core.csproj" />
+    </ItemGroup>
+
+</Project>

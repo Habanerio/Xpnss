@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <AssemblyName>Habanerio.Core.DBs.MongoDB.EFCore</AssemblyName>
+        <RootNamespace>Habanerio.Core.DBs.MongoDB.EFCore</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <!--<ProjectName>Habanerio.Core.DBs.MongoDB.EFCore</ProjectName>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <Title>$(AssemblyName)</Title>
+        <Version>$(VersionPrefix)-beta-1</Version>
+        <PackageOutputPath>$(OutputPath)</PackageOutputPath>
+        <NeutralLanguage>en-CA</NeutralLanguage>
+        <Authors>Jason L</Authors>
+        <Company>Habanerio</Company>-->
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="FluentResults" Version="3.16.0" />
+        <PackageReference Include="MongoDB.Bson" Version="2.28.0" />
+        <PackageReference Include="MongoDB.Driver" Version="2.27.0" />
+        <PackageReference Include="MongoDB.EntityFrameworkCore" Version="8.0.3" />
+        <PackageReference Include="SonarAnalyzer.CSharp" Version="9.30.0.95878">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Habanerio.Core.Dbs.EFCore\Habanerio.Core.DBs.EFCore.csproj" />
+        <ProjectReference Include="..\Habanerio.Core.Dbs\Habanerio.Core.Dbs.csproj" />
+    </ItemGroup>
+
+</Project>
