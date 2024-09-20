@@ -13,7 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "unit", "unit", "{B1F6B185-4
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "aspire", "aspire", "{086DECF2-D9EF-48B0-95FB-894C9A920538}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Defaults", "src\aspire\Defaults\Defaults.csproj", "{ADD08F3C-98F8-4A6D-87C2-B8CCB718D70F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Defaults", "src\aspire\Defaults\Defaults.csproj", "{ADD08F3C-98F8-4A6D-87C2-B8CCB718D70F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppHost", "src\aspire\AppHost\AppHost.csproj", "{405516FC-4D34-482B-8DD3-C54521CB635B}"
 EndProject
@@ -43,27 +43,33 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Habanerio.Core.Dbs.MongoDB.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dbs", "dbs", "{72385873-C488-43D1-AAE2-17BEB1F982AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Accounts", "src\modules\accounts\Accounts\Accounts.csproj", "{C3173061-4AD6-4BCF-A075-32747FCA4AF2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Accounts", "src\modules\accounts\Accounts\Accounts.csproj", "{C3173061-4AD6-4BCF-A075-32747FCA4AF2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Accounts", "Accounts", "{B7DF304C-7F64-4B36-9D9F-8F97B4F4720B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Transactions", "Transactions", "{7058F418-0889-48FC-A939-1AC48056AA6A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Transactions", "src\modules\transactions\Transactions\Transactions.csproj", "{700F1E21-E0A4-4CD1-8A62-C9D394E29FE2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Transactions", "src\modules\transactions\Transactions\Transactions.csproj", "{700F1E21-E0A4-4CD1-8A62-C9D394E29FE2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{99551278-D9CA-44BC-B9F4-A336F4430828}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "src\modules\common\Common\Common.csproj", "{982AC20A-5603-483E-B9CE-69C6F0F97B17}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "src\modules\common\Common\Common.csproj", "{982AC20A-5603-483E-B9CE-69C6F0F97B17}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Categories", "Categories", "{7A664148-6222-43A9-B519-6DBD2E2B0679}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Categories", "src\modules\categories\Categories\Categories.csproj", "{8EFEC6AD-E083-4BF0-9CE4-7ED4633FD13A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Categories", "src\modules\categories\Categories\Categories.csproj", "{8EFEC6AD-E083-4BF0-9CE4-7ED4633FD13A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppApis", "tests\functional\AppApis\AppApis.csproj", "{46469C5D-499F-4CDC-B9B8-2D94AF8D5933}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppApis", "tests\functional\AppApis\AppApis.csproj", "{46469C5D-499F-4CDC-B9B8-2D94AF8D5933}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppApis", "tests\integration\AppApis\AppApis.csproj", "{5AC1A26F-214A-4592-8E7A-777982CCD527}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppApis", "tests\integration\AppApis\AppApis.csproj", "{5AC1A26F-214A-4592-8E7A-777982CCD527}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppApis", "tests\unit\AppApis\AppApis.csproj", "{80C22CF4-37F4-4D68-8B41-B41992797056}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppApis", "tests\unit\AppApis\AppApis.csproj", "{80C22CF4-37F4-4D68-8B41-B41992797056}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{D2F44EA1-DD51-4F56-AAB6-90AF8ACBE53E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Unit.Modules.Accounts", "tests\unit\modules\Accounts\Tests.Unit.Modules.Accounts.csproj", "{5EF6F337-0092-4B9C-87E5-64863384BABB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Integration.Modules.Accounts", "tests\integration\Modules\Tests.Integration.Modules.Accounts\Tests.Integration.Modules.Accounts.csproj", "{C65CC3B9-8CD4-4AA6-83B8-BE9D411A3963}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -131,6 +137,14 @@ Global
 		{80C22CF4-37F4-4D68-8B41-B41992797056}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{80C22CF4-37F4-4D68-8B41-B41992797056}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{80C22CF4-37F4-4D68-8B41-B41992797056}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5EF6F337-0092-4B9C-87E5-64863384BABB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EF6F337-0092-4B9C-87E5-64863384BABB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EF6F337-0092-4B9C-87E5-64863384BABB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EF6F337-0092-4B9C-87E5-64863384BABB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C65CC3B9-8CD4-4AA6-83B8-BE9D411A3963}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C65CC3B9-8CD4-4AA6-83B8-BE9D411A3963}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C65CC3B9-8CD4-4AA6-83B8-BE9D411A3963}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C65CC3B9-8CD4-4AA6-83B8-BE9D411A3963}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -161,6 +175,9 @@ Global
 		{46469C5D-499F-4CDC-B9B8-2D94AF8D5933} = {18FF51DB-B445-4200-830E-EC39C867EBBF}
 		{5AC1A26F-214A-4592-8E7A-777982CCD527} = {B7FD61DB-F6C7-49EA-B437-1A1B7DBB46D6}
 		{80C22CF4-37F4-4D68-8B41-B41992797056} = {B1F6B185-4A30-4A76-B42C-36929242A687}
+		{D2F44EA1-DD51-4F56-AAB6-90AF8ACBE53E} = {B1F6B185-4A30-4A76-B42C-36929242A687}
+		{5EF6F337-0092-4B9C-87E5-64863384BABB} = {D2F44EA1-DD51-4F56-AAB6-90AF8ACBE53E}
+		{C65CC3B9-8CD4-4AA6-83B8-BE9D411A3963} = {B7FD61DB-F6C7-49EA-B437-1A1B7DBB46D6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {33A7DC7B-6CCF-4CE8-9C33-2C0041458710}

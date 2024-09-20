@@ -27,6 +27,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\..\aspire\Defaults\Defaults.csproj" />
         <ProjectReference Include="..\..\..\habanerio\Habanerio.Core.Dbs\Habanerio.Core.Dbs.MongoDB.EFCore\Habanerio.Core.Dbs.MongoDB.EFCore.csproj" />
+        <ProjectReference Include="..\..\..\modules\accounts\Accounts\Accounts.csproj" />
     </ItemGroup>
 
     <ItemGroup>

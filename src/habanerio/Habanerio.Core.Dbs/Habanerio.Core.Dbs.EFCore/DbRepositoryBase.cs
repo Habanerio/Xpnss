@@ -81,6 +81,15 @@ public abstract class DbRepositoryBase<TDbEntity, TId> : IDbRepository<TDbEntity
         return await DbSet.Where(x => idsArray.Contains(x.Id)).ToArrayAsync(cancellationToken);
     }
 
+    public async Task<IEnumerable<TDbEntity>> FindAsync(Expression<Func<TDbEntity, bool>> filter, CancellationToken cancellationToken = default)
+    {
+        var qry = DbSet.AsQueryable();
+
+        var results = await qry.Where(filter).ToArrayAsync(cancellationToken);
+
+        return results;
+    }
+
 
     public virtual TDbEntity? FirstOrDefault(Expression<Func<TDbEntity, bool>> expression, CancellationToken cancellationToken = default)
     {
