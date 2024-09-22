@@ -61,7 +61,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Categories", "src\modules\c
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppApis", "tests\functional\AppApis\AppApis.csproj", "{46469C5D-499F-4CDC-B9B8-2D94AF8D5933}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppApis", "tests\integration\AppApis\AppApis.csproj", "{5AC1A26F-214A-4592-8E7A-777982CCD527}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.Integration.AppApis", "tests\integration\AppApis\Tests.Integration.AppApis.csproj", "{5AC1A26F-214A-4592-8E7A-777982CCD527}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppApis", "tests\unit\AppApis\AppApis.csproj", "{80C22CF4-37F4-4D68-8B41-B41992797056}"
 EndProject
@@ -70,6 +70,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Unit.Modules.Accounts", "tests\unit\modules\Accounts\Tests.Unit.Modules.Accounts.csproj", "{5EF6F337-0092-4B9C-87E5-64863384BABB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Integration.Modules.Accounts", "tests\integration\Modules\Tests.Integration.Modules.Accounts\Tests.Integration.Modules.Accounts.csproj", "{C65CC3B9-8CD4-4AA6-83B8-BE9D411A3963}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Integration.Common", "tests\integration\Tests.Integration.Common\Tests.Integration.Common.csproj", "{60F8E81F-CEA3-45A8-A41D-AA1F095D44A7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -145,6 +147,10 @@ Global
 		{C65CC3B9-8CD4-4AA6-83B8-BE9D411A3963}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C65CC3B9-8CD4-4AA6-83B8-BE9D411A3963}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C65CC3B9-8CD4-4AA6-83B8-BE9D411A3963}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60F8E81F-CEA3-45A8-A41D-AA1F095D44A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60F8E81F-CEA3-45A8-A41D-AA1F095D44A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60F8E81F-CEA3-45A8-A41D-AA1F095D44A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60F8E81F-CEA3-45A8-A41D-AA1F095D44A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -178,6 +184,7 @@ Global
 		{D2F44EA1-DD51-4F56-AAB6-90AF8ACBE53E} = {B1F6B185-4A30-4A76-B42C-36929242A687}
 		{5EF6F337-0092-4B9C-87E5-64863384BABB} = {D2F44EA1-DD51-4F56-AAB6-90AF8ACBE53E}
 		{C65CC3B9-8CD4-4AA6-83B8-BE9D411A3963} = {B7FD61DB-F6C7-49EA-B437-1A1B7DBB46D6}
+		{60F8E81F-CEA3-45A8-A41D-AA1F095D44A7} = {B7FD61DB-F6C7-49EA-B437-1A1B7DBB46D6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {33A7DC7B-6CCF-4CE8-9C33-2C0041458710}

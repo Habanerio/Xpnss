@@ -7,11 +7,11 @@ namespace Habanerio.Xpnss.Modules.Accounts.Data;
 
 //[Table("MoneyAccount")]
 //[Collection("money_accounts")]
-public sealed class AccountDocument : MongoDocument
+public class AccountDocument : MongoDocument
 {
 
     [BsonElement("user_id")]
-    public required string UserId { get; set; }
+    public string UserId { get; set; }
 
     [BsonElement("account_type")]
     [BsonRepresentation(BsonType.String)]
@@ -22,7 +22,7 @@ public sealed class AccountDocument : MongoDocument
     /// </summary>
     /// <example>Capital One (Credit Card)</example>
     [BsonElement("account_name")]
-    public required string Name { get; set; }
+    public string Name { get; set; }
 
     [BsonElement("balance")]
     public decimal Balance { get; set; }
@@ -54,7 +54,7 @@ public sealed class AccountDocument : MongoDocument
     [BsonElement("extended_props")]
     public List<KeyValuePair<string, object?>> ExtendedProps { get; set; } = [];
 
-    [BsonElement("change_history")]
+    //[BsonElement("change_history")]
     public List<ChangeHistory> ChangeHistory { get; set; }
 
     [BsonElement("monthly_totals")]
@@ -72,8 +72,7 @@ public sealed class AccountDocument : MongoDocument
         AccountType accountType,
         string description,
         decimal balance,
-        string displayColor,
-        bool isCredit)
+        string displayColor)
     {
         return new AccountDocument
         {
@@ -83,11 +82,24 @@ public sealed class AccountDocument : MongoDocument
             Name = name,
             Balance = balance,
             DisplayColor = displayColor,
-            IsCredit = isCredit,
             Description = description,
             DateCreated = DateTimeOffset.UtcNow,
             ChangeHistory = [],
         };
+    }
+
+    public void AddChangeHistory(string userId, string property, string oldValue, string newValue, string reason)
+    {
+        ChangeHistory.Add(new ChangeHistory
+        {
+            AccountId = Id.ToString(),
+            UserId = userId,
+            Property = property,
+            OldValues = oldValue,
+            NewValues = newValue,
+            Reason = reason,
+            DateChanged = DateTime.UtcNow,
+        });
     }
 }
 
@@ -97,26 +109,26 @@ public sealed class AccountDocument : MongoDocument
 /// </summary>
 public sealed class ChangeHistory
 {
-    [BsonElement("account_id")]
-    public ObjectId AccountId { get; set; }
+    //[BsonElement("account_id")]
+    public string AccountId { get; set; }
 
-    [BsonElement("user_id")]
+    //[BsonElement("user_id")]
     public string UserId { get; set; } = "";
 
-    [BsonElement("old_value")]
+    //[BsonElement("old_value")]
     public string? OldValues { get; set; } = null;
 
-    [BsonElement("new_value")]
+    //[BsonElement("new_value")]
     public string NewValues { get; set; } = "";
 
-    [BsonElement("property")]
+    //[BsonElement("property")]
     public string Property { get; set; } = "";
 
-    [BsonElement("reason")]
+    //[BsonElement("reason")]
     public string Reason { get; set; } = "";
 
-    [BsonElement("date_changed")]
-    public string DateChanged { get; set; }
+    //[BsonElement("date_changed")]
+    public DateTime DateChanged { get; set; }
 }
 
 public sealed class MonthlyTotal

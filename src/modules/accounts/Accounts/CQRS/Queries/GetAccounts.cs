@@ -27,12 +27,17 @@ public class GetAccounts
             if (!validationResult.IsValid)
                 return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
-            var dtos = await _repository.GetByUserIdAsync(request.UserId, cancellationToken);
+            var docsResult = await _repository.ListByUserIdAsync(request.UserId, cancellationToken);
 
-            if (dtos.IsFailed)
-                return Result.Fail(dtos.Errors[0].Message);
+            if (docsResult.IsFailed)
+                return Result.Fail(docsResult.Errors);
 
-            return Result.Ok(dtos.Value);
+            if (!docsResult.Value.Any())
+                return Result.Ok(Enumerable.Empty<AccountDto>());
+
+            var dtos = Mappers.DocumentToDtoMappings.Map(docsResult.Value);
+
+            return Result.Ok(dtos);
         }
     }
 

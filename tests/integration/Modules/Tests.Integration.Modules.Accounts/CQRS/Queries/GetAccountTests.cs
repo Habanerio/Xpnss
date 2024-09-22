@@ -4,7 +4,7 @@ using Habanerio.Xpnss.Modules.Accounts.Data;
 using Habanerio.Xpnss.Modules.Accounts.DTOs;
 using Habanerio.Xpnss.Modules.Accounts.Interfaces;
 using MongoDB.Bson;
-using Tests.Integration.Plutus;
+using Tests.Integration.Common;
 using Xunit.Abstractions;
 
 namespace Habanerio.Xpnss.Tests.Integration.Modules.Accounts.CQRS.Queries;
@@ -46,7 +46,7 @@ public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, ID
 
         foreach (var accountId in accountIds)
         {
-            var query = new GetAccount.Query(accountId, _userId);
+            var query = new GetAccount.Query(_userId, accountId);
             var result = await _testHandler.Handle(query, CancellationToken.None);
 
             Assert.True(result.IsSuccess);
@@ -69,7 +69,7 @@ public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, ID
 
         foreach (var accountId in accountIds)
         {
-            var query = new GetAccount.Query(accountId, _userId);
+            var query = new GetAccount.Query(_userId, accountId);
             var result = await _testHandler.Handle(query, CancellationToken.None);
 
             Assert.True(result.IsSuccess);
@@ -92,7 +92,7 @@ public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, ID
 
         foreach (var accountId in accountIds)
         {
-            var query = new GetAccount.Query(accountId, _userId);
+            var query = new GetAccount.Query(_userId, accountId);
             var result = await _testHandler.Handle(query, CancellationToken.None);
 
             Assert.True(result.IsSuccess);
@@ -115,7 +115,7 @@ public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, ID
 
         foreach (var accountId in accountIds)
         {
-            var query = new GetAccount.Query(accountId, _userId);
+            var query = new GetAccount.Query(_userId, accountId);
             var result = await _testHandler.Handle(query, CancellationToken.None);
 
             Assert.True(result.IsSuccess);
@@ -138,7 +138,7 @@ public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, ID
 
         foreach (var accountId in accountIds)
         {
-            var query = new GetAccount.Query(accountId, _userId);
+            var query = new GetAccount.Query(_userId, accountId);
             var result = await _testHandler.Handle(query, CancellationToken.None);
 
             Assert.True(result.IsSuccess);
@@ -163,7 +163,7 @@ public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, ID
         var results = await _testHandler.Handle(query, CancellationToken.None);
         var empty = ObjectId.Empty;
 
-        Assert.Equal("'Id' must not be empty.", results.Errors[0].Message);
+        Assert.Equal("'Account Id' must not be empty.", results.Errors[0].Message);
     }
 
     [Theory]
@@ -171,13 +171,13 @@ public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, ID
     [InlineData("1234567890")]
     [InlineData("1234567890-1234567890-1234567890")]
     [InlineData("000000000000000000000000")]
-    public async Task CannotCall_Handle_GetAccount_InvalidId(string id)
+    public async Task CannotCall_Handle_GetAccount_InvalidId(string accountId)
     {
-        var query = new GetAccount.Query(id, _userId);
+        var query = new GetAccount.Query(_userId, accountId);
         var results = await _testHandler.Handle(query, CancellationToken.None);
 
         Assert.True(results.IsFailed);
-        Assert.Equal($"Invalid AccountId: `{id}`", results.Errors[0].Message);
+        Assert.Equal($"Invalid AccountId: `{accountId}`", results.Errors[0].Message);
     }
 
     [Theory]
@@ -186,7 +186,7 @@ public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, ID
     [InlineData(null)]
     public async Task CannotCall_Handle_GetAccount_EmptyOrNullUserId(string userId)
     {
-        var query = new GetAccount.Query(ObjectId.GenerateNewId().ToString(), userId);
+        var query = new GetAccount.Query(userId, ObjectId.GenerateNewId().ToString());
         var results = await _testHandler.Handle(query, CancellationToken.None);
 
         Assert.True(results.IsFailed);

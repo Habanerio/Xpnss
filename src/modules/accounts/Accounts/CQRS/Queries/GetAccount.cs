@@ -11,7 +11,7 @@ namespace Habanerio.Xpnss.Modules.Accounts.CQRS.Queries;
 /// </summary>
 public class GetAccount
 {
-    public record Query(string Id, string UserId) : IAccountsQuery<Result<AccountDto>>;
+    public record Query(string UserId, string AccountId) : IAccountsQuery<Result<AccountDto>>;
 
     public class Handler(IAccountsRepository repository) : IRequestHandler<Query, Result<AccountDto>>
     {
@@ -27,12 +27,17 @@ public class GetAccount
             if (!validationResult.IsValid)
                 return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
-            var dto = await _repository.GetByIdAsync(request.Id, request.UserId, cancellationToken);
+            var docResult = await _repository.GetByIdAsync(request.UserId, request.AccountId, cancellationToken);
 
-            if (dto.IsFailed)
-                return Result.Fail(dto.Errors[0].Message);
+            if (docResult.IsFailed)
+                return Result.Fail(docResult.Errors);
 
-            return Result.Ok(dto.Value);
+            var dto = Mappers.DocumentToDtoMappings.Map(docResult.Value);
+
+            if (dto is null)
+                return Result.Fail("Failed to map AccountDocument to AccountDto");
+
+            return Result.Ok(dto);
         }
     }
 
@@ -45,7 +50,7 @@ public class GetAccount
     {
         public Validator()
         {
-            RuleFor(x => x.Id).NotEmpty();
+            RuleFor(x => x.AccountId).NotEmpty();
             RuleFor(x => x.UserId).NotEmpty();
         }
     }

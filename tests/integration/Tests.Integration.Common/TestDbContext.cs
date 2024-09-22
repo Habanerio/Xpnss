@@ -2,7 +2,7 @@ using Habanerio.Core.DBs.MongoDB.EFCore;
 using Habanerio.Xpnss.Modules.Accounts.Data;
 using Microsoft.Extensions.Options;
 
-namespace Habanerio.Xpnss.Tests.Integration.Modules.Accounts;
+namespace Tests.Integration.Common;
 
 public class TestDbContext
 {

@@ -22,6 +22,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\..\src\modules\accounts\Accounts\Accounts.csproj" />
+        <ProjectReference Include="..\..\Tests.Integration.Common\Tests.Integration.Common.csproj" />
     </ItemGroup>
 
     <ItemGroup>

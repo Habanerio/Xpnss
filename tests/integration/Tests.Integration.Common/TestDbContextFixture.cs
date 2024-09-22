@@ -3,11 +3,10 @@ using Habanerio.Xpnss.Modules.Accounts.Common;
 using Habanerio.Xpnss.Modules.Accounts.Data;
 using Habanerio.Xpnss.Modules.Accounts.DTOs;
 using Habanerio.Xpnss.Modules.Accounts.Interfaces;
-using Habanerio.Xpnss.Tests.Integration.Modules.Accounts;
 using Microsoft.Extensions.Options;
 using Testcontainers.MongoDb;
 
-namespace Tests.Integration.Plutus;
+namespace Tests.Integration.Common;
 
 /// <summary>
 /// Fixture for the TestDb Context using the TestDb Container

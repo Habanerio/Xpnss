@@ -6,6 +6,12 @@ namespace Habanerio.Xpnss.Modules.Accounts.Mappers;
 
 public static class DocumentToDtoMappings
 {
+    /// <summary>
+    /// This will map a list of documents to a list of dtos.
+    /// If any of the mapped dtos are null, they will be skipped.
+    /// </summary>
+    /// <param name="documents"></param>
+    /// <returns></returns>
     public static IEnumerable<AccountDto> Map(IEnumerable<AccountDocument> documents)
     {
         var results = new List<AccountDto>();
@@ -21,6 +27,13 @@ public static class DocumentToDtoMappings
         return results;
     }
 
+    /// <summary>
+    /// This is for when you have a single document to map.
+    /// Do NOT iterate over this. Use <see cref="Map(IEnumerable{AccountDocument})"/> instead.
+    /// </summary>
+    /// <param name="document"></param>
+    /// <returns></returns>
+    /// <exception cref="NotSupportedException"></exception>
     public static AccountDto? Map(AccountDocument? document)
     {
         if (document is null)
@@ -160,7 +173,7 @@ public static class DocumentToDtoMappings
 
     //        //    MapCommonProperties(creditCardDocument, creditCard);
 
-    //        //    creditCardDocument.CreditLimit = creditCard.CreditLimit;
+    //        //    creditCardDocument.InterestRate = creditCard.InterestRate;
     //        //    creditCardDocument.InterestRate = creditCard.InterestRate;
     //        //    creditCardDocument.BillingCycleDays = creditCard.BillingCycleDays;
 
@@ -171,7 +184,7 @@ public static class DocumentToDtoMappings
 
     //        //    MapCommonProperties(locDocument, loc);
 
-    //        //    locDocument.CreditLimit = loc.CreditLimit;
+    //        //    locDocument.InterestRate = loc.InterestRate;
     //        //    locDocument.InterestRate = loc.InterestRate;
 
     //        //    return locDocument;
@@ -183,7 +196,7 @@ public static class DocumentToDtoMappings
 
     //private static void MapCommonProperties(MoneyAccountEntity document, MoneyAccount entity)
     //{
-    //    entity.Id = document.Id.ToString();
+    //    entity.AccountId = document.AccountId.ToString();
 
     //    entity.UserId = document.UserId;
 
@@ -204,7 +217,7 @@ public static class DocumentToDtoMappings
 
     //private static void MapCommonProperties(MoneyAccount dto, MoneyAccountEntity document)
     //{
-    //    document.Id = ObjectId.Parse(dto.Id);
+    //    document.AccountId = ObjectId.Parse(dto.AccountId);
 
     //    document.UserId = dto.UserId;
 

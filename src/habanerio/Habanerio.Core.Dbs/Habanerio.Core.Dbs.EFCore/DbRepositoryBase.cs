@@ -85,7 +85,17 @@ public abstract class DbRepositoryBase<TDbEntity, TId> : IDbRepository<TDbEntity
     {
         var qry = DbSet.AsQueryable();
 
-        var results = await qry.Where(filter).ToArrayAsync(cancellationToken);
+        TDbEntity[] results = Array.Empty<TDbEntity>();
+
+        try
+        {
+            results = await qry.Where(filter).ToArrayAsync(cancellationToken);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
 
         return results;
     }

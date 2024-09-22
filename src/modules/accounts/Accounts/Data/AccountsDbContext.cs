@@ -23,7 +23,7 @@ public class AccountsDbContext : MongoDbContext //<AccountsDbContext>
 
             e.HasKey(x => new { x.UserId, x.Id });
 
-            //e.HasKey(x => x.Id);
+            //e.HasKey(x => x.AccountId);
 
             e.HasIndex(x => x.UserId)
                 .HasDatabaseName("IX_UserId");

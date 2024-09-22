@@ -6,7 +6,7 @@ namespace Habanerio.Xpnss.Modules.Accounts.DTOs;
 
 public record AccountDto
 {
-    public string Id { get; private set; }
+    public string Id { get; set; }
 
     public string UserId { get; set; }
 
@@ -30,6 +30,9 @@ public record AccountDto
 
     public DateTimeOffset? DateDeleted { get; set; }
 
+    // Needed for deserialization in the API.
+    public AccountDto() { }
+
     protected AccountDto(AccountType accountType, bool isCredit)
     {
         AccountType = accountType;
@@ -51,7 +54,7 @@ public record AccountDto
         DateTimeOffset? dateDeleted = null)
     {
         if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("Id cannot be null or empty", nameof(id));
+            throw new ArgumentException("AccountId cannot be null or empty", nameof(id));
 
         if (string.IsNullOrWhiteSpace(userId))
             throw new ArgumentException("UserId cannot be null or empty", nameof(userId));

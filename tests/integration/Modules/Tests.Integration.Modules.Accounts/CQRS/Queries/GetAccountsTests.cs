@@ -3,7 +3,7 @@ using Habanerio.Xpnss.Modules.Accounts.CQRS.Queries;
 using Habanerio.Xpnss.Modules.Accounts.Data;
 using Habanerio.Xpnss.Modules.Accounts.DTOs;
 using Habanerio.Xpnss.Modules.Accounts.Interfaces;
-using Tests.Integration.Plutus;
+using Tests.Integration.Common;
 using Xunit.Abstractions;
 
 namespace Habanerio.Xpnss.Tests.Integration.Modules.Accounts.CQRS.Queries;

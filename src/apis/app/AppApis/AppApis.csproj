@@ -31,12 +31,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Endpoints\Accounts\" />
         <Folder Include="Endpoints\Authentication\" />
         <Folder Include="Endpoints\Transactions\" />
         <Folder Include="Managers\" />
         <Folder Include="Models\Responses\" />
-        <Folder Include="Models\Requests\" />
     </ItemGroup>
 
 </Project>
