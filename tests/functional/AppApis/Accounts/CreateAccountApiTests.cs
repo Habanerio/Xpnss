@@ -18,7 +18,7 @@ public class CreateAccountApiTests : BaseFunctionalApisTests,
     { }
 
     [Fact]
-    public async Task CreateAccount_CashAccount_WithValidRequest_ReturnsOk()
+    public async Task CanCall_CreateAccount_CashAccount_WithValidRequest_ReturnsOk()
     {
         // Arrange
         var request = new CreateAccountEndpoint.Request
@@ -52,7 +52,7 @@ public class CreateAccountApiTests : BaseFunctionalApisTests,
     }
 
     [Fact]
-    public async Task CreateAccount_CheckingAccount_WithValidRequest_ReturnsOk()
+    public async Task CanCall_CreateAccount_CheckingAccount_WithValidRequest_ReturnsOk()
     {
         // Arrange
         var request = new CreateAccountEndpoint.Request
@@ -85,7 +85,41 @@ public class CreateAccountApiTests : BaseFunctionalApisTests,
     }
 
     [Fact]
-    public async Task CreateAccount_CreditCardAccount_WithValidRequest_ReturnsOk()
+    public async Task CanCall_CreateAccount_SavingsAccount_WithValidRequest_ReturnsOk()
+    {
+        // Arrange
+        var request = new CreateAccountEndpoint.Request
+        {
+            UserId = USER_ID,
+            AccountTypeId = (int)AccountType.Savings,
+            Name = "Test Savings Account",
+            Description = "Test Savings Account Description",
+            Balance = 0,
+            InterestRate = 10,
+            DisplayColor = "#000000"
+        };
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync(
+            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID),
+            request);
+
+        // Assert
+        response.EnsureSuccessStatusCode();
+
+        var content = await response.Content.ReadAsStringAsync();
+        var apiResponse = JsonSerializer.Deserialize<ApiResponse<string>>(content, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        Assert.NotNull(apiResponse);
+        Assert.True(!string.IsNullOrWhiteSpace(apiResponse.Data));
+        Assert.True(apiResponse.IsSuccess);
+    }
+
+    [Fact]
+    public async Task CanCall_CreateAccount_CreditCardAccount_WithValidRequest_ReturnsOk()
     {
         // Arrange
         var request = new CreateAccountEndpoint.Request
@@ -120,7 +154,43 @@ public class CreateAccountApiTests : BaseFunctionalApisTests,
     }
 
     [Fact]
-    public async Task CreateAccount_WithInvalidRequest_NULL_ReturnsBadRequest()
+    public async Task CanCall_CreateAccount_LineOfCreditAccount_WithValidRequest_ReturnsOk()
+    {
+        // Arrange
+        var request = new CreateAccountEndpoint.Request
+        {
+            UserId = USER_ID,
+            AccountTypeId = (int)AccountType.LineOfCredit,
+            Name = "Test Line Of Credit Account",
+            Description = "Test Line Of Credit Account Description",
+            Balance = 0,
+            CreditLimit = 1000,
+            InterestRate = 10,
+            DisplayColor = "#000000"
+        };
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync(
+            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID),
+            request);
+
+        // Assert
+        response.EnsureSuccessStatusCode();
+
+        var content = await response.Content.ReadAsStringAsync();
+        var apiResponse = JsonSerializer.Deserialize<ApiResponse<string>>(content, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        Assert.NotNull(apiResponse);
+        Assert.True(!string.IsNullOrWhiteSpace(apiResponse.Data));
+        Assert.True(apiResponse.IsSuccess);
+    }
+
+
+    [Fact]
+    public async Task CannotCall_CreateAccount_WithInvalidRequest_NULL_ReturnsBadRequest()
     {
         // Arrange
         CreateAccountEndpoint.Request? request = null;
@@ -137,7 +207,7 @@ public class CreateAccountApiTests : BaseFunctionalApisTests,
     }
 
     [Fact]
-    public async Task CreateAccount_WithInvalidRequest_EmptyUserId_ReturnsBadRequest()
+    public async Task CannotCall_CreateAccount_WithInvalidRequest_EmptyUserId_ReturnsBadRequest()
     {
         // Arrange
         var request = new CreateAccountEndpoint.Request
@@ -170,7 +240,7 @@ public class CreateAccountApiTests : BaseFunctionalApisTests,
     }
 
     [Fact]
-    public async Task CreateAccount_WithInvalidRequest_EmptyAccountType_ReturnsBadRequest()
+    public async Task CannotCall_CreateAccount_WithInvalidRequest_EmptyAccountType_ReturnsBadRequest()
     {
         // Arrange
         var request = new CreateAccountEndpoint.Request
@@ -203,7 +273,7 @@ public class CreateAccountApiTests : BaseFunctionalApisTests,
     }
 
     [Fact]
-    public async Task CreateAccount_WithInvalidRequest_EmptyName_ReturnsBadRequest()
+    public async Task CannotCall_CreateAccount_WithInvalidRequest_EmptyName_ReturnsBadRequest()
     {
         // Arrange
         var request = new CreateAccountEndpoint.Request
@@ -236,7 +306,7 @@ public class CreateAccountApiTests : BaseFunctionalApisTests,
     }
 
     [Fact]
-    public async Task CreateAccount_WithInvalidRequest_CreditLimit_ReturnsBadRequest()
+    public async Task CannotCall_CreateAccount_WithInvalidRequest_CreditLimit_ReturnsBadRequest()
     {
         // Arrange
         var request = new CreateAccountEndpoint.Request
@@ -270,7 +340,7 @@ public class CreateAccountApiTests : BaseFunctionalApisTests,
     }
 
     [Fact]
-    public async Task CreateAccount_WithInvalidRequest_InterestRate_BelowZero_ReturnsBadRequest()
+    public async Task CannotCall_CreateAccount_WithInvalidRequest_InterestRate_BelowZero_ReturnsBadRequest()
     {
         // Arrange
         var request = new CreateAccountEndpoint.Request
@@ -305,7 +375,7 @@ public class CreateAccountApiTests : BaseFunctionalApisTests,
     }
 
     [Fact]
-    public async Task CreateAccount_WithInvalidRequest_InterestRate_AboveHundred_ReturnsBadRequest()
+    public async Task CannotCall_CreateAccount_WithInvalidRequest_InterestRate_AboveHundred_ReturnsBadRequest()
     {
         // Arrange
         var request = new CreateAccountEndpoint.Request

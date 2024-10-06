@@ -8,9 +8,9 @@ namespace Habanerio.Xpnss.Modules.Accounts.Interfaces;
 
 public interface IAccountsRepository
 {
-    void Add(AccountDocument account);
+    Result<ObjectId> Add(AccountDto accountDto);
 
-    ObjectId Add(AccountDto accountDto);
+    Task<Result<ObjectId>> AddAsync(AccountDocument account, CancellationToken cancellationToken = default);
 
     Task<Result<AccountDocument>> GetByIdAsync(
         string userId,
@@ -33,11 +33,5 @@ public interface IAccountsRepository
         string displayColor,
         CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Save needs to be called after all operations are done
-    /// </summary>
-    /// <param name="account"></param>
-    void Update(AccountDocument account);
-
-    Task<Result> SaveAsync(CancellationToken cancellationToken = default);
+    Task<Result> UpdateAsync(AccountDocument account, CancellationToken cancellationToken);
 }

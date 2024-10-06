@@ -8,7 +8,7 @@ using MediatR;
 namespace Habanerio.Xpnss.Modules.Accounts.CQRS.Commands;
 
 /// <summary>
-/// MediatR Command to Add an Existing Account (?)
+/// MediatR Command to AddDocument an Existing Account (?)
 /// </summary>
 /// <remarks>
 /// Needs to be cleaned up
@@ -99,14 +99,12 @@ public class AddAccount
             if (accountDto is null)
                 return Result.Fail("Account Type not supported");
 
-            var accountId = _repository.Add(accountDto);
-
-            var result = await _repository.SaveAsync(cancellationToken);
+            var result = _repository.Add(accountDto);
 
             if (!result.IsSuccess)
                 return Result.Fail(result.Errors?[0].Message ?? "Could not save the Account");
 
-            return Result.Ok(accountId.ToString());
+            return Result.Ok(result.Value.ToString());
         }
     }
 

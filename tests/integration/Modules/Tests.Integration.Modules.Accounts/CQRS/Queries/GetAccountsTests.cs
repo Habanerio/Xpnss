@@ -1,6 +1,5 @@
 using Habanerio.Xpnss.Modules.Accounts.Common;
 using Habanerio.Xpnss.Modules.Accounts.CQRS.Queries;
-using Habanerio.Xpnss.Modules.Accounts.Data;
 using Habanerio.Xpnss.Modules.Accounts.DTOs;
 using Habanerio.Xpnss.Modules.Accounts.Interfaces;
 using Tests.Integration.Common;
@@ -29,7 +28,7 @@ public class GetAccountsTests : IClassFixture<AccountsTestDbContextFixture>//, I
     {
         _outputHelper = outputHelper;
 
-        _accountsRepository = new AccountsRepository(dbContextFixture.DbContext);
+        _accountsRepository = dbContextFixture.AccountsRepository;
 
         _testHandler = new GetAccounts.Handler(_accountsRepository);
 

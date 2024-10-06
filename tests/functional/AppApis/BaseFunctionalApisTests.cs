@@ -31,6 +31,6 @@ public class BaseFunctionalApisTests
         //Config = AppConfigSettingsManager.GetConfigs();
         //var apiKey = Config.GetValue<string>("ApiKey");
 
-        //HttpClient.DefaultRequestHeaders.Add("xpnss-api-key", apiKey);
+        //HttpClient.DefaultRequestHeaders.AddDocument("xpnss-api-key", apiKey);
     }
 }

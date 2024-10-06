@@ -1,4 +1,4 @@
-using Habanerio.Core.DBs.MongoDB.EFCore;
+using Habanerio.Core.Dbs.MongoDb;
 using Habanerio.Xpnss.Modules.Accounts.Data;
 using Microsoft.Extensions.Options;
 
@@ -16,5 +16,6 @@ public class TestDbContext
 public class TestAccountsRepository : MongoDbRepository<AccountDocument>
 {
     public TestAccountsRepository(IOptions<MongoDbSettings> options) : base(options) { }
-    public TestAccountsRepository(MongoDbContext context) : base(context) { }
+
+    public TestAccountsRepository(string connectionString, string databaseName) : base(connectionString, databaseName) { }
 }

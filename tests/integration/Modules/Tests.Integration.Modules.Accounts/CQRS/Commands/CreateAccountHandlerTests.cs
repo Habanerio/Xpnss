@@ -12,7 +12,7 @@ namespace Habanerio.Xpnss.Tests.Integration.Modules.Accounts.CQRS.Commands;
 /// Tests that each type of Account can be created successfully.
 /// </summary>
 [Collection(nameof(AccountsMongoCollection))]
-public class CreateAccountTests : IClassFixture<AccountsTestDbContextFixture>//, IDisposable
+public class CreateAccountHandlerTests : IClassFixture<AccountsTestDbContextFixture>//, IDisposable
 {
     private readonly ITestOutputHelper _outputHelper;
 
@@ -26,13 +26,13 @@ public class CreateAccountTests : IClassFixture<AccountsTestDbContextFixture>//,
 
     private readonly string _userId = "1";
 
-    public CreateAccountTests(AccountsTestDbContextFixture dbContextFixture, ITestOutputHelper outputHelper)
+    public CreateAccountHandlerTests(AccountsTestDbContextFixture dbContextFixture, ITestOutputHelper outputHelper)
     {
         _outputHelper = outputHelper;
 
-        _accountsRepository = new AccountsRepository(dbContextFixture.DbContext);
+        _accountsRepository = dbContextFixture.AccountsRepository;
 
-        _verifyRepository = new TestAccountsRepository(dbContextFixture.DbContext);
+        _verifyRepository = dbContextFixture.VerifyAccountsRepository;
 
         _testHandler = new CreateAccount.Handler(_accountsRepository);
     }
@@ -97,9 +97,9 @@ public class CreateAccountTests : IClassFixture<AccountsTestDbContextFixture>//,
         Assert.True(result.IsSuccess);
         var accountId = Assert.IsType<string>(result.Value);
 
-        var actualAccountDoc = await _verifyRepository
+        var actualAccountDoc = (await _verifyRepository
             .FirstOrDefaultAsync(a =>
-                a.Id.ToString() == accountId && a.UserId == _userId);
+                a.Id.ToString() == accountId && a.UserId == _userId)) as CheckingAccount;
 
         Assert.NotNull(actualAccountDoc);
         Assert.NotEqual(ObjectId.Empty, actualAccountDoc.Id);
@@ -118,14 +118,7 @@ public class CreateAccountTests : IClassFixture<AccountsTestDbContextFixture>//,
         Assert.Null(actualAccountDoc.DateUpdated);
         Assert.Null(actualAccountDoc.DateDeleted);
 
-        // Due to how the extended properties are added in the handler, this will fail.
-        //Assert.Equal(1, actualAccountDoc.ExtendedProps.Count);
-
-        var actualOverDraftAmount = actualAccountDoc.ExtendedProps
-            .First(x =>
-                x.Key.Equals("OverDraftAmount")).Value?.ToString() ?? string.Empty;
-
-        Assert.Equal(command.OverDraftAmount, decimal.Parse(actualOverDraftAmount));
+        Assert.Equal(command.OverDraftAmount, actualAccountDoc.OverDraftAmount);
     }
 
     [Fact]
@@ -146,9 +139,9 @@ public class CreateAccountTests : IClassFixture<AccountsTestDbContextFixture>//,
         Assert.True(result.IsSuccess);
         var accountId = Assert.IsType<string>(result.Value);
 
-        var actualAccountDoc = await _verifyRepository
+        var actualAccountDoc = (await _verifyRepository
             .FirstOrDefaultAsync(a =>
-                a.Id.ToString() == accountId && a.UserId == _userId);
+                a.Id.ToString() == accountId && a.UserId == _userId)) as SavingsAccount;
 
         Assert.NotNull(actualAccountDoc);
         Assert.NotEqual(ObjectId.Empty, actualAccountDoc.Id);
@@ -167,14 +160,7 @@ public class CreateAccountTests : IClassFixture<AccountsTestDbContextFixture>//,
         Assert.Null(actualAccountDoc.DateUpdated);
         Assert.Null(actualAccountDoc.DateDeleted);
 
-        // Due to how the extended properties are added in the handler, this will fail.
-        //Assert.Equal(1, actualAccountDoc.ExtendedProps.Count);
-
-        var actualInterestRate = actualAccountDoc.ExtendedProps
-            .First(x =>
-                x.Key.Equals("InterestRate")).Value?.ToString() ?? string.Empty;
-
-        Assert.Equal(command.InterestRate, decimal.Parse(actualInterestRate));
+        Assert.Equal(command.InterestRate, actualAccountDoc.InterestRate);
     }
 
     [Fact]
@@ -196,9 +182,9 @@ public class CreateAccountTests : IClassFixture<AccountsTestDbContextFixture>//,
         Assert.True(result.IsSuccess);
         var accountId = Assert.IsType<string>(result.Value);
 
-        var actualAccountDoc = await _verifyRepository
+        var actualAccountDoc = (await _verifyRepository
             .FirstOrDefaultAsync(a =>
-                a.Id.ToString() == accountId && a.UserId == _userId);
+                a.Id.ToString() == accountId && a.UserId == _userId)) as CreditCardAccount;
 
         Assert.NotNull(actualAccountDoc);
         Assert.NotEqual(ObjectId.Empty, actualAccountDoc.Id);
@@ -209,7 +195,7 @@ public class CreateAccountTests : IClassFixture<AccountsTestDbContextFixture>//,
         Assert.Equal(command.Balance, actualAccountDoc.Balance);
         Assert.Equal(command.DisplayColor, actualAccountDoc.DisplayColor);
 
-        //Assert.True(actualAccountDoc.IsCredit);
+        Assert.True(actualAccountDoc.IsCredit);
         Assert.False(actualAccountDoc.IsDeleted);
 
         Assert.NotNull(actualAccountDoc.DateCreated);
@@ -217,20 +203,8 @@ public class CreateAccountTests : IClassFixture<AccountsTestDbContextFixture>//,
         Assert.Null(actualAccountDoc.DateUpdated);
         Assert.Null(actualAccountDoc.DateDeleted);
 
-        // Due to how the extended properties are added in the handler, this will fail.
-        //Assert.Equal(2, actualAccountDoc.ExtendedProps.Count);
-
-        var actualCreditLimit = actualAccountDoc.ExtendedProps
-            .First(x =>
-                x.Key.Equals(nameof(command.CreditLimit))).Value?.ToString() ?? string.Empty;
-
-        Assert.Equal(command.CreditLimit, decimal.Parse(actualCreditLimit));
-
-        var actualInterestRate = actualAccountDoc.ExtendedProps
-            .First(x =>
-                x.Key.Equals(nameof(command.InterestRate))).Value?.ToString() ?? string.Empty;
-
-        Assert.Equal(command.InterestRate, decimal.Parse(actualInterestRate));
+        Assert.Equal(command.CreditLimit, actualAccountDoc.CreditLimit);
+        Assert.Equal(command.InterestRate, actualAccountDoc.InterestRate);
     }
 
     [Fact]
@@ -252,9 +226,9 @@ public class CreateAccountTests : IClassFixture<AccountsTestDbContextFixture>//,
         Assert.True(result.IsSuccess);
         var accountId = Assert.IsType<string>(result.Value);
 
-        var actualAccountDoc = await _verifyRepository
+        var actualAccountDoc = (await _verifyRepository
             .FirstOrDefaultAsync(a =>
-                a.Id.ToString() == accountId && a.UserId == _userId);
+                a.Id.ToString() == accountId && a.UserId == _userId)) as LineOfCreditAccount;
 
         Assert.NotNull(actualAccountDoc);
 
@@ -269,7 +243,7 @@ public class CreateAccountTests : IClassFixture<AccountsTestDbContextFixture>//,
         Assert.Equal(command.Balance, actualAccountDoc.Balance);
         Assert.Equal(command.DisplayColor, actualAccountDoc.DisplayColor);
 
-        //Assert.True(actualAccountDoc.IsCredit);
+        Assert.True(actualAccountDoc.IsCredit);
         Assert.False(actualAccountDoc.IsDeleted);
 
         Assert.NotNull(actualAccountDoc.DateCreated);
@@ -277,19 +251,8 @@ public class CreateAccountTests : IClassFixture<AccountsTestDbContextFixture>//,
         Assert.Null(actualAccountDoc.DateUpdated);
         Assert.Null(actualAccountDoc.DateDeleted);
 
-        // Due to how the extended properties are added in the handler, this will fail.
-        //Assert.Equal(2, actualAccountDoc.ExtendedProps.Count);
 
-        var actualCreditLimit = actualAccountDoc.ExtendedProps
-            .First(x =>
-                x.Key.Equals(nameof(command.CreditLimit))).Value?.ToString() ?? string.Empty;
-
-        Assert.Equal(command.CreditLimit, decimal.Parse(actualCreditLimit));
-
-        var actualInterestRate = actualAccountDoc.ExtendedProps
-            .First(x =>
-                x.Key.Equals(nameof(command.InterestRate))).Value?.ToString() ?? string.Empty;
-
-        Assert.Equal(command.InterestRate, decimal.Parse(actualInterestRate));
+        Assert.Equal(command.CreditLimit, actualAccountDoc.CreditLimit);
+        Assert.Equal(command.InterestRate, actualAccountDoc.InterestRate);
     }
 }

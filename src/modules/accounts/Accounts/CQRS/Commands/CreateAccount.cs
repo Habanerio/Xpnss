@@ -40,51 +40,58 @@ public class CreateAccount
             if (!validationResult.IsValid)
                 return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
-            var newDoc = AccountDocument.New(
-                request.UserId,
-                request.Name,
-                request.AccountType,
-                request.Description,
-                request.Balance,
-                request.DisplayColor);
+            var account = GetAccount(request);
 
-            var extendedProps = new List<KeyValuePair<string, object?>>();
-
-            foreach (var prop in request.GetType().GetProperties())
-            {
-                if (string.IsNullOrWhiteSpace(prop.Name) ||
-                    prop.Name == nameof(request.UserId) ||
-                    prop.Name == nameof(request.Name) ||
-                    prop.Name == nameof(request.AccountType) ||
-                    prop.Name == nameof(request.Balance) ||
-                    prop.Name == nameof(request.Description) ||
-                    prop.Name == nameof(request.DisplayColor)
-                   )
-                    continue;
-
-                var value = prop.GetValue(request) ?? default;
-
-                extendedProps.Add(new KeyValuePair<string, object?>(prop.Name, value));
-            }
-
-            newDoc.ExtendedProps = extendedProps;
-
-            try
-            {
-                _repository.Add(newDoc);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-
-            var result = await _repository.SaveAsync(cancellationToken);
+            var result = await _repository.AddAsync(account, cancellationToken);
 
             if (!result.IsSuccess)
                 return Result.Fail(result.Errors?[0].Message ?? "Could not save the Account");
 
-            return Result.Ok(newDoc.Id.ToString());
+            return Result.Ok(result.Value.ToString());
+        }
+
+        private AccountDocument GetAccount(Command request)
+        {
+            return request.AccountType switch
+            {
+                AccountType.Cash => CashAccount.New(
+                    request.UserId,
+                    request.Name,
+                    request.Description,
+                    request.Balance,
+                    request.DisplayColor),
+                AccountType.Checking => CheckingAccount.New(
+                    request.UserId,
+                    request.Name,
+                    request.Description,
+                    request.Balance,
+                    request.OverDraftAmount,
+                    request.DisplayColor),
+                AccountType.Savings => SavingsAccount.New(
+                    request.UserId,
+                    request.Name,
+                    request.Description,
+                    request.Balance,
+                    request.InterestRate,
+                    request.DisplayColor),
+                AccountType.CreditCard => CreditCardAccount.New(
+                    request.UserId,
+                    request.Name,
+                    request.Description,
+                    request.Balance,
+                    request.CreditLimit,
+                    request.InterestRate,
+                    request.DisplayColor),
+                AccountType.LineOfCredit => LineOfCreditAccount.New(
+                    request.UserId,
+                    request.Name,
+                    request.Description,
+                    request.Balance,
+                    request.CreditLimit,
+                    request.InterestRate,
+                    request.DisplayColor),
+                _ => throw new InvalidOperationException("Account Type not supported")
+            };
         }
     }
 
