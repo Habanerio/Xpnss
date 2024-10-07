@@ -4,4 +4,4 @@ builder.AddProject<Projects.AppApis>("appapis");
 
 builder.AddProject<Projects.AdminApis>("adminapis");
 
-builder.Build().Run();
+await builder.Build().RunAsync();

@@ -38,7 +38,7 @@ public interface IDbRepository<TDbEntity, in TId> where TDbEntity : IDbEntity<TI
     /// <returns></returns>
     ValueTask<IEnumerable<TDbEntity>> FindAsync(IEnumerable<TId> ids, CancellationToken cancellationToken = default);
 
-    //Task<(IEnumerable<TDbEntity> Results, int TotalPages, int TotalCount)> GetAsync(int pageNo, int pageSize, CancellationToken cancellationToken = default);
+    Task<IEnumerable<TDbEntity>> FindAsync(Expression<Func<TDbEntity, bool>> filter, CancellationToken cancellationToken = default);
 
     TDbEntity? FirstOrDefault(Expression<Func<TDbEntity, bool>> expression, CancellationToken cancellationToken = default);
 
