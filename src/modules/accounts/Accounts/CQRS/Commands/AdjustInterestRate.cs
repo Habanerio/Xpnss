@@ -48,7 +48,7 @@ public class AdjustInterestRate
             var dto = Mappers.DocumentToDtoMappings.Map(existingAccount);
 
             if (dto is not IHasInterestRate interestRateDto)
-                return Result.Fail("Account does not have a Interest Rate");
+                return Result.Fail($"The Account Type `{dto.AccountType}` does not support Interest Rate");
 
             var previousInterestRate = interestRateDto.InterestRate;
 
@@ -66,9 +66,7 @@ public class AdjustInterestRate
                 interestRateDto.InterestRate.ToString(CultureInfo.InvariantCulture),
                 request.Reason);
 
-            _repository.Update(existingAccount);
-
-            var result = await _repository.SaveAsync(cancellationToken);
+            var result = await _repository.UpdateAsync(existingAccount, cancellationToken);
 
             if (result.IsFailed)
                 return Result.Fail<decimal>(result.Errors);

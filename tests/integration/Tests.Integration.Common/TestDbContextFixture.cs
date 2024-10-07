@@ -1,4 +1,5 @@
-using Habanerio.Core.DBs.MongoDB.EFCore;
+using Habanerio.Core.Dbs.MongoDb;
+using Habanerio.Core.Dbs.MongoDb.Interfaces;
 using Habanerio.Xpnss.Modules.Accounts.Common;
 using Habanerio.Xpnss.Modules.Accounts.Data;
 using Habanerio.Xpnss.Modules.Accounts.DTOs;
@@ -34,10 +35,13 @@ public class AccountsMongoCollection : ICollectionFixture<AccountsTestDbContextF
 
 public class AccountsTestDbContextFixture : TestDbContainerFixture
 {
-    private TestDbContext.TestAccountsDbContext? _dbContext;
-    public TestDbContext.TestAccountsDbContext DbContext => _dbContext;
+    private IMongoDbContext<AccountDocument>? _dbContext;
 
-    private IAccountsRepository _accountsRepository;
+    public IMongoDbContext<AccountDocument> DbContext => _dbContext;
+
+    public IAccountsRepository AccountsRepository { get; set; }
+
+    public TestAccountsRepository VerifyAccountsRepository { get; set; }
 
     public List<(string AccountId, AccountType AccountType)> AvailableAccounts = [];
 
@@ -45,16 +49,18 @@ public class AccountsTestDbContextFixture : TestDbContainerFixture
     {
         await base.InitializeAsync();
 
-        var options = Options.Create<MongoDbSettings>(new MongoDbSettings
+        var options = Options.Create(new MongoDbSettings
         {
             ConnectionString = ConnectionString,
-            DatabaseName = "PlutusTest",
+            DatabaseName = "Xpnss-Test",
             EnableDetailedErrors = true,
             EnableSensitiveDataLogging = true
         });
 
         _dbContext = new TestDbContext.TestAccountsDbContext(options);
-        _accountsRepository = new AccountsRepository(_dbContext);
+
+        AccountsRepository = new AccountsRepository(options);
+        VerifyAccountsRepository = new TestAccountsRepository(options);
 
         await PopulateData();
     }
@@ -64,11 +70,10 @@ public class AccountsTestDbContextFixture : TestDbContainerFixture
         await base.DisposeAsync();
     }
 
-    // Not able to do this in the TestDbContext
+    //// Not able to do this in the TestDbContext
     private async Task PopulateData()
     {
         // If the db already exists, delete it and reseed it
-        await DbContext.Database.EnsureDeletedAsync();
 
         var accountDtos = new List<AccountDto>()
         {
@@ -130,14 +135,15 @@ public class AccountsTestDbContextFixture : TestDbContainerFixture
                 dateCreated: DateTimeOffset.UtcNow.AddDays(-150)),
         };
 
-        foreach (var accountDto in accountDtos)
+        var accountDocuments = Habanerio.Xpnss.Modules.Accounts.Mappers.DtoToDocumentMappings.Map(accountDtos);
+
+        foreach (var accountDocument in accountDocuments)
         {
-            var accountId = _accountsRepository.Add(accountDto);
+            var result = await AccountsRepository.AddAsync(accountDocument);
 
-            AvailableAccounts.Add((accountId.ToString(), accountDto.AccountType));
+            if (result.IsSuccess)
+                AvailableAccounts.Add((result.Value.ToString(), accountDocument.AccountType));
         }
-
-        await _accountsRepository.SaveAsync(CancellationToken.None);
 
         //Thread.Sleep(500);
     }

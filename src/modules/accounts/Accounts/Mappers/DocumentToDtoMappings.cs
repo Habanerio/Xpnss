@@ -42,88 +42,83 @@ public static class DocumentToDtoMappings
         switch (document.AccountType)
         {
             case AccountType.Cash:
+                var cashDoc = document as CashAccount;
                 var cash = new CashAccountDto(
-                    document.Id.ToString(),
-                    document.UserId,
-                    document.Name,
-                    document.Description,
-                    document.Balance,
-                    document.DisplayColor,
-                    document.DateCreated,
-                    document.DateUpdated,
-                    document.DateDeleted);
-
-                MapExtendedPropertiesToDto(cash, document.ExtendedProps);
+                    cashDoc.Id.ToString(),
+                    cashDoc.UserId,
+                    cashDoc.Name,
+                    cashDoc.Description,
+                    cashDoc.Balance,
+                    cashDoc.DisplayColor,
+                    cashDoc.DateCreated,
+                    cashDoc.DateUpdated,
+                    cashDoc.DateDeleted);
 
                 return cash;
 
             case AccountType.Checking:
+                var checkingDoc = document as CheckingAccount;
                 var checking = new CheckingAccountDto(
-                    document.Id.ToString(),
-                    document.UserId,
-                    document.Name,
-                    document.Description,
-                    document.Balance,
-                    overDraftAmount: 0,
-                    document.DisplayColor,
-                    document.DateCreated,
-                    document.DateUpdated,
-                    document.DateDeleted);
-
-                MapExtendedPropertiesToDto(checking, document.ExtendedProps);
+                    checkingDoc.Id.ToString(),
+                    checkingDoc.UserId,
+                    checkingDoc.Name,
+                    checkingDoc.Description,
+                    checkingDoc.Balance,
+                    overDraftAmount: checkingDoc.OverDraftAmount,
+                    checkingDoc.DisplayColor,
+                    checkingDoc.DateCreated,
+                    checkingDoc.DateUpdated,
+                    checkingDoc.DateDeleted);
 
                 return checking;
 
             case AccountType.Savings:
+                var savingsDoc = document as SavingsAccount;
                 var savings = new SavingsAccountDto(
-                    document.Id.ToString(),
-                    document.UserId,
-                    document.Name,
-                    document.Description,
-                    document.Balance,
-                    interestRate: 0,
-                    document.DisplayColor,
-                    document.DateCreated,
-                    document.DateUpdated,
-                    document.DateDeleted);
-
-                MapExtendedPropertiesToDto(savings, document.ExtendedProps);
+                    savingsDoc.Id.ToString(),
+                    savingsDoc.UserId,
+                    savingsDoc.Name,
+                    savingsDoc.Description,
+                    savingsDoc.Balance,
+                    interestRate: savingsDoc.InterestRate,
+                    savingsDoc.DisplayColor,
+                    savingsDoc.DateCreated,
+                    savingsDoc.DateUpdated,
+                    savingsDoc.DateDeleted);
 
                 return savings;
 
             case AccountType.CreditCard:
+                var creditCardDoc = document as CreditCardAccount;
                 var creditCard = new CreditCardAccountDto(
-                    document.Id.ToString(),
-                    document.UserId,
-                    document.Name,
-                    document.Description,
-                    document.Balance,
-                    creditLimit: 0,
-                    interestRate: 0,
-                    document.DisplayColor,
-                    dateCreated: document.DateCreated,
-                    dateUpdated: document.DateUpdated,
-                    dateDeleted: document.DateDeleted);
-
-                MapExtendedPropertiesToDto(creditCard, document.ExtendedProps);
+                    creditCardDoc.Id.ToString(),
+                    creditCardDoc.UserId,
+                    creditCardDoc.Name,
+                    creditCardDoc.Description,
+                    creditCardDoc.Balance,
+                    creditLimit: creditCardDoc.CreditLimit,
+                    interestRate: creditCardDoc.InterestRate,
+                    creditCardDoc.DisplayColor,
+                    dateCreated: creditCardDoc.DateCreated,
+                    dateUpdated: creditCardDoc.DateUpdated,
+                    dateDeleted: creditCardDoc.DateDeleted);
 
                 return creditCard;
 
             case AccountType.LineOfCredit:
+                var locDoc = document as LineOfCreditAccount;
                 var lineOfCredit = new LineOfCreditAccountDto(
-                    document.Id.ToString(),
-                    document.UserId,
-                    document.Name,
-                    document.Description,
-                    document.Balance,
-                    creditLimit: 0,
-                    interestRate: 0,
-                    document.DisplayColor,
-                    dateCreated: document.DateCreated,
-                    dateUpdated: document.DateUpdated,
-                    dateDeleted: document.DateDeleted);
-
-                MapExtendedPropertiesToDto(lineOfCredit, document.ExtendedProps);
+                    locDoc.Id.ToString(),
+                    locDoc.UserId,
+                    locDoc.Name,
+                    locDoc.Description,
+                    locDoc.Balance,
+                    creditLimit: locDoc.CreditLimit,
+                    interestRate: locDoc.InterestRate,
+                    locDoc.DisplayColor,
+                    dateCreated: locDoc.DateCreated,
+                    dateUpdated: locDoc.DateUpdated,
+                    dateDeleted: locDoc.DateDeleted);
 
                 return lineOfCredit;
 

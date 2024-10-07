@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
 using FluentResults;
-using Habanerio.Core.DBs.MongoDB.EFCore;
+using Habanerio.Core.Dbs.MongoDb;
+using Habanerio.Xpnss.Modules.Accounts.Common;
 using Habanerio.Xpnss.Modules.Accounts.DTOs;
 using Habanerio.Xpnss.Modules.Accounts.Interfaces;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 
@@ -16,20 +16,13 @@ public sealed class AccountsRepository :
     MongoDbRepository<AccountDocument>,
     IAccountsRepository
 {
-    public AccountsRepository(IOptions<MongoDbSettings> options) : base(options)
-    {
-        Context = new AccountsDbContext(options);
-    }
+    public AccountsRepository(IOptions<MongoDbSettings> options) :
+        base(new AccountsDbContext(options))
+    { }
 
-    public AccountsRepository(MongoDbContext context) : base(context) { }
-
-    public override void Add(AccountDocument account)
-    {
-        base.Add(account);
-    }
 
     [Obsolete("Currently just used to populate the data in the tests")]
-    public ObjectId Add(AccountDto accountDto)
+    public Result<ObjectId> Add(AccountDto accountDto)
     {
         var newDoc = AccountDocument.New(
             accountDto.UserId,
@@ -39,47 +32,123 @@ public sealed class AccountsRepository :
             accountDto.Balance,
             accountDto.DisplayColor);
 
-        var extendedProps = new List<KeyValuePair<string, object?>>();
-
-        foreach (var prop in accountDto.GetType().GetProperties())
+        if (accountDto.AccountType == AccountType.Cash)
         {
-            if (string.IsNullOrWhiteSpace(prop.Name) ||
-                prop.Name == nameof(AccountDto.Id) ||
-                prop.Name == nameof(AccountDto.UserId) ||
-                prop.Name == nameof(AccountDto.Name) ||
-                prop.Name == nameof(AccountDto.AccountType) ||
-                prop.Name == nameof(AccountDto.Balance) ||
-                prop.Name == nameof(AccountDto.Description) ||
-                prop.Name == nameof(AccountDto.DisplayColor) ||
-                prop.Name == nameof(AccountDto.IsCredit) ||
-                prop.Name == nameof(AccountDto.IsDeleted) ||
-                //prop.Name == nameof(AccountDto.ChangeHistory) ||
-                prop.Name == nameof(AccountDto.DateCreated) ||
-                prop.Name == nameof(AccountDto.DateUpdated) ||
-                prop.Name == nameof(AccountDto.DateDeleted)
-                // || prop.Name == nameof(AccountDto.ChangeHistoryItems)
-                )
-                continue;
+            if (accountDto is not CashAccountDto cashDto)
+                return Result.Fail("Invalid CashAccountDto");
 
-            /* If/when `InterestRate` is a ValueObject
-            if (prop.Name.Equals("InterestRate"))
-            {
-                var interestRate = prop?.GetValue(entity) as InterestRate ?? default;
-                extendedProps.Add(new KeyValuePair<string, object?>(prop.Name, interestRate.Value));
-                continue;
-            }
-            */
+            var cash = newDoc as CashAccount;
 
-            var value = prop.GetValue(accountDto) ?? default;
+            base.AddDocument(cash);
+        }
+        else if (accountDto.AccountType == AccountType.Checking)
+        {
+            if (accountDto is not CheckingAccountDto checkingDto)
+                return Result.Fail("Invalid CheckingAccountDto");
 
-            extendedProps.Add(new KeyValuePair<string, object?>(prop.Name, value));
+            var checking = newDoc as CheckingAccount;
+
+            checking.OverDraftAmount = checkingDto.OverDraftAmount;
+
+            base.AddDocument(checking);
         }
 
-        newDoc.ExtendedProps = extendedProps;
+        else if (accountDto.AccountType == AccountType.Savings)
+        {
+            newDoc = (SavingsAccount)newDoc;
 
-        base.Add(newDoc);
+            if (accountDto is not SavingsAccountDto savingsDto)
+                return Result.Fail("Invalid SavingsAccountDto");
+
+            var savings = newDoc as SavingsAccount;
+            savings.InterestRate = savingsDto.InterestRate;
+
+            base.AddDocument(savings);
+        }
+        else if (accountDto.AccountType == AccountType.CreditCard)
+        {
+            if (accountDto is not CreditCardAccountDto creditCardDto)
+                return Result.Fail("Invalid CreditCardAccountDto");
+
+            var creditCard = newDoc as CreditCardAccount;
+            creditCard.CreditLimit = creditCardDto.CreditLimit;
+            creditCard.InterestRate = creditCardDto.InterestRate;
+
+            base.AddDocument(creditCard);
+        }
+        else if (accountDto.AccountType == AccountType.LineOfCredit)
+        {
+            if (accountDto is not LineOfCreditAccountDto locDto)
+                return Result.Fail("Invalid LineOfCreditAccountDto");
+
+            var loc = newDoc as LineOfCreditAccount;
+            loc.CreditLimit = locDto.CreditLimit;
+            loc.InterestRate = locDto.InterestRate;
+
+            base.AddDocument(loc);
+        }
+        else
+        {
+            return Result.Fail($"Invalid AccountType: {accountDto.AccountType}");
+        }
+
+        //var extendedProps = new List<KeyValuePair<string, object?>>();
+
+        //foreach (var prop in accountDto.GetType().GetProperties())
+        //{
+        //    if (string.IsNullOrWhiteSpace(prop.Name) ||
+        //        prop.Name == nameof(AccountDto.Id) ||
+        //        prop.Name == nameof(AccountDto.UserId) ||
+        //        prop.Name == nameof(AccountDto.Name) ||
+        //        prop.Name == nameof(AccountDto.AccountType) ||
+        //        prop.Name == nameof(AccountDto.Balance) ||
+        //        prop.Name == nameof(AccountDto.Description) ||
+        //        prop.Name == nameof(AccountDto.DisplayColor) ||
+        //        prop.Name == nameof(AccountDto.IsCredit) ||
+        //        prop.Name == nameof(AccountDto.IsDeleted) ||
+        //        //prop.Name == nameof(AccountDto.ChangeHistory) ||
+        //        prop.Name == nameof(AccountDto.DateCreated) ||
+        //        prop.Name == nameof(AccountDto.DateUpdated) ||
+        //        prop.Name == nameof(AccountDto.DateDeleted)
+        //        // || prop.Name == nameof(AccountDto.ChangeHistoryItems)
+        //        )
+        //        continue;
+
+        //    /* If/when `InterestRate` is a ValueObject
+        //    if (prop.Name.Equals("InterestRate"))
+        //    {
+        //        var interestRate = prop?.GetValue(entity) as InterestRate ?? default;
+        //        extendedProps.AddDocument(new KeyValuePair<string, object?>(prop.Name, interestRate.Value));
+        //        continue;
+        //    }
+        //    */
+
+        //    var value = prop.GetValue(accountDto) ?? default;
+
+        //    extendedProps.Add(new KeyValuePair<string, object?>(prop.Name, value));
+        //}
+
+        //newDoc.ExtendedProps = extendedProps;
+
+        //base.AddDocument(newDoc);
 
         return newDoc.Id;
+    }
+
+    public async Task<Result<ObjectId>> AddAsync(AccountDocument account, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await base.AddDocumentAsync(account, cancellationToken);
+
+            return account.Id;
+        }
+        catch (Exception e)
+        {
+            return Result.Fail($"Could not save the Account{Environment.NewLine}{e.Message}");
+        }
+
+
     }
 
     public async Task<Result<AccountDocument>> GetByIdAsync(
@@ -95,8 +164,8 @@ public sealed class AccountsRepository :
             return Result.Fail($"Invalid AccountId: `{accountId}`");
 
         var doc = await FirstOrDefaultAsync(a =>
-                                    a.Id.Equals(accountObjectId) &&
-                                    a.UserId.Equals(userId) /*&& !a.IsDeleted*/,
+                                    a.Id.Equals(accountObjectId) && a.UserId.Equals(userId)
+                                    /*&& !a.IsDeleted*/,
                                 cancellationToken);
 
         if (doc is null)
@@ -148,6 +217,7 @@ public sealed class AccountsRepository :
         return Result.Ok(docs);
     }
 
+    //TODO: Move to UpdateAccountDetailsCommand
     public async Task<Result<AccountDocument>> UpdateDetailsAsync(
         string userId,
         string accountId,
@@ -160,7 +230,7 @@ public sealed class AccountsRepository :
             accountObjectId.Equals(ObjectId.Empty))
             return Result.Fail("Invalid AccountId");
 
-        var existingAccount = await DbSet.FirstOrDefaultAsync(a =>
+        var existingAccount = await FirstOrDefaultAsync(a =>
             a.Id == accountObjectId && a.UserId == userId,
             cancellationToken);
 
@@ -171,7 +241,7 @@ public sealed class AccountsRepository :
         existingAccount.Description = description;
         existingAccount.DisplayColor = displayColor;
 
-        var result = await SaveAsync(cancellationToken);
+        var result = await UpdateAsync(existingAccount, cancellationToken);
 
         if (result.IsFailed)
             return Result.Fail(result.Errors);
@@ -179,13 +249,13 @@ public sealed class AccountsRepository :
         return Result.Ok(existingAccount!);
     }
 
-    public override void Update(AccountDocument account)
+    public async Task<Result> UpdateAsync(AccountDocument account, CancellationToken cancellationToken)
     {
-        base.Update(account);
-    }
+        var saveCount = await UpdateDocumentAsync(account, cancellationToken);
 
-    public override Task<Result> SaveAsync(CancellationToken cancellationToken = default)
-    {
-        return base.SaveAsync(cancellationToken);
+        if (saveCount == 0)
+            return Result.Fail("Could not update the account");
+
+        return Result.Ok();
     }
 }

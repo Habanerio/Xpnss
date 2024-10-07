@@ -49,9 +49,7 @@ public class UpdateBalance
 
             existingAccount.Balance = request.Balance;
 
-            _repository.Update(existingAccount);
-
-            var result = await _repository.SaveAsync(cancellationToken);
+            var result = await _repository.UpdateAsync(existingAccount, cancellationToken);
 
             if (result.IsFailed)
                 return Result.Fail<decimal>(result.Errors);

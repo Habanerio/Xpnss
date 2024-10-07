@@ -37,13 +37,13 @@ public class AdjustBalance
             var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
             if (!validationResult.IsValid)
-                return Result.Fail<decimal>(validationResult.Errors[0].ErrorMessage);
+                return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
             var existingResult =
                 await _repository.GetByIdAsync(request.UserId, request.AccountId, cancellationToken);
 
             if (existingResult.IsFailed)
-                return Result.Fail<decimal>(existingResult.Errors);
+                return Result.Fail(existingResult.Errors);
 
             var existingAccount = existingResult.Value;
 
@@ -59,10 +59,10 @@ public class AdjustBalance
                 existingAccount.Balance.ToString(CultureInfo.InvariantCulture),
                 request.Reason);
 
-            var result = await _repository.SaveAsync(cancellationToken);
+            var result = await _repository.UpdateAsync(existingAccount, cancellationToken);
 
             if (result.IsFailed)
-                return Result.Fail<decimal>(result.Errors);
+                return Result.Fail(result.Errors);
 
             return Result.Ok(request.Balance);
         }

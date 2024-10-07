@@ -1,6 +1,5 @@
 using Habanerio.Xpnss.Modules.Accounts.Common;
 using Habanerio.Xpnss.Modules.Accounts.CQRS.Queries;
-using Habanerio.Xpnss.Modules.Accounts.Data;
 using Habanerio.Xpnss.Modules.Accounts.DTOs;
 using Habanerio.Xpnss.Modules.Accounts.Interfaces;
 using MongoDB.Bson;
@@ -30,7 +29,7 @@ public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, ID
     {
         _outputHelper = outputHelper;
 
-        _accountsRepository = new AccountsRepository(dbContextFixture.DbContext);
+        _accountsRepository = dbContextFixture.AccountsRepository;
 
         _testHandler = new GetAccount.Handler(_accountsRepository);
 
@@ -157,11 +156,10 @@ public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, ID
     [InlineData("")]
     [InlineData(" ")]
     [InlineData(null)]
-    public async Task CannotCall_Handle_GetAccount_EmptyOrNullId(string id)
+    public async Task CannotCall_Handle_GetAccount_EmptyOrNullId(string accountId)
     {
-        var query = new GetAccount.Query(id, _userId);
+        var query = new GetAccount.Query(_userId, accountId);
         var results = await _testHandler.Handle(query, CancellationToken.None);
-        var empty = ObjectId.Empty;
 
         Assert.Equal("'Account Id' must not be empty.", results.Errors[0].Message);
     }

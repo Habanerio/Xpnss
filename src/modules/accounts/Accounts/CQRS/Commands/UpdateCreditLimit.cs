@@ -50,7 +50,7 @@ public class UpdateCreditLimit
             var dto = Mappers.DocumentToDtoMappings.Map(existingAccount);
 
             if (dto is not IHasCreditLimit creditLimitDto)
-                return Result.Fail("Account does not have a Credit Limit");
+                return Result.Fail($"The Account Type `{existingAccount.AccountType}` does not support Credit Limits");
 
             creditLimitDto.CreditLimit = request.CreditLimit;
 
@@ -59,9 +59,7 @@ public class UpdateCreditLimit
             if (existingAccount is null)
                 return Result.Fail<decimal>("Failed to map AccountDto to Account");
 
-            _repository.Update(existingAccount);
-
-            var result = await _repository.SaveAsync(cancellationToken);
+            var result = await _repository.UpdateAsync(existingAccount, cancellationToken);
 
             if (result.IsFailed)
                 return Result.Fail<decimal>(result.Errors);

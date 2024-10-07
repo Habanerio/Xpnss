@@ -15,6 +15,7 @@ public static class DtoToDocumentMappings
         {
             Id = ObjectId.Parse(accountDto.Id),
             UserId = accountDto.UserId,
+            AccountType = accountDto.AccountType,
             Name = accountDto.Name,
             Description = accountDto.Description,
             Balance = accountDto.Balance,
@@ -23,35 +24,6 @@ public static class DtoToDocumentMappings
             DateUpdated = accountDto.DateUpdated,
             DateDeleted = accountDto.DateDeleted
         };
-
-        var extendedProps = new List<KeyValuePair<string, object?>>();
-
-        foreach (var prop in accountDto.GetType().GetProperties())
-        {
-            if (string.IsNullOrWhiteSpace(prop.Name) ||
-                prop.Name == nameof(AccountDto.Id) ||
-                prop.Name == nameof(AccountDto.UserId) ||
-                prop.Name == nameof(AccountDto.Name) ||
-                prop.Name == nameof(AccountDto.AccountType) ||
-                prop.Name == nameof(AccountDto.Balance) ||
-                prop.Name == nameof(AccountDto.Description) ||
-                prop.Name == nameof(AccountDto.DisplayColor) ||
-                prop.Name == nameof(AccountDto.IsCredit) ||
-                prop.Name == nameof(AccountDto.IsDeleted) ||
-                //prop.Name == nameof(AccountDto.ChangeHistory) ||
-                prop.Name == nameof(AccountDto.DateCreated) ||
-                prop.Name == nameof(AccountDto.DateUpdated) ||
-                prop.Name == nameof(AccountDto.DateDeleted)
-                // || prop.Name == nameof(AccountDto.ChangeHistoryItems)
-                )
-                continue;
-
-            var value = prop.GetValue(accountDto) ?? default;
-
-            extendedProps.Add(new KeyValuePair<string, object?>(prop.Name, value));
-        }
-
-        doc.ExtendedProps = extendedProps;
 
         return doc;
     }

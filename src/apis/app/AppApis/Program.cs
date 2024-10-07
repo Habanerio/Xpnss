@@ -1,6 +1,5 @@
 using Carter;
-
-using Habanerio.Core.DBs.MongoDB.EFCore;
+using Habanerio.Core.Dbs.MongoDb;
 using Habanerio.Xpnss.Modules.Accounts;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis;
@@ -21,6 +20,8 @@ public class Program
         builder.Services.AddOptions<MongoDbSettings>()
         .BindConfiguration("XpnssMongoDBSettings");
 
+        //builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("XpnssMongoDBSettings"));
+
         builder.Services.AddCarter();
 
         builder.Services.AddCors();
@@ -28,7 +29,7 @@ public class Program
         //builder.Services.AddMongoDbContext<AccountsDbContext>();
         builder.Services.AddAccountsModule();
 
-        // Add services to the container.
+        // AddDocument services to the container.
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();

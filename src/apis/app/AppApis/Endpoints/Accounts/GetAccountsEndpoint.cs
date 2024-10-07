@@ -42,7 +42,7 @@ public class GetAccountsEndpoint
                     async (
                         [FromRoute] string userId,
                         [FromServices] IAccountsService service,
-                        CancellationToken cancellationToken) =>
+            CancellationToken cancellationToken) =>
                     {
                         return await HandleAsync(userId, service, cancellationToken);
                     })
