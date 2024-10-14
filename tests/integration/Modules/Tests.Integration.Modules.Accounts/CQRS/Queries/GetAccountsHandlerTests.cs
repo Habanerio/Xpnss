@@ -2,7 +2,9 @@ using Habanerio.Xpnss.Modules.Accounts.Common;
 using Habanerio.Xpnss.Modules.Accounts.CQRS.Queries;
 using Habanerio.Xpnss.Modules.Accounts.DTOs;
 using Habanerio.Xpnss.Modules.Accounts.Interfaces;
+
 using Tests.Integration.Common;
+
 using Xunit.Abstractions;
 
 namespace Habanerio.Xpnss.Tests.Integration.Modules.Accounts.CQRS.Queries;
@@ -11,7 +13,7 @@ namespace Habanerio.Xpnss.Tests.Integration.Modules.Accounts.CQRS.Queries;
 /// Tests that we can call the GetAccount query handler and handle appropriately.
 /// </summary>
 [Collection(nameof(AccountsMongoCollection))]
-public class GetAccountsTests : IClassFixture<AccountsTestDbContextFixture>//, IDisposable
+public class GetAccountsHandlerTests : IClassFixture<AccountsTestDbContextFixture>//, IDisposable
 {
     private readonly ITestOutputHelper _outputHelper;
 
@@ -20,11 +22,11 @@ public class GetAccountsTests : IClassFixture<AccountsTestDbContextFixture>//, I
 
     private readonly GetAccounts.Handler _testHandler;
 
-    private readonly string _userId = "1";
+    private readonly string _userId = "test-user-id";
 
-    private readonly List<(string AccountId, AccountType AccountType)> _availableAccounts;
+    private readonly List<(string UserId, string AccountId, AccountTypes AccountType)> _availableAccounts;
 
-    public GetAccountsTests(AccountsTestDbContextFixture dbContextFixture, ITestOutputHelper outputHelper)
+    public GetAccountsHandlerTests(AccountsTestDbContextFixture dbContextFixture, ITestOutputHelper outputHelper)
     {
         _outputHelper = outputHelper;
 
@@ -50,23 +52,23 @@ public class GetAccountsTests : IClassFixture<AccountsTestDbContextFixture>//, I
         {
             switch (accountDto.AccountType)
             {
-                case AccountType.Cash:
+                case nameof(AccountTypes.Cash):
                     Assert.IsType<CashAccountDto>(accountDto);
                     break;
-                case AccountType.Checking:
+                case nameof(AccountTypes.Checking):
                     Assert.IsType<CheckingAccountDto>(accountDto);
                     break;
-                case AccountType.Savings:
+                case nameof(AccountTypes.Savings):
                     Assert.IsType<SavingsAccountDto>(accountDto);
                     break;
-                case AccountType.CreditCard:
+                case nameof(AccountTypes.CreditCard):
                     Assert.IsType<CreditCardAccountDto>(accountDto);
                     break;
-                case AccountType.LineOfCredit:
+                case nameof(AccountTypes.LineOfCredit):
                     Assert.IsType<LineOfCreditAccountDto>(accountDto);
                     break;
                 default:
-                    Assert.Fail("The dto's type does not match its AccountType");
+                    Assert.Fail("The dto's type does not match its AccountTypes");
                     break;
             }
         }

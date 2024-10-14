@@ -3,28 +3,25 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Accounts;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Modules.Accounts.Common;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis.Accounts;
 
-public class CreateAccountApiTests : BaseFunctionalApisTests,
+public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Program> factory) :
+    BaseFunctionalApisTests(factory),
     IClassFixture<WebApplicationFactory<Apis.App.AppApis.Program>>
 {
     private const string ENDPOINTS_CREATE_ACCOUNT = "/api/v1/users/{userId}/accounts";
 
-    public CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Program> factory) :
-        base(factory)
-    { }
 
     [Fact]
     public async Task CanCall_CreateAccount_CashAccount_WithValidRequest_ReturnsOk()
     {
         // Arrange
-        var request = new CreateAccountEndpoint.Request
+        var request = new CreateAccountEndpoint.CreateAccountRequest
         {
             UserId = USER_ID,
-            AccountTypeId = (int)AccountType.Cash,
+            AccountType = "Cash",
             Name = "Test Cash Account",
             Description = "Test Cash Account Description",
             Balance = 0,
@@ -55,10 +52,10 @@ public class CreateAccountApiTests : BaseFunctionalApisTests,
     public async Task CanCall_CreateAccount_CheckingAccount_WithValidRequest_ReturnsOk()
     {
         // Arrange
-        var request = new CreateAccountEndpoint.Request
+        var request = new CreateAccountEndpoint.CreateAccountRequest
         {
             UserId = USER_ID,
-            AccountTypeId = (int)AccountType.Checking,
+            AccountType = "Checking",
             Name = "Test Checking Account",
             Description = "Test Checking Account Description",
             Balance = 0,
@@ -88,10 +85,10 @@ public class CreateAccountApiTests : BaseFunctionalApisTests,
     public async Task CanCall_CreateAccount_SavingsAccount_WithValidRequest_ReturnsOk()
     {
         // Arrange
-        var request = new CreateAccountEndpoint.Request
+        var request = new CreateAccountEndpoint.CreateAccountRequest
         {
             UserId = USER_ID,
-            AccountTypeId = (int)AccountType.Savings,
+            AccountType = "Savings",
             Name = "Test Savings Account",
             Description = "Test Savings Account Description",
             Balance = 0,
@@ -122,10 +119,10 @@ public class CreateAccountApiTests : BaseFunctionalApisTests,
     public async Task CanCall_CreateAccount_CreditCardAccount_WithValidRequest_ReturnsOk()
     {
         // Arrange
-        var request = new CreateAccountEndpoint.Request
+        var request = new CreateAccountEndpoint.CreateAccountRequest
         {
             UserId = USER_ID,
-            AccountTypeId = (int)AccountType.CreditCard,
+            AccountType = "CreditCard",
             Name = "Test Credit Card Account",
             Description = "Test Credit Card Account Description",
             Balance = 0,
@@ -157,10 +154,10 @@ public class CreateAccountApiTests : BaseFunctionalApisTests,
     public async Task CanCall_CreateAccount_LineOfCreditAccount_WithValidRequest_ReturnsOk()
     {
         // Arrange
-        var request = new CreateAccountEndpoint.Request
+        var request = new CreateAccountEndpoint.CreateAccountRequest
         {
             UserId = USER_ID,
-            AccountTypeId = (int)AccountType.LineOfCredit,
+            AccountType = "LineOfCredit",
             Name = "Test Line Of Credit Account",
             Description = "Test Line Of Credit Account Description",
             Balance = 0,
@@ -193,7 +190,7 @@ public class CreateAccountApiTests : BaseFunctionalApisTests,
     public async Task CannotCall_CreateAccount_WithInvalidRequest_NULL_ReturnsBadRequest()
     {
         // Arrange
-        CreateAccountEndpoint.Request? request = null;
+        CreateAccountEndpoint.CreateAccountRequest? request = null;
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
@@ -210,10 +207,10 @@ public class CreateAccountApiTests : BaseFunctionalApisTests,
     public async Task CannotCall_CreateAccount_WithInvalidRequest_EmptyUserId_ReturnsBadRequest()
     {
         // Arrange
-        var request = new CreateAccountEndpoint.Request
+        var request = new CreateAccountEndpoint.CreateAccountRequest
         {
             UserId = string.Empty,
-            AccountTypeId = (int)AccountType.Cash,
+            AccountType = "Cash",
             Name = "Test Cash Account",
             Description = "Test Cash Account Description",
             Balance = 0,
@@ -243,10 +240,10 @@ public class CreateAccountApiTests : BaseFunctionalApisTests,
     public async Task CannotCall_CreateAccount_WithInvalidRequest_EmptyAccountType_ReturnsBadRequest()
     {
         // Arrange
-        var request = new CreateAccountEndpoint.Request
+        var request = new CreateAccountEndpoint.CreateAccountRequest
         {
             UserId = USER_ID,
-            //AccountTypeId = (int)AccountType.Cash,
+            //AccountTypeId = (int)AccountTypes.Cash,
             Name = "Test Cash Account",
             Description = "Test Cash Account Description",
             Balance = 0,
@@ -269,17 +266,17 @@ public class CreateAccountApiTests : BaseFunctionalApisTests,
         });
 
         Assert.Equal(1, errors.Count);
-        Assert.Equal("'Account Type Id' must not be empty.", errors[0]);
+        Assert.Equal("'Account Type' must not be empty.", errors[0]);
     }
 
     [Fact]
     public async Task CannotCall_CreateAccount_WithInvalidRequest_EmptyName_ReturnsBadRequest()
     {
         // Arrange
-        var request = new CreateAccountEndpoint.Request
+        var request = new CreateAccountEndpoint.CreateAccountRequest
         {
             UserId = USER_ID,
-            AccountTypeId = (int)AccountType.Cash,
+            AccountType = "Cash",
             //Name = "Test Cash Account",
             Description = "Test Cash Account Description",
             Balance = 0,
@@ -309,10 +306,10 @@ public class CreateAccountApiTests : BaseFunctionalApisTests,
     public async Task CannotCall_CreateAccount_WithInvalidRequest_CreditLimit_ReturnsBadRequest()
     {
         // Arrange
-        var request = new CreateAccountEndpoint.Request
+        var request = new CreateAccountEndpoint.CreateAccountRequest
         {
             UserId = USER_ID,
-            AccountTypeId = (int)AccountType.CreditCard,
+            AccountType = "CreditCard",
             Name = "Test Cash Account",
             Description = "Test Cash Account Description",
             Balance = 0,
@@ -343,10 +340,10 @@ public class CreateAccountApiTests : BaseFunctionalApisTests,
     public async Task CannotCall_CreateAccount_WithInvalidRequest_InterestRate_BelowZero_ReturnsBadRequest()
     {
         // Arrange
-        var request = new CreateAccountEndpoint.Request
+        var request = new CreateAccountEndpoint.CreateAccountRequest
         {
             UserId = USER_ID,
-            AccountTypeId = (int)AccountType.CreditCard,
+            AccountType = "CreditCard",
             Name = "Test Cash Account",
             Description = "Test Cash Account Description",
             Balance = 0,
@@ -378,10 +375,10 @@ public class CreateAccountApiTests : BaseFunctionalApisTests,
     public async Task CannotCall_CreateAccount_WithInvalidRequest_InterestRate_AboveHundred_ReturnsBadRequest()
     {
         // Arrange
-        var request = new CreateAccountEndpoint.Request
+        var request = new CreateAccountEndpoint.CreateAccountRequest
         {
             UserId = USER_ID,
-            AccountTypeId = (int)AccountType.CreditCard,
+            AccountType = "CreditCard",
             Name = "Test Cash Account",
             Description = "Test Cash Account Description",
             Balance = 0,

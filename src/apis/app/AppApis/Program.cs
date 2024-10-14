@@ -1,6 +1,7 @@
 using Carter;
 using Habanerio.Core.Dbs.MongoDb;
 using Habanerio.Xpnss.Modules.Accounts;
+using Habanerio.Xpnss.Modules.Transactions;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis;
 
@@ -28,6 +29,7 @@ public class Program
 
         //builder.Services.AddMongoDbContext<AccountsDbContext>();
         builder.Services.AddAccountsModule();
+        builder.Services.AddTransactionsModule();
 
         // AddDocument services to the container.
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

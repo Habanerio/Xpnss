@@ -50,7 +50,7 @@ public class UpdateInterestRate
             var dto = Mappers.DocumentToDtoMappings.Map(existingAccount);
 
             if (dto is not IHasInterestRate interestRateDto)
-                return Result.Fail($"The Account Type `{existingAccount.AccountType}` does not support Credit Limits");
+                return Result.Fail($"The Account Type `{existingAccount.AccountTypes}` does not support Credit Limits");
 
             interestRateDto.InterestRate = request.InterestRate;
 

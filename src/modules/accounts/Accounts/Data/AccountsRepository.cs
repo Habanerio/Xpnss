@@ -6,6 +6,7 @@ using Habanerio.Xpnss.Modules.Accounts.DTOs;
 using Habanerio.Xpnss.Modules.Accounts.Interfaces;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
+using MongoDB.Driver;
 
 namespace Habanerio.Xpnss.Modules.Accounts.Data;
 
@@ -21,119 +22,119 @@ public sealed class AccountsRepository :
     { }
 
 
-    [Obsolete("Currently just used to populate the data in the tests")]
-    public Result<ObjectId> Add(AccountDto accountDto)
-    {
-        var newDoc = AccountDocument.New(
-            accountDto.UserId,
-            accountDto.Name,
-            accountDto.AccountType,
-            accountDto.Description,
-            accountDto.Balance,
-            accountDto.DisplayColor);
+    //[Obsolete("Currently just used to populate the data in the tests")]
+    //public Result<ObjectId> Add(AccountDto accountDto)
+    //{
+    //    var newDoc = AccountDocument.New(
+    //        accountDto.UserId,
+    //        accountDto.Name,
+    //        accountDto.AccountTypes,
+    //        accountDto.Description,
+    //        accountDto.Balance,
+    //        accountDto.DisplayColor);
 
-        if (accountDto.AccountType == AccountType.Cash)
-        {
-            if (accountDto is not CashAccountDto cashDto)
-                return Result.Fail("Invalid CashAccountDto");
+    //    if (accountDto.AccountTypes == AccountTypes.Cash)
+    //    {
+    //        if (accountDto is not CashAccountDto cashDto)
+    //            return Result.Fail("Invalid CashAccountDto");
 
-            var cash = newDoc as CashAccount;
+    //        var cash = newDoc as CashAccount;
 
-            base.AddDocument(cash);
-        }
-        else if (accountDto.AccountType == AccountType.Checking)
-        {
-            if (accountDto is not CheckingAccountDto checkingDto)
-                return Result.Fail("Invalid CheckingAccountDto");
+    //        base.AddDocument(cash);
+    //    }
+    //    else if (accountDto.AccountTypes == AccountTypes.Checking)
+    //    {
+    //        if (accountDto is not CheckingAccountDto checkingDto)
+    //            return Result.Fail("Invalid CheckingAccountDto");
 
-            var checking = newDoc as CheckingAccount;
+    //        var checking = newDoc as CheckingAccount;
 
-            checking.OverDraftAmount = checkingDto.OverDraftAmount;
+    //        checking.OverDraftAmount = checkingDto.OverDraftAmount;
 
-            base.AddDocument(checking);
-        }
+    //        base.AddDocument(checking);
+    //    }
 
-        else if (accountDto.AccountType == AccountType.Savings)
-        {
-            newDoc = (SavingsAccount)newDoc;
+    //    else if (accountDto.AccountTypes == AccountTypes.Savings)
+    //    {
+    //        newDoc = (SavingsAccount)newDoc;
 
-            if (accountDto is not SavingsAccountDto savingsDto)
-                return Result.Fail("Invalid SavingsAccountDto");
+    //        if (accountDto is not SavingsAccountDto savingsDto)
+    //            return Result.Fail("Invalid SavingsAccountDto");
 
-            var savings = newDoc as SavingsAccount;
-            savings.InterestRate = savingsDto.InterestRate;
+    //        var savings = newDoc as SavingsAccount;
+    //        savings.InterestRate = savingsDto.InterestRate;
 
-            base.AddDocument(savings);
-        }
-        else if (accountDto.AccountType == AccountType.CreditCard)
-        {
-            if (accountDto is not CreditCardAccountDto creditCardDto)
-                return Result.Fail("Invalid CreditCardAccountDto");
+    //        base.AddDocument(savings);
+    //    }
+    //    else if (accountDto.AccountTypes == AccountTypes.CreditCard)
+    //    {
+    //        if (accountDto is not CreditCardAccountDto creditCardDto)
+    //            return Result.Fail("Invalid CreditCardAccountDto");
 
-            var creditCard = newDoc as CreditCardAccount;
-            creditCard.CreditLimit = creditCardDto.CreditLimit;
-            creditCard.InterestRate = creditCardDto.InterestRate;
+    //        var creditCard = newDoc as CreditCardAccount;
+    //        creditCard.CreditLimit = creditCardDto.CreditLimit;
+    //        creditCard.InterestRate = creditCardDto.InterestRate;
 
-            base.AddDocument(creditCard);
-        }
-        else if (accountDto.AccountType == AccountType.LineOfCredit)
-        {
-            if (accountDto is not LineOfCreditAccountDto locDto)
-                return Result.Fail("Invalid LineOfCreditAccountDto");
+    //        base.AddDocument(creditCard);
+    //    }
+    //    else if (accountDto.AccountTypes == AccountTypes.LineOfCredit)
+    //    {
+    //        if (accountDto is not LineOfCreditAccountDto locDto)
+    //            return Result.Fail("Invalid LineOfCreditAccountDto");
 
-            var loc = newDoc as LineOfCreditAccount;
-            loc.CreditLimit = locDto.CreditLimit;
-            loc.InterestRate = locDto.InterestRate;
+    //        var loc = newDoc as LineOfCreditAccount;
+    //        loc.CreditLimit = locDto.CreditLimit;
+    //        loc.InterestRate = locDto.InterestRate;
 
-            base.AddDocument(loc);
-        }
-        else
-        {
-            return Result.Fail($"Invalid AccountType: {accountDto.AccountType}");
-        }
+    //        base.AddDocument(loc);
+    //    }
+    //    else
+    //    {
+    //        return Result.Fail($"Invalid AccountTypes: {accountDto.AccountTypes}");
+    //    }
 
-        //var extendedProps = new List<KeyValuePair<string, object?>>();
+    //    //var extendedProps = new List<KeyValuePair<string, object?>>();
 
-        //foreach (var prop in accountDto.GetType().GetProperties())
-        //{
-        //    if (string.IsNullOrWhiteSpace(prop.Name) ||
-        //        prop.Name == nameof(AccountDto.Id) ||
-        //        prop.Name == nameof(AccountDto.UserId) ||
-        //        prop.Name == nameof(AccountDto.Name) ||
-        //        prop.Name == nameof(AccountDto.AccountType) ||
-        //        prop.Name == nameof(AccountDto.Balance) ||
-        //        prop.Name == nameof(AccountDto.Description) ||
-        //        prop.Name == nameof(AccountDto.DisplayColor) ||
-        //        prop.Name == nameof(AccountDto.IsCredit) ||
-        //        prop.Name == nameof(AccountDto.IsDeleted) ||
-        //        //prop.Name == nameof(AccountDto.ChangeHistory) ||
-        //        prop.Name == nameof(AccountDto.DateCreated) ||
-        //        prop.Name == nameof(AccountDto.DateUpdated) ||
-        //        prop.Name == nameof(AccountDto.DateDeleted)
-        //        // || prop.Name == nameof(AccountDto.ChangeHistoryItems)
-        //        )
-        //        continue;
+    //    //foreach (var prop in accountDto.GetType().GetProperties())
+    //    //{
+    //    //    if (string.IsNullOrWhiteSpace(prop.Name) ||
+    //    //        prop.Name == nameof(AccountDto.Id) ||
+    //    //        prop.Name == nameof(AccountDto.UserId) ||
+    //    //        prop.Name == nameof(AccountDto.Name) ||
+    //    //        prop.Name == nameof(AccountDto.AccountTypes) ||
+    //    //        prop.Name == nameof(AccountDto.Balance) ||
+    //    //        prop.Name == nameof(AccountDto.Description) ||
+    //    //        prop.Name == nameof(AccountDto.DisplayColor) ||
+    //    //        prop.Name == nameof(AccountDto.IsCredit) ||
+    //    //        prop.Name == nameof(AccountDto.IsDeleted) ||
+    //    //        //prop.Name == nameof(AccountDto.ChangeHistory) ||
+    //    //        prop.Name == nameof(AccountDto.DateCreated) ||
+    //    //        prop.Name == nameof(AccountDto.DateUpdated) ||
+    //    //        prop.Name == nameof(AccountDto.DateDeleted)
+    //    //        // || prop.Name == nameof(AccountDto.ChangeHistoryItems)
+    //    //        )
+    //    //        continue;
 
-        //    /* If/when `InterestRate` is a ValueObject
-        //    if (prop.Name.Equals("InterestRate"))
-        //    {
-        //        var interestRate = prop?.GetValue(entity) as InterestRate ?? default;
-        //        extendedProps.AddDocument(new KeyValuePair<string, object?>(prop.Name, interestRate.Value));
-        //        continue;
-        //    }
-        //    */
+    //    //    /* If/when `InterestRate` is a ValueObject
+    //    //    if (prop.Name.Equals("InterestRate"))
+    //    //    {
+    //    //        var interestRate = prop?.GetValue(entity) as InterestRate ?? default;
+    //    //        extendedProps.AddDocument(new KeyValuePair<string, object?>(prop.Name, interestRate.Value));
+    //    //        continue;
+    //    //    }
+    //    //    */
 
-        //    var value = prop.GetValue(accountDto) ?? default;
+    //    //    var value = prop.GetValue(accountDto) ?? default;
 
-        //    extendedProps.Add(new KeyValuePair<string, object?>(prop.Name, value));
-        //}
+    //    //    extendedProps.Add(new KeyValuePair<string, object?>(prop.Name, value));
+    //    //}
 
-        //newDoc.ExtendedProps = extendedProps;
+    //    //newDoc.ExtendedProps = extendedProps;
 
-        //base.AddDocument(newDoc);
+    //    //base.AddDocument(newDoc);
 
-        return newDoc.Id;
-    }
+    //    return newDoc.Id;
+    //}
 
     public async Task<Result<ObjectId>> AddAsync(AccountDocument account, CancellationToken cancellationToken = default)
     {
@@ -147,8 +148,6 @@ public sealed class AccountsRepository :
         {
             return Result.Fail($"Could not save the Account{Environment.NewLine}{e.Message}");
         }
-
-
     }
 
     public async Task<Result<AccountDocument>> GetByIdAsync(
@@ -207,6 +206,10 @@ public sealed class AccountsRepository :
     {
         if (string.IsNullOrWhiteSpace(userId))
             return Result.Fail("UserId cannot be null or empty");
+
+        //var filter = Builders<AccountDocument>.Filter.Eq(a => a.UserId, userId);
+
+        //var docs = await FindAsync(filter, cancellationToken);
 
         var docs = (await FindAsync(a =>
             a.UserId == userId, cancellationToken));

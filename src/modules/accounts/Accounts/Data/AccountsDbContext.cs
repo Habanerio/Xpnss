@@ -22,7 +22,15 @@ public class AccountsDbContext : MongoDbContext<AccountDocument>
             new CreateIndexOptions { Name = "UserId_Id_Index" }
         );
 
-        Collection().Indexes.CreateOne(createIndexModel);
+        try
+        {
+            Collection().Indexes.CreateOne(createIndexModel);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     //protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -44,7 +52,7 @@ public class AccountsDbContext : MongoDbContext<AccountDocument>
     //            .HasMaxLength(36)
     //            .IsRequired();
 
-    //        e.Property(p => p.AccountType)
+    //        e.Property(p => p.AccountTypes)
     //            .HasAnnotation("BsonElement", "account_type")
     //            .HasMaxLength(36)
     //            .IsRequired();
@@ -111,11 +119,11 @@ public class AccountsDbContext : MongoDbContext<AccountDocument>
     //        });
 
     //        /* Not supported in EF for MongoDB
-    //        e.HasDiscriminator<string>("AccountType")
-    //            .HasValue<CheckingAccountDocument>(AccountType.CHECKING_ACCOUNT)
-    //            .HasValue<SavingsAccountDocument>(AccountType.SAVINGS_ACCOUNT)
-    //            .HasValue<CreditCardAccountDocument>(AccountType.CREDIT_CARD_ACCOUNT)
-    //            .HasValue<LineOfCreditAccountDocument>(AccountType.LINE_OF_CREDIT_ACCOUNT);
+    //        e.HasDiscriminator<string>("AccountTypes")
+    //            .HasValue<CheckingAccountDocument>(AccountTypes.CHECKING_ACCOUNT)
+    //            .HasValue<SavingsAccountDocument>(AccountTypes.SAVINGS_ACCOUNT)
+    //            .HasValue<CreditCardAccountDocument>(AccountTypes.CREDIT_CARD_ACCOUNT)
+    //            .HasValue<LineOfCreditAccountDocument>(AccountTypes.LINE_OF_CREDIT_ACCOUNT);
     //        */
     //    });
     //}

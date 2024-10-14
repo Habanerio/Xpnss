@@ -3,7 +3,6 @@ using System.Net;
 using Carter;
 using FluentValidation;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Modules.Accounts.Common;
 using Habanerio.Xpnss.Modules.Accounts.CQRS.Commands;
 using Habanerio.Xpnss.Modules.Accounts.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -15,13 +14,13 @@ namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Accounts;
 /// </summary>
 public class CreateAccountEndpoint
 {
-    public record Request
+    public record CreateAccountRequest
     {
         [Required]
         public string UserId { get; set; }
 
         [Required]
-        public int AccountTypeId { get; set; }
+        public string AccountType { get; set; }
 
         [Required]
         public string Name { get; set; } = "";
@@ -39,14 +38,14 @@ public class CreateAccountEndpoint
         public string DisplayColor { get; set; } = "#ff0000";
     }
 
-    public sealed class Validator : AbstractValidator<Request>
+    public sealed class Validator : AbstractValidator<CreateAccountRequest>
     {
         public Validator()
         {
             RuleFor(x => x).NotNull();
             RuleFor(x => x.UserId).NotEmpty();
             RuleFor(x => x.Name).NotEmpty();
-            RuleFor(x => x.AccountTypeId).NotEmpty();
+            RuleFor(x => x.AccountType).NotEmpty();
             RuleFor(x => x.CreditLimit).GreaterThanOrEqualTo(0);
             RuleFor(x => x.InterestRate).GreaterThanOrEqualTo(0)
                 .LessThanOrEqualTo(100);
@@ -55,7 +54,7 @@ public class CreateAccountEndpoint
 
     public static async Task<IResult> HandleAsync(
         string userId,
-        Request request,
+        CreateAccountRequest request,
         IAccountsService service,
         CancellationToken cancellationToken)
     {
@@ -72,7 +71,7 @@ public class CreateAccountEndpoint
 
         var command = new CreateAccount.Command(
             request.UserId,
-            (AccountType)request.AccountTypeId,
+            request.AccountType,
             request.Name,
             request.Description,
             request.Balance,
@@ -98,12 +97,11 @@ public class CreateAccountEndpoint
             app.MapPost("/api/v1/users/{userId}/accounts",
                     async (
                         [FromRoute] string userId,
-                        [FromBody] Request request,
+                        [FromBody] CreateAccountRequest request,
                         [FromServices] IAccountsService service,
                         CancellationToken cancellationToken) =>
                             await HandleAsync(userId, request, service, cancellationToken))
                 .Produces<string>((int)HttpStatusCode.OK)
-                .Produces((int)HttpStatusCode.NotFound)
                 .Produces((int)HttpStatusCode.BadRequest)
                 .Produces<string>((int)HttpStatusCode.BadRequest)
                 .WithDisplayName("New Account")

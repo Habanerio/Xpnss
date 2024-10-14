@@ -39,9 +39,9 @@ public static class DocumentToDtoMappings
         if (document is null)
             return default;
 
-        switch (document.AccountType)
+        switch (document.AccountTypes)
         {
-            case AccountType.Cash:
+            case AccountTypes.Cash:
                 var cashDoc = document as CashAccount;
                 var cash = new CashAccountDto(
                     cashDoc.Id.ToString(),
@@ -56,7 +56,7 @@ public static class DocumentToDtoMappings
 
                 return cash;
 
-            case AccountType.Checking:
+            case AccountTypes.Checking:
                 var checkingDoc = document as CheckingAccount;
                 var checking = new CheckingAccountDto(
                     checkingDoc.Id.ToString(),
@@ -72,7 +72,7 @@ public static class DocumentToDtoMappings
 
                 return checking;
 
-            case AccountType.Savings:
+            case AccountTypes.Savings:
                 var savingsDoc = document as SavingsAccount;
                 var savings = new SavingsAccountDto(
                     savingsDoc.Id.ToString(),
@@ -88,7 +88,7 @@ public static class DocumentToDtoMappings
 
                 return savings;
 
-            case AccountType.CreditCard:
+            case AccountTypes.CreditCard:
                 var creditCardDoc = document as CreditCardAccount;
                 var creditCard = new CreditCardAccountDto(
                     creditCardDoc.Id.ToString(),
@@ -105,7 +105,7 @@ public static class DocumentToDtoMappings
 
                 return creditCard;
 
-            case AccountType.LineOfCredit:
+            case AccountTypes.LineOfCredit:
                 var locDoc = document as LineOfCreditAccount;
                 var lineOfCredit = new LineOfCreditAccountDto(
                     locDoc.Id.ToString(),

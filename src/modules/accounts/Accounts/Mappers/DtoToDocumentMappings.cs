@@ -1,3 +1,4 @@
+using Habanerio.Xpnss.Modules.Accounts.Common;
 using Habanerio.Xpnss.Modules.Accounts.Data;
 using Habanerio.Xpnss.Modules.Accounts.DTOs;
 using MongoDB.Bson;
@@ -15,14 +16,14 @@ public static class DtoToDocumentMappings
         {
             Id = ObjectId.Parse(accountDto.Id),
             UserId = accountDto.UserId,
-            AccountType = accountDto.AccountType,
+            AccountTypes = (AccountTypes)Enum.Parse(typeof(AccountTypes), accountDto.AccountType),
             Name = accountDto.Name,
             Description = accountDto.Description,
             Balance = accountDto.Balance,
             DisplayColor = accountDto.DisplayColor,
-            DateCreated = accountDto.DateCreated,
-            DateUpdated = accountDto.DateUpdated,
-            DateDeleted = accountDto.DateDeleted
+            DateCreated = accountDto.DateCreated.ToUniversalTime(),
+            DateUpdated = accountDto.DateUpdated?.ToUniversalTime(),
+            DateDeleted = accountDto.DateDeleted?.ToUniversalTime()
         };
 
         return doc;

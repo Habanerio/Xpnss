@@ -8,7 +8,7 @@ public record AccountItemDto
 
     public string UserId { get; set; }
 
-    public AccountType AccountType { get; set; }
+    public AccountTypes AccountTypes { get; set; }
 
     public string Name { get; set; }
 
@@ -20,9 +20,9 @@ public record AccountItemDto
 
     public DateTimeOffset DateCreated { get; set; }
 
-    protected AccountItemDto(AccountType accountType, bool isCredit)
+    protected AccountItemDto(AccountTypes accountTypes, bool isCredit)
     {
-        AccountType = accountType;
+        AccountTypes = accountTypes;
         IsCredit = isCredit;
     }
 }

@@ -1,17 +1,17 @@
 using Habanerio.Core.Dbs.MongoDb;
 using Habanerio.Core.Dbs.MongoDb.Attributes;
-using Habanerio.Core.Dbs.MongoDb.Interfaces;
 using Habanerio.Xpnss.Modules.Accounts.Common;
 using Habanerio.Xpnss.Modules.Accounts.Interfaces;
+
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Habanerio.Xpnss.Modules.Accounts.Data;
 
 //[Table("MoneyAccount")]
-[BsonDiscriminator(RootClass = true)]
+//[BsonDiscriminator(RootClass = true)]
 [BsonCollection("money_accounts")]
-public class AccountDocument : MongoDocument, IMongoDocument
+public class AccountDocument : MongoDocument//, IMongoDocument
 {
 
     [BsonElement("user_id")]
@@ -19,7 +19,7 @@ public class AccountDocument : MongoDocument, IMongoDocument
 
     [BsonElement("account_type")]
     [BsonRepresentation(BsonType.String)]
-    public AccountType AccountType { get; set; }
+    public AccountTypes AccountTypes { get; set; }
 
     /// <summary>
     /// Name of the specific account type
@@ -47,13 +47,16 @@ public class AccountDocument : MongoDocument, IMongoDocument
     public bool IsDeleted { get; set; }
 
     [BsonElement("date_created")]
-    public DateTimeOffset DateCreated { get; set; }
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime DateCreated { get; set; }
 
     [BsonElement("date_updated")]
-    public DateTimeOffset? DateUpdated { get; set; }
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime? DateUpdated { get; set; }
 
     [BsonElement("date_deleted")]
-    public DateTimeOffset? DateDeleted { get; set; }
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime? DateDeleted { get; set; }
 
     [BsonElement("change_history")]
     public List<ChangeHistory> ChangeHistory { get; set; }
@@ -69,27 +72,27 @@ public class AccountDocument : MongoDocument, IMongoDocument
         MonthlyTotals = [];
     }
 
-    public static AccountDocument New(
-        string userId,
-        string name,
-        AccountType accountType,
-        string description,
-        decimal balance,
-        string displayColor)
-    {
-        return new AccountDocument
-        {
-            Id = ObjectId.GenerateNewId(),
-            UserId = userId,
-            AccountType = accountType,
-            Name = name,
-            Balance = balance,
-            DisplayColor = displayColor,
-            Description = description,
-            DateCreated = DateTimeOffset.UtcNow,
-            ChangeHistory = [],
-        };
-    }
+    //public static AccountDocument New(
+    //    string userId,
+    //    string name,
+    //    AccountTypes accountTypes,
+    //    string description,
+    //    decimal balance,
+    //    string displayColor)
+    //{
+    //    return new AccountDocument
+    //    {
+    //        Id = ObjectId.GenerateNewId(),
+    //        UserId = userId,
+    //        AccountTypes = accountTypes,
+    //        Name = name,
+    //        Balance = balance,
+    //        DisplayColor = displayColor,
+    //        Description = description,
+    //        DateCreated = DateTimeOffset.UtcNow,
+    //        ChangeHistory = [],
+    //    };
+    //}
 
     public void AddChangeHistory(string userId, string property, string oldValue, string newValue, string reason)
     {
@@ -119,12 +122,12 @@ public class CashAccount : AccountDocument
         {
             Id = ObjectId.GenerateNewId(),
             UserId = userId,
-            AccountType = AccountType.Cash,
+            AccountTypes = AccountTypes.Cash,
             Name = name,
             Balance = balance,
             DisplayColor = displayColor,
             Description = description,
-            DateCreated = DateTimeOffset.UtcNow,
+            DateCreated = DateTime.UtcNow,
             ChangeHistory = [],
         };
     }
@@ -147,13 +150,13 @@ public class CheckingAccount : AccountDocument
         {
             Id = ObjectId.GenerateNewId(),
             UserId = userId,
-            AccountType = AccountType.Checking,
+            AccountTypes = AccountTypes.Checking,
             Name = name,
             Balance = balance,
             DisplayColor = displayColor,
             Description = description,
             OverDraftAmount = overDraftAmount,
-            DateCreated = DateTimeOffset.UtcNow,
+            DateCreated = DateTime.UtcNow,
             ChangeHistory = [],
         };
     }
@@ -176,13 +179,13 @@ public class SavingsAccount : AccountDocument, IHasInterestRate
         {
             Id = ObjectId.GenerateNewId(),
             UserId = userId,
-            AccountType = AccountType.Savings,
+            AccountTypes = AccountTypes.Savings,
             Name = name,
             Balance = balance,
             DisplayColor = displayColor,
             Description = description,
             InterestRate = interestRate,
-            DateCreated = DateTimeOffset.UtcNow,
+            DateCreated = DateTime.UtcNow,
             ChangeHistory = [],
         };
     }
@@ -217,14 +220,14 @@ public class CreditCardAccount : CreditAccount
         {
             Id = ObjectId.GenerateNewId(),
             UserId = userId,
-            AccountType = AccountType.CreditCard,
+            AccountTypes = AccountTypes.CreditCard,
             Name = name,
             Balance = balance,
             DisplayColor = displayColor,
             Description = description,
             CreditLimit = creditLimit,
             InterestRate = interestRate,
-            DateCreated = DateTimeOffset.UtcNow,
+            DateCreated = DateTime.UtcNow,
             ChangeHistory = [],
         };
     }
@@ -245,14 +248,14 @@ public class LineOfCreditAccount : CreditAccount
         {
             Id = ObjectId.GenerateNewId(),
             UserId = userId,
-            AccountType = AccountType.LineOfCredit,
+            AccountTypes = AccountTypes.LineOfCredit,
             Name = name,
             Balance = balance,
             DisplayColor = displayColor,
             Description = description,
             CreditLimit = creditLimit,
             InterestRate = interestRate,
-            DateCreated = DateTimeOffset.UtcNow,
+            DateCreated = DateTime.UtcNow,
             ChangeHistory = [],
         };
     }
@@ -283,6 +286,7 @@ public sealed class ChangeHistory
     public string Reason { get; set; } = "";
 
     [BsonElement("date_changed")]
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
     public DateTime DateChanged { get; set; }
 }
 

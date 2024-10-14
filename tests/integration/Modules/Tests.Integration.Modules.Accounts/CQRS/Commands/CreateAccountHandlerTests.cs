@@ -24,7 +24,7 @@ public class CreateAccountHandlerTests : IClassFixture<AccountsTestDbContextFixt
 
     private readonly CreateAccount.Handler _testHandler;
 
-    private readonly string _userId = "1";
+    private readonly string _userId = "test-user-id";
 
     public CreateAccountHandlerTests(AccountsTestDbContextFixture dbContextFixture, ITestOutputHelper outputHelper)
     {
@@ -42,7 +42,7 @@ public class CreateAccountHandlerTests : IClassFixture<AccountsTestDbContextFixt
     {
         var command = new CreateAccount.Command(
             _userId,
-            AccountType.Cash,
+            nameof(AccountTypes.Cash),
             "Cash Account",
             "Cash Account Description",
             999.99m,
@@ -61,7 +61,7 @@ public class CreateAccountHandlerTests : IClassFixture<AccountsTestDbContextFixt
         Assert.NotNull(actualAccountDoc);
         Assert.NotEqual(ObjectId.Empty, actualAccountDoc.Id);
         Assert.Equal(_userId, actualAccountDoc.UserId);
-        Assert.Equal(AccountType.Cash, actualAccountDoc.AccountType);
+        Assert.Equal(AccountTypes.Cash, actualAccountDoc.AccountTypes);
         Assert.Equal(command.Name, actualAccountDoc.Name);
         Assert.Equal(command.Description, actualAccountDoc.Description);
         Assert.Equal(command.Balance, actualAccountDoc.Balance);
@@ -84,7 +84,7 @@ public class CreateAccountHandlerTests : IClassFixture<AccountsTestDbContextFixt
     {
         var command = new CreateAccount.Command(
             _userId,
-            AccountType.Checking,
+            nameof(AccountTypes.Checking),
             "Checking Account",
             "Checking Account Description",
             999.99m,
@@ -104,7 +104,7 @@ public class CreateAccountHandlerTests : IClassFixture<AccountsTestDbContextFixt
         Assert.NotNull(actualAccountDoc);
         Assert.NotEqual(ObjectId.Empty, actualAccountDoc.Id);
         Assert.Equal(_userId, actualAccountDoc.UserId);
-        Assert.Equal(AccountType.Checking, actualAccountDoc.AccountType);
+        Assert.Equal(AccountTypes.Checking, actualAccountDoc.AccountTypes);
         Assert.Equal(command.Name, actualAccountDoc.Name);
         Assert.Equal(command.Description, actualAccountDoc.Description);
         Assert.Equal(command.Balance, actualAccountDoc.Balance);
@@ -126,7 +126,7 @@ public class CreateAccountHandlerTests : IClassFixture<AccountsTestDbContextFixt
     {
         var command = new CreateAccount.Command(
             _userId,
-            AccountType.Savings,
+            nameof(AccountTypes.Savings),
             "Savings Account",
             "Savings Account Description",
             999.99m,
@@ -146,7 +146,7 @@ public class CreateAccountHandlerTests : IClassFixture<AccountsTestDbContextFixt
         Assert.NotNull(actualAccountDoc);
         Assert.NotEqual(ObjectId.Empty, actualAccountDoc.Id);
         Assert.Equal(_userId, actualAccountDoc.UserId);
-        Assert.Equal(AccountType.Savings, actualAccountDoc.AccountType);
+        Assert.Equal(AccountTypes.Savings, actualAccountDoc.AccountTypes);
         Assert.Equal(command.Name, actualAccountDoc.Name);
         Assert.Equal(command.Description, actualAccountDoc.Description);
         Assert.Equal(command.Balance, actualAccountDoc.Balance);
@@ -168,7 +168,7 @@ public class CreateAccountHandlerTests : IClassFixture<AccountsTestDbContextFixt
     {
         var command = new CreateAccount.Command(
             _userId,
-            AccountType.CreditCard,
+            nameof(AccountTypes.CreditCard),
             "CreditCard Account",
             "CreditCard Account Description",
             999.99m,
@@ -189,7 +189,7 @@ public class CreateAccountHandlerTests : IClassFixture<AccountsTestDbContextFixt
         Assert.NotNull(actualAccountDoc);
         Assert.NotEqual(ObjectId.Empty, actualAccountDoc.Id);
         Assert.Equal(_userId, actualAccountDoc.UserId);
-        Assert.Equal(AccountType.CreditCard, actualAccountDoc.AccountType);
+        Assert.Equal(AccountTypes.CreditCard, actualAccountDoc.AccountTypes);
         Assert.Equal(command.Name, actualAccountDoc.Name);
         Assert.Equal(command.Description, actualAccountDoc.Description);
         Assert.Equal(command.Balance, actualAccountDoc.Balance);
@@ -212,7 +212,7 @@ public class CreateAccountHandlerTests : IClassFixture<AccountsTestDbContextFixt
     {
         var command = new CreateAccount.Command(
             _userId,
-            AccountType.LineOfCredit,
+            nameof(AccountTypes.LineOfCredit),
             "LineOfCredit Account",
             "LineOfCredit Account Description",
             999.99m,
@@ -234,7 +234,7 @@ public class CreateAccountHandlerTests : IClassFixture<AccountsTestDbContextFixt
 
         Assert.NotEqual(ObjectId.Empty, actualAccountDoc.Id);
 
-        Assert.Equal(AccountType.LineOfCredit, actualAccountDoc.AccountType);
+        Assert.Equal(AccountTypes.LineOfCredit, actualAccountDoc.AccountTypes);
 
         Assert.Equal(_userId, actualAccountDoc.UserId);
 

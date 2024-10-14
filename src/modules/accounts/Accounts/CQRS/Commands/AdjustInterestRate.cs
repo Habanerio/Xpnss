@@ -43,27 +43,23 @@ public class AdjustInterestRate
             if (existingResult.IsFailed)
                 return Result.Fail<decimal>(existingResult.Errors);
 
+            // Check if the account supports InterestRates
+            if (existingResult.Value is not IHasInterestRate)
+                return Result.Fail<decimal>($"The Account Type `{existingResult.Value.AccountTypes}` does not support Interest Rates");
+
             var existingAccount = existingResult.Value;
 
-            var dto = Mappers.DocumentToDtoMappings.Map(existingAccount);
+            var existingInterestRateAccount = existingAccount as IHasInterestRate;
 
-            if (dto is not IHasInterestRate interestRateDto)
-                return Result.Fail($"The Account Type `{dto.AccountType}` does not support Interest Rate");
+            var previousInterestRate = existingInterestRateAccount.InterestRate;
 
-            var previousInterestRate = interestRateDto.InterestRate;
-
-            interestRateDto.InterestRate = request.InterestRate;
-
-            existingAccount = Mappers.DtoToDocumentMappings.Map(dto);
-
-            if (existingAccount is null)
-                return Result.Fail<decimal>("Failed to map AccountDto to Account");
+            existingInterestRateAccount.InterestRate = request.InterestRate;
 
             existingAccount.AddChangeHistory(
                 existingAccount.UserId,
-                nameof(existingAccount.Balance),
+                nameof(IHasInterestRate.InterestRate),
                 previousInterestRate.ToString(CultureInfo.InvariantCulture),
-                interestRateDto.InterestRate.ToString(CultureInfo.InvariantCulture),
+                request.InterestRate.ToString(CultureInfo.InvariantCulture),
                 request.Reason);
 
             var result = await _repository.UpdateAsync(existingAccount, cancellationToken);
@@ -80,9 +76,7 @@ public class AdjustInterestRate
         public Validator()
         {
             RuleFor(x => x.UserId).NotEmpty();
-
             RuleFor(x => x.AccountId).NotEmpty();
-
             RuleFor(x => x.InterestRate)
                 .InclusiveBetween(0, 100);
         }

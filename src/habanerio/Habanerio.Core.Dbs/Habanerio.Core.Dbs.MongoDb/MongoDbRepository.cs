@@ -147,18 +147,27 @@ public abstract class MongoDbRepository<TDocument, TId> :
         Collection = _context.Collection() ?? throw new InvalidOperationException(EXCEPTION_COLLECTION_NOT_FOUND);
     }
 
-    internal async Task<IEnumerable<TDocument>> FindAsync(
+    protected async Task<IEnumerable<TDocument>> FindAsync(
         FilterDefinition<TDocument> filter,
         CancellationToken cancellationToken = default)
     {
         if (filter is null)
             throw new ArgumentNullException(nameof(filter));
 
-        var cursor = await Collection.FindAsync(filter, null, cancellationToken);
+        try
+        {
+            var cursor = await Collection.FindAsync(filter, null, cancellationToken);
 
-        var results = await cursor.ToListAsync(cancellationToken);
+            var results = await cursor.ToListAsync(cancellationToken);
 
-        return results;
+            return results;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+
     }
 
     internal async Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)> FindAsync(

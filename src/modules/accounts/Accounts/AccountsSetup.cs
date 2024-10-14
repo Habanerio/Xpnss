@@ -21,7 +21,7 @@ public static class AccountsSetup
             cm.SetIsRootClass(true);
             cm.SetDiscriminator("_t");
             cm.SetDiscriminatorIsRequired(true);
-            //cm.SetIgnoreExtraElements(true);
+            cm.SetIgnoreExtraElements(true);
         });
 
         BsonClassMap.RegisterClassMap<CashAccount>();

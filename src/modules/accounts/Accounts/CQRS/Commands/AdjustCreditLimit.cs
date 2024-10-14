@@ -43,27 +43,26 @@ public class AdjustCreditLimit
             if (existingResult.IsFailed)
                 return Result.Fail<decimal>(existingResult.Errors);
 
+            // Check if the account supports Credit Limits
+            if (existingResult.Value is not IHasCreditLimit)
+                return Result.Fail<decimal>($"The Account Type `{existingResult.Value.AccountTypes}` does not support Credit Limits");
+            //return Result.Fail<decimal>($"The Account Type `{existingResult.Value.GetType().Name}` does not support Credit Limits");
+
             var existingAccount = existingResult.Value;
 
-            var dto = Mappers.DocumentToDtoMappings.Map(existingAccount);
+            var existingCreditLimitAccount = existingAccount as IHasCreditLimit;
 
-            if (dto is not IHasCreditLimit creditLimitDto)
-                return Result.Fail($"The Account Type `{existingAccount.AccountType}` does not support Credit Limits");
+            var previousCreditLimit = existingCreditLimitAccount.CreditLimit;
 
-            var previousCreditLimit = creditLimitDto.CreditLimit;
-
-            creditLimitDto.CreditLimit = request.CreditLimit;
-
-            existingAccount = Mappers.DtoToDocumentMappings.Map(dto);
-
-            if (existingAccount is null)
-                return Result.Fail<decimal>("Failed to map AccountDto to Account");
+            // Updating the existingCreditLimitAccount.CreditLimit will update the existingAccount.CreditLimit.
+            // Cannot access the existingAccount.CreditLimit directly because it does not belong to the base AccountDocument.
+            existingCreditLimitAccount.CreditLimit = request.CreditLimit;
 
             existingAccount.AddChangeHistory(
                 existingAccount.UserId,
-                nameof(creditLimitDto.CreditLimit),
+                nameof(IHasCreditLimit.CreditLimit),
                 previousCreditLimit.ToString(CultureInfo.InvariantCulture),
-                existingAccount.Balance.ToString(CultureInfo.InvariantCulture),
+                request.CreditLimit.ToString(CultureInfo.InvariantCulture),
                 request.Reason);
 
             var result = await _repository.UpdateAsync(existingAccount, cancellationToken);

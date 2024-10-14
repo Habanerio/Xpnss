@@ -66,7 +66,7 @@ public class CashAccountDtoTests
         Assert.Equal(string.Empty, account.Id);
         Assert.Equal(userId, account.UserId);
         Assert.Equal(name, account.Name);
-        Assert.Equal(AccountType.Cash, account.AccountType);
+        Assert.Equal(nameof(AccountTypes.Cash), account.AccountType);
         Assert.Equal(description, account.Description);
         Assert.Equal(balance, account.Balance);
         Assert.Equal(displayColor, account.DisplayColor);
@@ -147,7 +147,7 @@ public class CheckingAccountDtoTests
         Assert.Equal(_id, account.Id);
         Assert.Equal(_userId, account.UserId);
         Assert.Equal(_name, account.Name);
-        Assert.Equal(AccountType.Checking, account.AccountType);
+        Assert.Equal(nameof(AccountTypes.Checking), account.AccountType);
         Assert.Equal(_balance, account.Balance);
         Assert.Equal(_description, account.Description);
         Assert.Equal(_displayColor, account.DisplayColor);
@@ -170,7 +170,7 @@ public class CheckingAccountDtoTests
         Assert.Equal(string.Empty, account.Id);
         Assert.Equal(_userId, account.UserId);
         Assert.Equal(_name, account.Name);
-        Assert.Equal(AccountType.Checking, account.AccountType);
+        Assert.Equal(nameof(AccountTypes.Checking), account.AccountType);
         Assert.Equal(_balance, account.Balance);
         Assert.Equal(_description, account.Description);
         Assert.Equal(_displayColor, account.DisplayColor);
@@ -267,7 +267,7 @@ public class SavingsAccountDtoTests
         Assert.Equal(_id, account.Id);
         Assert.Equal(_userId, account.UserId);
         Assert.Equal(_name, account.Name);
-        Assert.Equal(AccountType.Savings, account.AccountType);
+        Assert.Equal(nameof(AccountTypes.Savings), account.AccountType);
         Assert.Equal(_balance, account.Balance);
         Assert.Equal(_description, account.Description);
         Assert.Equal(_displayColor, account.DisplayColor);
@@ -291,7 +291,7 @@ public class SavingsAccountDtoTests
         Assert.Equal(string.Empty, account.Id);
         Assert.Equal(_userId, account.UserId);
         Assert.Equal(_name, account.Name);
-        Assert.Equal(AccountType.Savings, account.AccountType);
+        Assert.Equal(nameof(AccountTypes.Savings), account.AccountType);
         Assert.Equal(_balance, account.Balance);
         Assert.Equal(_description, account.Description);
         Assert.Equal(_displayColor, account.DisplayColor);
@@ -388,7 +388,7 @@ public class CreditCardAccountDtoTests
         Assert.Equal(_id, account.Id);
         Assert.Equal(_userId, account.UserId);
         Assert.Equal(_name, account.Name);
-        Assert.Equal(AccountType.CreditCard, account.AccountType);
+        Assert.Equal(nameof(AccountTypes.CreditCard), account.AccountType);
         Assert.Equal(_balance, account.Balance);
         Assert.Equal(_description, account.Description);
         Assert.Equal(_displayColor, account.DisplayColor);
@@ -413,7 +413,7 @@ public class CreditCardAccountDtoTests
         Assert.Equal(string.Empty, account.Id);
         Assert.Equal(_userId, account.UserId);
         Assert.Equal(_name, account.Name);
-        Assert.Equal(AccountType.CreditCard, account.AccountType);
+        Assert.Equal(nameof(AccountTypes.CreditCard), account.AccountType);
         Assert.Equal(_balance, account.Balance);
         Assert.Equal(_description, account.Description);
         Assert.Equal(_displayColor, account.DisplayColor);
@@ -498,7 +498,7 @@ public class LineOfCreditAccountDtoTests
         Assert.Equal(_id, account.Id);
         Assert.Equal(_userId, account.UserId);
         Assert.Equal(_name, account.Name);
-        Assert.Equal(AccountType.LineOfCredit, account.AccountType);
+        Assert.Equal(nameof(AccountTypes.LineOfCredit), account.AccountType);
         Assert.Equal(_balance, account.Balance);
         Assert.Equal(_description, account.Description);
         Assert.Equal(_displayColor, account.DisplayColor);
@@ -532,7 +532,7 @@ public class LineOfCreditAccountDtoTests
         Assert.Equal(string.Empty, account.Id);
         Assert.Equal(_userId, account.UserId);
         Assert.Equal(_name, account.Name);
-        Assert.Equal(AccountType.LineOfCredit, account.AccountType);
+        Assert.Equal(nameof(AccountTypes.LineOfCredit), account.AccountType);
         Assert.Equal(_balance, account.Balance);
         Assert.Equal(_description, account.Description);
         Assert.Equal(_displayColor, account.DisplayColor);
@@ -575,7 +575,7 @@ public class AccountDtoTests
 {
     private readonly AccountDto _testClass;
     private IFixture _fixture;
-    private AccountType _accountType;
+    private AccountTypes _accountType;
     private bool _isCredit;
     private string _id;
     private string _userId;
@@ -590,7 +590,7 @@ public class AccountDtoTests
     public AccountDtoTests()
     {
         _fixture = new Fixture().Customize(new AutoMoqCustomization());
-        _accountType = _fixture.Create<AccountType>();
+        _accountType = _fixture.Create<AccountTypes>();
         _isCredit = _fixture.Create<bool>();
         _id = _fixture.Create<string>();
         _userId = _fixture.Create<string>();
@@ -653,13 +653,13 @@ public class AccountDtoTests
     public void CanSet_And_Get_AccountType()
     {
         // Arrange
-        var testValue = _fixture.Create<AccountType>();
+        var testValue = _fixture.Create<AccountTypes>();
 
         // Act
-        _testClass.AccountType = testValue;
+        _testClass.AccountTypes = testValue;
 
         // Assert
-        Assert.Equal(testValue, _testClass.AccountType);
+        Assert.Equal(testValue, _testClass.AccountTypes);
     }
 
     [Fact]

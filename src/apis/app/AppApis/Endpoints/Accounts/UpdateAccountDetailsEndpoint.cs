@@ -13,7 +13,7 @@ namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Accounts;
 /// </summary>
 public class UpdateAccountDetailsEndpoint
 {
-    public sealed record Request
+    public sealed record UpdateAccountDetailsRequest
     {
         [Required]
         public string AccountId { get; set; }
@@ -29,7 +29,7 @@ public class UpdateAccountDetailsEndpoint
         public string DisplayColor { get; set; } = "#ff0000";
     }
 
-    public sealed class Validator : AbstractValidator<Request>
+    public sealed class Validator : AbstractValidator<UpdateAccountDetailsRequest>
     {
         public Validator()
         {
@@ -41,11 +41,11 @@ public class UpdateAccountDetailsEndpoint
 
     public static async Task<IResult> HandleAsync(
         string userId,
-        Request request,
+        UpdateAccountDetailsRequest request,
         IAccountsService service,
         CancellationToken cancellationToken)
     {
-        var validationResult = new Validator().Validate(request);
+        var validationResult = await new Validator().ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
             return Results.BadRequest(validationResult.Errors[0].ErrorMessage);
@@ -73,7 +73,7 @@ public class UpdateAccountDetailsEndpoint
                 async (
                     [FromRoute] string userId,
                     [FromRoute] string accountId,
-                    [FromBody] Request request,
+                    [FromBody] UpdateAccountDetailsRequest request,
                     [FromServices] IAccountsService service,
                     CancellationToken cancellationToken) =>
                 {

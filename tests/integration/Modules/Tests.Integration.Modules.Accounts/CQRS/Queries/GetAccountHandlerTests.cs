@@ -2,8 +2,11 @@ using Habanerio.Xpnss.Modules.Accounts.Common;
 using Habanerio.Xpnss.Modules.Accounts.CQRS.Queries;
 using Habanerio.Xpnss.Modules.Accounts.DTOs;
 using Habanerio.Xpnss.Modules.Accounts.Interfaces;
+
 using MongoDB.Bson;
+
 using Tests.Integration.Common;
+
 using Xunit.Abstractions;
 
 namespace Habanerio.Xpnss.Tests.Integration.Modules.Accounts.CQRS.Queries;
@@ -12,7 +15,7 @@ namespace Habanerio.Xpnss.Tests.Integration.Modules.Accounts.CQRS.Queries;
 /// Tests that we can call the GetAccount query handler and handle appropriately.
 /// </summary>
 [Collection(nameof(AccountsMongoCollection))]
-public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, IDisposable
+public class GetAccountHandlerTests : IClassFixture<AccountsTestDbContextFixture>//, IDisposable
 {
     private readonly ITestOutputHelper _outputHelper;
 
@@ -21,11 +24,11 @@ public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, ID
 
     private readonly GetAccount.Handler _testHandler;
 
-    private readonly string _userId = "1";
+    private readonly string _userId = "test-user-id";
 
-    private readonly List<(string AccountId, AccountType AccountType)> _availableAccounts;
+    private readonly List<(string UserId, string AccountId, AccountTypes AccountType)> _availableAccounts;
 
-    public GetAccountTests(AccountsTestDbContextFixture dbContextFixture, ITestOutputHelper outputHelper)
+    public GetAccountHandlerTests(AccountsTestDbContextFixture dbContextFixture, ITestOutputHelper outputHelper)
     {
         _outputHelper = outputHelper;
 
@@ -40,7 +43,7 @@ public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, ID
     public async Task CanCall_Handle_GetAccount_Cash()
     {
         var accountIds = _availableAccounts
-            .Where(x => x.AccountType == AccountType.Cash)
+            .Where(x => x.AccountType == AccountTypes.Cash)
             .Select(x => x.AccountId).ToList();
 
         foreach (var accountId in accountIds)
@@ -54,7 +57,7 @@ public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, ID
             var accountDto = Assert.IsType<CashAccountDto>(result.Value);
             Assert.Equal(accountId, accountDto.Id);
             Assert.Equal(_userId, accountDto.UserId);
-            Assert.Equal(AccountType.Cash, accountDto.AccountType);
+            Assert.Equal(nameof(AccountTypes.Cash), accountDto.AccountType);
             Assert.Contains("Cash Account", accountDto.Name);
         }
     }
@@ -63,7 +66,7 @@ public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, ID
     public async Task CanCall_Handle_GetAccount_Checking()
     {
         var accountIds = _availableAccounts
-            .Where(x => x.AccountType == AccountType.Checking)
+            .Where(x => x.AccountType == AccountTypes.Checking)
             .Select(x => x.AccountId).ToList();
 
         foreach (var accountId in accountIds)
@@ -77,7 +80,7 @@ public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, ID
             var accountDto = Assert.IsType<CheckingAccountDto>(result.Value);
             Assert.Equal(accountId, accountDto.Id);
             Assert.Equal(_userId, accountDto.UserId);
-            Assert.Equal(AccountType.Checking, accountDto.AccountType);
+            Assert.Equal(nameof(AccountTypes.Checking), accountDto.AccountType);
             Assert.Contains("Checking Account", accountDto.Name);
         }
     }
@@ -86,7 +89,7 @@ public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, ID
     public async Task CanCall_Handle_GetAccount_Savings()
     {
         var accountIds = _availableAccounts
-            .Where(x => x.AccountType == AccountType.Savings)
+            .Where(x => x.AccountType == AccountTypes.Savings)
             .Select(x => x.AccountId).ToList();
 
         foreach (var accountId in accountIds)
@@ -100,7 +103,7 @@ public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, ID
             var accountDto = Assert.IsType<SavingsAccountDto>(result.Value);
             Assert.Equal(accountId, accountDto.Id);
             Assert.Equal(_userId, accountDto.UserId);
-            Assert.Equal(AccountType.Savings, accountDto.AccountType);
+            Assert.Equal(nameof(AccountTypes.Savings), accountDto.AccountType);
             Assert.Contains("Savings Account", accountDto.Name);
         }
     }
@@ -109,7 +112,7 @@ public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, ID
     public async Task CanCall_Handle_GetAccount_CreditCard()
     {
         var accountIds = _availableAccounts
-            .Where(x => x.AccountType == AccountType.CreditCard)
+            .Where(x => x.AccountType == AccountTypes.CreditCard)
             .Select(x => x.AccountId).ToList();
 
         foreach (var accountId in accountIds)
@@ -123,7 +126,7 @@ public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, ID
             var accountDto = Assert.IsType<CreditCardAccountDto>(result.Value);
             Assert.Equal(accountId, accountDto.Id);
             Assert.Equal(_userId, accountDto.UserId);
-            Assert.Equal(AccountType.CreditCard, accountDto.AccountType);
+            Assert.Equal(nameof(AccountTypes.CreditCard), accountDto.AccountType);
             Assert.Contains("Credit Card Account", accountDto.Name);
         }
     }
@@ -132,7 +135,7 @@ public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, ID
     public async Task CanCall_Handle_GetAccount_LineOfCredit()
     {
         var accountIds = _availableAccounts
-            .Where(x => x.AccountType == AccountType.LineOfCredit)
+            .Where(x => x.AccountType == AccountTypes.LineOfCredit)
             .Select(x => x.AccountId).ToList();
 
         foreach (var accountId in accountIds)
@@ -146,7 +149,7 @@ public class GetAccountTests : IClassFixture<AccountsTestDbContextFixture>//, ID
             var accountDto = Assert.IsType<LineOfCreditAccountDto>(result.Value);
             Assert.Equal(accountId, accountDto.Id);
             Assert.Equal(_userId, accountDto.UserId);
-            Assert.Equal(AccountType.LineOfCredit, accountDto.AccountType);
+            Assert.Equal(nameof(AccountTypes.LineOfCredit), accountDto.AccountType);
             Assert.Contains("Line of Credit Account", accountDto.Name);
         }
     }

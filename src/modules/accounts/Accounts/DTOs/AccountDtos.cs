@@ -10,7 +10,7 @@ public record AccountDto
 
     public string UserId { get; set; }
 
-    public AccountType AccountType { get; set; }
+    public string AccountType { get; set; }
 
     public string Name { get; set; }
 
@@ -24,25 +24,25 @@ public record AccountDto
 
     public bool IsDeleted => DateDeleted.HasValue;
 
-    public DateTimeOffset DateCreated { get; set; }
+    public DateTime DateCreated { get; set; }
 
-    public DateTimeOffset? DateUpdated { get; set; }
+    public DateTime? DateUpdated { get; set; }
 
-    public DateTimeOffset? DateDeleted { get; set; }
+    public DateTime? DateDeleted { get; set; }
 
     // Needed for deserialization in the API.
     public AccountDto() { }
 
-    protected AccountDto(AccountType accountType, bool isCredit)
+    protected AccountDto(AccountTypes accountTypes, bool isCredit)
     {
-        AccountType = accountType;
+        AccountType = accountTypes.ToString();
         IsCredit = isCredit;
     }
 
     protected AccountDto(
         string id,
         string userId,
-        AccountType accountType,
+        AccountTypes accountTypes,
         string name,
         string description,
         decimal balance,
@@ -62,20 +62,20 @@ public record AccountDto
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name cannot be null or empty", nameof(name));
 
-        if (!displayColor.StartsWith("#") || displayColor.Length > 7)
+        if (!displayColor.StartsWith('#') || displayColor.Length > 7)
             throw new ArgumentException("DisplayColor must be a valid hex color code", nameof(displayColor));
 
         Id = id;
         UserId = userId;
-        AccountType = accountType;
+        AccountType = accountTypes.ToString();
         Name = name;
         Balance = balance;
         Description = description ?? string.Empty;
         DisplayColor = displayColor ?? string.Empty;
         IsCredit = isCredit;
-        DateCreated = dateCreated;
-        DateUpdated = dateUpdated;
-        DateDeleted = dateDeleted;
+        DateCreated = dateCreated.UtcDateTime;
+        DateUpdated = dateUpdated?.UtcDateTime;
+        DateDeleted = dateDeleted?.UtcDateTime;
     }
 
     internal AccountDto(
@@ -92,7 +92,7 @@ public record AccountDto
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name cannot be null or empty", nameof(name));
 
-        if (!displayColor.StartsWith("#") || displayColor.Length > 7)
+        if (!displayColor.StartsWith('#') || displayColor.Length > 7)
             throw new ArgumentException("DisplayColor must be a valid hex color code", nameof(displayColor));
 
         accountDto.Id = string.Empty;
@@ -102,7 +102,7 @@ public record AccountDto
         accountDto.Description = description;
         accountDto.DisplayColor = displayColor;
 
-        accountDto.DateCreated = DateTimeOffset.UtcNow;
+        accountDto.DateCreated = DateTime.UtcNow;
     }
 
     internal static AccountDto New(
@@ -120,7 +120,7 @@ public record AccountDto
 
 public record CashAccountDto : AccountDto
 {
-    private CashAccountDto() : base(AccountType.Cash, false) { }
+    private CashAccountDto() : base(AccountTypes.Cash, false) { }
 
     public CashAccountDto(
         string id,
@@ -132,7 +132,7 @@ public record CashAccountDto : AccountDto
         DateTimeOffset dateCreated,
         DateTimeOffset? dateUpdated = null,
         DateTimeOffset? dateDeleted = null) :
-        base(id, userId, AccountType.Cash, name, description, balance, displayColor, false, dateCreated, dateUpdated, dateDeleted)
+        base(id, userId, AccountTypes.Cash, name, description, balance, displayColor, false, dateCreated, dateUpdated, dateDeleted)
     { }
 
     public static CashAccountDto New(
@@ -157,7 +157,7 @@ public record CheckingAccountDto :
 
     //public bool IsOverDrafted { get; set; }
 
-    private CheckingAccountDto() : base(AccountType.Checking, false) { }
+    private CheckingAccountDto() : base(AccountTypes.Checking, false) { }
 
     public CheckingAccountDto(
         string id,
@@ -170,7 +170,7 @@ public record CheckingAccountDto :
         DateTimeOffset dateCreated,
         DateTimeOffset? dateUpdated = null,
         DateTimeOffset? dateDeleted = null) :
-        base(id, userId, AccountType.Checking, name, description, balance, displayColor, false, dateCreated, dateUpdated, dateDeleted)
+        base(id, userId, AccountTypes.Checking, name, description, balance, displayColor, false, dateCreated, dateUpdated, dateDeleted)
     {
         OverDraftAmount = overDraftAmount;
     }
@@ -197,7 +197,7 @@ public record SavingsAccountDto : AccountDto, IHasInterestRate
 {
     public decimal InterestRate { get; set; }
 
-    private SavingsAccountDto() : base(AccountType.Savings, false) { }
+    private SavingsAccountDto() : base(AccountTypes.Savings, false) { }
 
     public SavingsAccountDto(
         string id,
@@ -210,7 +210,7 @@ public record SavingsAccountDto : AccountDto, IHasInterestRate
         DateTimeOffset dateCreated,
         DateTimeOffset? dateUpdated = null,
         DateTimeOffset? dateDeleted = null) :
-        base(id, userId, AccountType.Savings, name, description, balance, displayColor, false, dateCreated, dateUpdated, dateDeleted)
+        base(id, userId, AccountTypes.Savings, name, description, balance, displayColor, false, dateCreated, dateUpdated, dateDeleted)
     {
         InterestRate = interestRate;
     }
@@ -239,12 +239,12 @@ public abstract record CreditAccountDto : AccountDto, IHasCreditLimit, IHasInter
 
     public decimal InterestRate { get; set; }
 
-    protected CreditAccountDto(AccountType accountType) : base(accountType, true) { }
+    protected CreditAccountDto(AccountTypes accountTypes) : base(accountTypes, true) { }
 
     public CreditAccountDto(
         string id,
         string userId,
-        AccountType accountType,
+        AccountTypes accountTypes,
         string name,
         string description,
         decimal balance,
@@ -254,7 +254,7 @@ public abstract record CreditAccountDto : AccountDto, IHasCreditLimit, IHasInter
         DateTimeOffset dateCreated,
         DateTimeOffset? dateUpdated = null,
         DateTimeOffset? dateDeleted = null) :
-        base(id, userId, accountType, name, description, balance, displayColor, true, dateCreated, dateUpdated, dateDeleted)
+        base(id, userId, accountTypes, name, description, balance, displayColor, true, dateCreated, dateUpdated, dateDeleted)
     {
         CreditLimit = creditLimit;
         InterestRate = interestRate;
@@ -281,7 +281,7 @@ public abstract record CreditAccountDto : AccountDto, IHasCreditLimit, IHasInter
 
 public record CreditCardAccountDto : CreditAccountDto
 {
-    private CreditCardAccountDto() : base(AccountType.CreditCard) { }
+    private CreditCardAccountDto() : base(AccountTypes.CreditCard) { }
 
     public CreditCardAccountDto(string id,
         string userId,
@@ -294,7 +294,7 @@ public record CreditCardAccountDto : CreditAccountDto
         DateTimeOffset dateCreated,
         DateTimeOffset? dateUpdated = null,
         DateTimeOffset? dateDeleted = null) :
-        base(id, userId, AccountType.CreditCard, name, description, balance, creditLimit, interestRate, displayColor, dateCreated, dateUpdated, dateDeleted)
+        base(id, userId, AccountTypes.CreditCard, name, description, balance, creditLimit, interestRate, displayColor, dateCreated, dateUpdated, dateDeleted)
     { }
 
     public static CreditCardAccountDto New(
@@ -316,7 +316,7 @@ public record CreditCardAccountDto : CreditAccountDto
 
 public record LineOfCreditAccountDto : CreditAccountDto
 {
-    private LineOfCreditAccountDto() : base(AccountType.LineOfCredit) { }
+    private LineOfCreditAccountDto() : base(AccountTypes.LineOfCredit) { }
 
     public LineOfCreditAccountDto(
         string id,
@@ -330,7 +330,7 @@ public record LineOfCreditAccountDto : CreditAccountDto
         DateTimeOffset dateCreated,
         DateTimeOffset? dateUpdated = null,
         DateTimeOffset? dateDeleted = null) :
-        base(id, userId, AccountType.LineOfCredit, name, description, balance, creditLimit, interestRate, displayColor, dateCreated, dateUpdated, dateDeleted)
+        base(id, userId, AccountTypes.LineOfCredit, name, description, balance, creditLimit, interestRate, displayColor, dateCreated, dateUpdated, dateDeleted)
     { }
 
     public static LineOfCreditAccountDto New(

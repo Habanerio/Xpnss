@@ -50,7 +50,7 @@ public class UpdateCreditLimit
             var dto = Mappers.DocumentToDtoMappings.Map(existingAccount);
 
             if (dto is not IHasCreditLimit creditLimitDto)
-                return Result.Fail($"The Account Type `{existingAccount.AccountType}` does not support Credit Limits");
+                return Result.Fail($"The Account Type `{existingAccount.AccountTypes}` does not support Credit Limits");
 
             creditLimitDto.CreditLimit = request.CreditLimit;
 

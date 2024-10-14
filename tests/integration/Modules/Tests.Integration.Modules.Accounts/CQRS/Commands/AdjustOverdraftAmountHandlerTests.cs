@@ -20,9 +20,9 @@
 
 //    private readonly AdjustOverdraftAmount.Handler _testHandler;
 
-//    private readonly string _userId = "1";
+//    private readonly string _userId = "test-user-id";
 
-//    private readonly List<(string accountId, AccountType type)> _availableAccounts;
+//    private readonly List<(string accountId, AccountTypes type)> _availableAccounts;
 
 //    public AdjustOverdraftAmountHandlerTests(AccountsTestDbContextFixture dbContextFixture, ITestOutputHelper outputHelper)
 //    {
@@ -51,11 +51,11 @@
 //    }
 
 //    [Theory]
-//    [InlineData(AccountType.CreditCard)]
-//    [InlineData(AccountType.LineOfCredit)]
-//    public async Task Can_Adjust_InterestRate(AccountType accountType)
+//    [InlineData(AccountTypes.CreditCard)]
+//    [InlineData(AccountTypes.LineOfCredit)]
+//    public async Task Can_Adjust_InterestRate(AccountTypes accountTypes)
 //    {
-//        var accountId = _availableAccounts.First(x => x.type == accountType).accountId;
+//        var accountId = _availableAccounts.First(x => x.type == accountTypes).accountId;
 
 //        var cashAccountDocument = await _verifyRepository.FirstOrDefaultAsync(a =>
 //            a.Id == ObjectId.Parse(accountId) && a.UserId == _userId);
@@ -65,7 +65,7 @@
 //        var expected = previous + 100;
 
 //        var command = new AdjustOverdraftAmount.Command(
-//            "1",
+//            "test-user-id",
 //            cashAccountDocument.Id.ToString(),
 //            expected,
 //            "Updated by `Can_Adjust_InterestRate`");
@@ -97,12 +97,12 @@
 //    }
 
 //    [Theory]
-//    [InlineData(AccountType.Cash)]
-//    [InlineData(AccountType.Checking)]
-//    [InlineData(AccountType.Savings)]
-//    public async Task Cannot_Adjust_InterestRate_Invalid_AccountType(AccountType accountType)
+//    [InlineData(AccountTypes.Cash)]
+//    [InlineData(AccountTypes.Checking)]
+//    [InlineData(AccountTypes.Savings)]
+//    public async Task Cannot_Adjust_InterestRate_Invalid_AccountType(AccountTypes accountTypes)
 //    {
-//        var accountId = _availableAccounts.First(x => x.type == accountType).accountId;
+//        var accountId = _availableAccounts.First(x => x.type == accountTypes).accountId;
 
 //        var cashAccountDocument = await _verifyRepository.FirstOrDefaultAsync(a =>
 //            a.Id == ObjectId.Parse(accountId) && a.UserId == _userId);
@@ -112,7 +112,7 @@
 //        var expected = previous + 100;
 
 //        var command = new AdjustOverdraftAmount.Command(
-//            "1",
+//            "test-user-id",
 //            cashAccountDocument.Id.ToString(),
 //            expected,
 //            "Updated by `Can_Adjust_InterestRate`");
@@ -122,7 +122,7 @@
 
 //        // Assert
 //        Assert.True(actualResult.IsFailed);
-//        Assert.Equal($"The Account Type `{accountType}` does not support InterestRate Limits", actualResult.Errors[0].Message);
+//        Assert.Equal($"The Account Type `{accountTypes}` does not support InterestRate Limits", actualResult.Errors[0].Message);
 //    }
 
 //    [Theory]
@@ -143,7 +143,7 @@
 //    [InlineData(null)]
 //    public async Task CanNotCall_Adjust_InterestRate_WithEmpty_Account_IsFailed(string value)
 //    {
-//        var result = await _testHandler.Handle(new AdjustOverdraftAmount.Command("1", value, 1000, ""), CancellationToken.None);
+//        var result = await _testHandler.Handle(new AdjustOverdraftAmount.Command("test-user-id", value, 1000, ""), CancellationToken.None);
 
 //        Assert.True(result.IsFailed);
 //        Assert.Equal("'Account Id' must not be empty.", result.Errors[0].Message);
@@ -154,7 +154,7 @@
 //    {
 //        var accountId = "sdfgsdf7gsd9fgsdfg";
 
-//        var result = await _testHandler.Handle(new AdjustOverdraftAmount.Command("1", accountId, 1000, ""), CancellationToken.None);
+//        var result = await _testHandler.Handle(new AdjustOverdraftAmount.Command("test-user-id", accountId, 1000, ""), CancellationToken.None);
 
 //        Assert.True(result.IsFailed);
 //        Assert.Equal($"Invalid AccountId: `{accountId}`", result.Errors[0].Message);

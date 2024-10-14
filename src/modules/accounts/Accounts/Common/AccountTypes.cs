@@ -1,6 +1,6 @@
 namespace Habanerio.Xpnss.Modules.Accounts.Common;
 
-public enum AccountType
+public enum AccountTypes
 {
     None = 0,
 

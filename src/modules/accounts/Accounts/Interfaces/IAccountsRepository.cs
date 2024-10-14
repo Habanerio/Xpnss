@@ -1,14 +1,13 @@
 using System.Collections.ObjectModel;
 using FluentResults;
 using Habanerio.Xpnss.Modules.Accounts.Data;
-using Habanerio.Xpnss.Modules.Accounts.DTOs;
 using MongoDB.Bson;
 
 namespace Habanerio.Xpnss.Modules.Accounts.Interfaces;
 
 public interface IAccountsRepository
 {
-    Result<ObjectId> Add(AccountDto accountDto);
+    //Result<ObjectId> Add(AccountDto accountDto);
 
     Task<Result<ObjectId>> AddAsync(AccountDocument account, CancellationToken cancellationToken = default);
 

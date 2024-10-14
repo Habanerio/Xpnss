@@ -11,14 +11,14 @@ namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Accounts;
 
 public class AdjustBalanceEndpoint
 {
-    public sealed record Request(
+    public sealed record AdjustBalanceRequest(
         [Required] string UserId,
         [Required] string AccountId,
         [Required] decimal NewBalance,
         string Reason = "");
 
 
-    public sealed class Validator : AbstractValidator<Request>
+    public sealed class Validator : AbstractValidator<AdjustBalanceRequest>
     {
         public Validator()
         {
@@ -30,11 +30,11 @@ public class AdjustBalanceEndpoint
 
     public static async Task<IResult> HandleAsync(
         string userId,
-        Request request,
+        AdjustBalanceRequest request,
         IAccountsService service,
         CancellationToken cancellationToken)
     {
-        var validationResult = new Validator().Validate(request);
+        var validationResult = await new Validator().ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
             return Results.BadRequest(validationResult.Errors[0].ErrorMessage);
@@ -63,7 +63,7 @@ public class AdjustBalanceEndpoint
                     async (
                         [FromRoute] string userId,
                         [FromRoute] string accountId,
-                        [FromBody] Request request,
+                        [FromBody] AdjustBalanceRequest request,
                         [FromServices] IAccountsService service,
                         CancellationToken cancellationToken) =>
                     {

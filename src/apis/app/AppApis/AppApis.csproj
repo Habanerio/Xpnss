@@ -12,10 +12,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Aspire.MongoDB.Driver" Version="8.2.0" />
+        <PackageReference Include="Aspire.MongoDB.Driver" Version="8.2.1" />
         <PackageReference Include="Carter" Version="8.2.1" />
         <PackageReference Include="FluentResults" Version="3.16.0" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.8" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.10" />
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" />
         <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
@@ -23,18 +23,18 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.8.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.8.1" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\aspire\Defaults\Defaults.csproj" />
         <ProjectReference Include="..\..\..\habanerio\Habanerio.Core.Dbs\Habanerio.Core.Dbs.MongoDB.EFCore\Habanerio.Core.Dbs.MongoDB.EFCore.csproj" />
         <ProjectReference Include="..\..\..\modules\accounts\Accounts\Accounts.csproj" />
+        <ProjectReference Include="..\..\..\modules\transactions\Transactions\Transactions.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <Folder Include="Endpoints\Authentication\" />
-        <Folder Include="Endpoints\Transactions\" />
         <Folder Include="Managers\" />
         <Folder Include="Models\Responses\" />
     </ItemGroup>

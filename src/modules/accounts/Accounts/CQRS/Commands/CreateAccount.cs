@@ -17,7 +17,7 @@ public class CreateAccount
 {
     public record Command(
         string UserId,
-        AccountType AccountType,
+        string AccountType,
         string Name,
         string Description,
         decimal Balance,
@@ -52,29 +52,30 @@ public class CreateAccount
 
         private AccountDocument GetAccount(Command request)
         {
+
             return request.AccountType switch
             {
-                AccountType.Cash => CashAccount.New(
+                nameof(AccountTypes.Cash) => CashAccount.New(
                     request.UserId,
                     request.Name,
                     request.Description,
                     request.Balance,
                     request.DisplayColor),
-                AccountType.Checking => CheckingAccount.New(
+                nameof(AccountTypes.Checking) => CheckingAccount.New(
                     request.UserId,
                     request.Name,
                     request.Description,
                     request.Balance,
                     request.OverDraftAmount,
                     request.DisplayColor),
-                AccountType.Savings => SavingsAccount.New(
+                nameof(AccountTypes.Savings) => SavingsAccount.New(
                     request.UserId,
                     request.Name,
                     request.Description,
                     request.Balance,
                     request.InterestRate,
                     request.DisplayColor),
-                AccountType.CreditCard => CreditCardAccount.New(
+                nameof(AccountTypes.CreditCard) => CreditCardAccount.New(
                     request.UserId,
                     request.Name,
                     request.Description,
@@ -82,7 +83,7 @@ public class CreateAccount
                     request.CreditLimit,
                     request.InterestRate,
                     request.DisplayColor),
-                AccountType.LineOfCredit => LineOfCreditAccount.New(
+                nameof(AccountTypes.LineOfCredit) => LineOfCreditAccount.New(
                     request.UserId,
                     request.Name,
                     request.Description,
@@ -101,7 +102,7 @@ public class CreateAccount
         {
             RuleFor(x => x).NotNull();
             RuleFor(x => x.UserId).NotEmpty();
-            RuleFor(x => x.AccountType).IsInEnum();
+            //RuleFor(x => x.AccountTypes).IsInEnum();
             RuleFor(x => x.Name).NotEmpty();
         }
     }
