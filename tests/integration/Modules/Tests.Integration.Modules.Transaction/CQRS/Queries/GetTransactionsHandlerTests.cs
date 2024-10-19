@@ -62,7 +62,7 @@ public class GetTransactionsHandlerTests : IClassFixture<TransactionsTestDbConte
             // Act
             var query = new GetTransactions.Query(
                 userTransaction.Key,
-                FromDate: DateTimeOffset.UtcNow.AddYears(-1));
+                FromDate: DateTime.UtcNow.AddYears(-1));
 
             var results = await _testHandler
                 .Handle(query, CancellationToken.None);
@@ -93,7 +93,7 @@ public class GetTransactionsHandlerTests : IClassFixture<TransactionsTestDbConte
             var query = new GetTransactions.Query(
                 _userId,
                 userAccountId,
-                FromDate: DateTimeOffset.UtcNow.AddYears(-1));
+                FromDate: DateTime.UtcNow.AddYears(-1));
 
             var results = await _testHandler.Handle(
                 query, CancellationToken.None);

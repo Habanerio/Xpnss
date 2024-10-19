@@ -11,7 +11,10 @@ namespace Habanerio.Xpnss.Modules.Accounts.CQRS.Queries;
 /// </summary>
 public class GetAccount
 {
-    public record Query(string UserId, string AccountId) : IAccountsQuery<Result<AccountDto>>;
+    public record Query(string UserId, string AccountId) : IAccountsQuery<Result<AccountDto>>
+    {
+        public string TimeZone { get; set; }
+    }
 
     public class Handler(IAccountsRepository repository) : IRequestHandler<Query, Result<AccountDto>>
     {
@@ -39,11 +42,6 @@ public class GetAccount
 
             return Result.Ok(dto);
         }
-    }
-
-    public Task<Result<AccountDto>> Handle(Query request, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
     }
 
     public class Validator : AbstractValidator<Query>

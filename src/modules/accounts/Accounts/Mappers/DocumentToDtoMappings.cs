@@ -39,7 +39,7 @@ public static class DocumentToDtoMappings
         if (document is null)
             return default;
 
-        switch (document.AccountTypes)
+        switch (document.AccountType)
         {
             case AccountTypes.Cash:
                 var cashDoc = document as CashAccount;

@@ -35,25 +35,26 @@ public class AdjustInterestRate
             var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
             if (!validationResult.IsValid)
-                return Result.Fail<decimal>(validationResult.Errors[0].ErrorMessage);
+                return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
             var existingResult =
                 await _repository.GetByIdAsync(request.UserId, request.AccountId, cancellationToken);
 
             if (existingResult.IsFailed)
-                return Result.Fail<decimal>(existingResult.Errors);
+                return Result.Fail(existingResult.Errors);
 
             // Check if the account supports InterestRates
             if (existingResult.Value is not IHasInterestRate)
-                return Result.Fail<decimal>($"The Account Type `{existingResult.Value.AccountTypes}` does not support Interest Rates");
+                return Result.Fail($"The Account Type `{existingResult.Value.AccountType}` does not support Interest Rates");
 
             var existingAccount = existingResult.Value;
 
-            var existingInterestRateAccount = existingAccount as IHasInterestRate;
+            if (!(existingAccount is IHasInterestRate interestRateAccount))
+                return Result.Fail("Account does not have an interest rate");
 
-            var previousInterestRate = existingInterestRateAccount.InterestRate;
+            var previousInterestRate = interestRateAccount.InterestRate;
 
-            existingInterestRateAccount.InterestRate = request.InterestRate;
+            interestRateAccount.InterestRate = request.InterestRate;
 
             existingAccount.AddChangeHistory(
                 existingAccount.UserId,
@@ -65,7 +66,7 @@ public class AdjustInterestRate
             var result = await _repository.UpdateAsync(existingAccount, cancellationToken);
 
             if (result.IsFailed)
-                return Result.Fail<decimal>(result.Errors);
+                return Result.Fail(result.Errors);
 
             return Result.Ok(request.InterestRate);
         }

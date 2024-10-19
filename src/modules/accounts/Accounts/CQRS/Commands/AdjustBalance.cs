@@ -51,7 +51,6 @@ public class AdjustBalance
 
             existingAccount.Balance = request.Balance;
 
-            // This is causing the error
             existingAccount.AddChangeHistory(
                 existingAccount.UserId,
                 nameof(existingAccount.Balance),

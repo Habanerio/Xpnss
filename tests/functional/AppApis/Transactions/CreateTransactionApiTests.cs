@@ -1,9 +1,10 @@
-﻿using System.Net.Http.Json;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Habanerio.Xpnss.Apis.App.AppApis;
 using Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Transactions;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
 using Habanerio.Xpnss.Modules.Transactions.Common;
+using Habanerio.Xpnss.Modules.Transactions.DTOs;
 using Microsoft.AspNetCore.Mvc.Testing;
 using MongoDB.Bson;
 
@@ -22,23 +23,22 @@ public class CreateTransactionApiTests : BaseFunctionalApisTests,
     public async Task CanCall_CreateTransaction_WithValidRequest_ReturnsOk()
     {
         // Arrange
-        var userId = "user-id";
         var request = new CreateTransactionEndpoint.CreateTransactionRequest
         {
-            UserId = userId,
+            UserId = USER_ID,
             AccountId = ObjectId.GenerateNewId().ToString(),
-            TransactionDate = DateTimeOffset.UtcNow,
-            TransactionTypeId = (int)TransactionTypes.PURCHASE,
+            TransactionDate = DateTime.Now,
+            TransactionType = TransactionTypes.PURCHASE.ToString(),
             Items = new List<CreateTransactionEndpoint.TransactionItem>
             {
-                new CreateTransactionEndpoint.TransactionItem
+                new()
                 {
                     Amount = 100,
                     CategoryId = ObjectId.GenerateNewId().ToString(),
                     Description = "Transaction Item 1 Description"
                     },
-                new CreateTransactionEndpoint.TransactionItem
-                    {
+                new()
+                {
                     Amount = 200,
                     CategoryId = ObjectId.GenerateNewId().ToString(),
                     Description = "Transaction Item 2 Description"
@@ -59,13 +59,30 @@ public class CreateTransactionApiTests : BaseFunctionalApisTests,
             request);
 
         var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<string>>(content, new JsonSerializerOptions
+        var apiResponse = JsonSerializer.Deserialize<ApiResponse<TransactionDto>>(content, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         });
 
         Assert.NotNull(apiResponse);
-        Assert.True(!string.IsNullOrWhiteSpace(apiResponse.Data));
         Assert.True(apiResponse.IsSuccess);
+
+        var actualDto = Assert.IsType<TransactionDto>(apiResponse.Data);
+        Assert.True(!actualDto.Id.Equals(ObjectId.Empty.ToString()));
+        Assert.Equal(request.UserId, actualDto.UserId);
+        Assert.Equal(request.AccountId, actualDto.AccountId);
+        Assert.Equal(DateTime.UtcNow.Date, actualDto.TransactionDate.Date);
+        Assert.Equal(request.TransactionType, actualDto.TransactionType);
+
+        Assert.Equal(request.Items.Count, actualDto.Items.Count);
+
+        Assert.NotNull(actualDto.Merchant);
+        Assert.Equal(request.Merchant.Id, actualDto.Merchant.Id);
+        Assert.Equal(request.Merchant.Name, actualDto.Merchant.Name);
+        Assert.Equal(request.Merchant.Location, actualDto.Merchant.Location);
+
+        Assert.Equal(request.Items.Sum(i => i.Amount), actualDto.Amount);
+        Assert.Equal(request.Items.Sum(i => i.Amount), actualDto.Owing);
+        Assert.Equal(0, actualDto.Paid);
     }
 }

@@ -1,12 +1,13 @@
 using FluentResults;
 using Habanerio.Xpnss.Modules.Transactions.Data;
-using MongoDB.Bson;
 
 namespace Habanerio.Xpnss.Modules.Transactions.Interfaces;
 
 public interface ITransactionsRepository
 {
-    Task<Result<ObjectId>> AddAsync(TransactionDocument transaction, CancellationToken cancellationToken = default);
+    Task<Result<TransactionDocument>> AddAsync(
+        TransactionDocument transaction,
+        CancellationToken cancellationToken = default);
 
     Task<Result<TransactionDocument>> GetByIdAsync(
         string userId,
@@ -16,7 +17,8 @@ public interface ITransactionsRepository
     Task<Result<IEnumerable<TransactionDocument>>> ListAsync(
         string userId,
         string accountId = "",
-        DateTimeOffset? startDate = null,
-        DateTimeOffset? endDate = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        string userTimeZone = "",
         CancellationToken cancellationToken = default);
 }

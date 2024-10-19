@@ -22,7 +22,7 @@
 
 //    private readonly string _userId = "test-user-id";
 
-//    private readonly List<(string accountId, AccountTypes type)> _availableAccounts;
+//    private readonly List<(string accountId, AccountType type)> _availableAccounts;
 
 //    public AdjustOverdraftAmountHandlerTests(AccountsTestDbContextFixture dbContextFixture, ITestOutputHelper outputHelper)
 //    {
@@ -51,9 +51,9 @@
 //    }
 
 //    [Theory]
-//    [InlineData(AccountTypes.CreditCard)]
-//    [InlineData(AccountTypes.LineOfCredit)]
-//    public async Task Can_Adjust_InterestRate(AccountTypes accountTypes)
+//    [InlineData(AccountType.CreditCard)]
+//    [InlineData(AccountType.LineOfCredit)]
+//    public async Task Can_Adjust_InterestRate(AccountType accountTypes)
 //    {
 //        var accountId = _availableAccounts.First(x => x.type == accountTypes).accountId;
 
@@ -97,10 +97,10 @@
 //    }
 
 //    [Theory]
-//    [InlineData(AccountTypes.Cash)]
-//    [InlineData(AccountTypes.Checking)]
-//    [InlineData(AccountTypes.Savings)]
-//    public async Task Cannot_Adjust_InterestRate_Invalid_AccountType(AccountTypes accountTypes)
+//    [InlineData(AccountType.Cash)]
+//    [InlineData(AccountType.Checking)]
+//    [InlineData(AccountType.Savings)]
+//    public async Task Cannot_Adjust_InterestRate_Invalid_AccountType(AccountType accountTypes)
 //    {
 //        var accountId = _availableAccounts.First(x => x.type == accountTypes).accountId;
 

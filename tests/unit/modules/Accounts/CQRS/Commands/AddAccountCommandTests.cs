@@ -48,7 +48,7 @@
 //    {
 //        var command = new AddAccount.Command(
 //            value,
-//            AccountTypes.Cash,
+//            AccountType.Cash,
 //            "Cash Account",
 //            "Cash Account Description",
 //            100m,
@@ -66,7 +66,7 @@
 //    {
 //        var command = new AddAccount.Command(
 //            "1",
-//            (AccountTypes)10000,
+//            (AccountType)10000,
 //            "Cash Account",
 //            "Cash Account Description",
 //            100m,
@@ -86,7 +86,7 @@
 //    {
 //        var command = new AddAccount.Command(
 //            "1",
-//            AccountTypes.Cash,
+//            AccountType.Cash,
 //            value,
 //            "Cash Account Description",
 //            100m,

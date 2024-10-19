@@ -121,7 +121,7 @@ public class AccountsTestDbContextFixture : TestDbContainerFixture
             var result = await AccountsRepository.AddAsync(accountDoc);
 
             if (result.IsSuccess)
-                AvailableAccounts.Add((accountDoc.UserId, result.Value.ToString(), accountDoc.AccountTypes));
+                AvailableAccounts.Add((accountDoc.UserId, result.Value.Id.ToString(), accountDoc.AccountType));
         }
 
         //Thread.Sleep(500);
@@ -190,7 +190,7 @@ public class TransactionsTestDbContextFixture : TestDbContainerFixture
             TransactionDocument.New(
                 "test-user-id",
                 accountIds[0],
-                DateTimeOffset.UtcNow.AddDays(-365),
+                DateTime.UtcNow.AddDays(-365),
                 new List<TransactionItem>
                 {
                     TransactionItem.New(100, "Test Transaction 1", categoryIds[0])
@@ -201,7 +201,7 @@ public class TransactionsTestDbContextFixture : TestDbContainerFixture
             TransactionDocument.New(
                 "test-user-id",
                 accountIds[0],
-                DateTimeOffset.UtcNow.AddDays(-200),
+                DateTime.UtcNow.AddDays(-200),
                 new List<TransactionItem>
                 {
                     TransactionItem.New(200, "Test Transaction 2", categoryIds[1])
@@ -212,7 +212,7 @@ public class TransactionsTestDbContextFixture : TestDbContainerFixture
             TransactionDocument.New(
                 "test-user-id-2",
                 accountIds[1],
-                DateTimeOffset.UtcNow.AddDays(-100),
+                DateTime.UtcNow.AddDays(-100),
                 new List<TransactionItem>
                 {
                     TransactionItem.New(300, "Test Transaction 3", categoryIds[0])
@@ -223,7 +223,7 @@ public class TransactionsTestDbContextFixture : TestDbContainerFixture
             TransactionDocument.New(
                 "test-user-id",
                 accountIds[3],
-                DateTimeOffset.UtcNow.AddDays(-50),
+                DateTime.UtcNow.AddDays(-50),
                 new List<TransactionItem>
                 {
                     TransactionItem.New(400, "Test Transaction 4", categoryIds[1])
@@ -234,7 +234,7 @@ public class TransactionsTestDbContextFixture : TestDbContainerFixture
             TransactionDocument.New(
                 "test-user-id-2",
                 accountIds[2],
-                DateTimeOffset.UtcNow.AddDays(-20),
+                DateTime.UtcNow.AddDays(-20),
                 new List<TransactionItem>
                 {
                     TransactionItem.New(500, "Test Transaction 5", categoryIds[0])
@@ -245,7 +245,7 @@ public class TransactionsTestDbContextFixture : TestDbContainerFixture
             TransactionDocument.New(
                 "test-user-id",
                 accountIds[0],
-                DateTimeOffset.UtcNow.AddDays(-10),
+                DateTime.UtcNow.AddDays(-10),
                 new List<TransactionItem>
                 {
                     TransactionItem.New(600, "Test Transaction 6", categoryIds[1])

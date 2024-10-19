@@ -16,7 +16,7 @@ public static class DtoToDocumentMappings
         {
             Id = ObjectId.Parse(accountDto.Id),
             UserId = accountDto.UserId,
-            AccountTypes = (AccountTypes)Enum.Parse(typeof(AccountTypes), accountDto.AccountType),
+            AccountType = (AccountTypes)Enum.Parse(typeof(AccountTypes), accountDto.AccountType),
             Name = accountDto.Name,
             Description = accountDto.Description,
             Balance = accountDto.Balance,

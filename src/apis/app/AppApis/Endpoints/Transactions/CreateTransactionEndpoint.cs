@@ -27,7 +27,7 @@ public class CreateTransactionEndpoint
         public Merchant? Merchant { get; set; } = null;
 
         [Required]
-        public DateTimeOffset TransactionDate { get; set; }
+        public DateTime TransactionDate { get; set; }
 
         [Required]
         public string TransactionType { get; set; }
@@ -53,14 +53,27 @@ public class CreateTransactionEndpoint
         public string Location { get; init; } = "";
     }
 
-    public sealed class Validator : AbstractValidator<CreateTransactionRequest>
+    public sealed class Endpoint : ICarterModule
     {
-        public Validator()
+        public void AddRoutes(IEndpointRouteBuilder builder)
         {
-            RuleFor(x => x).NotNull();
-            RuleFor(x => x.UserId).NotEmpty();
-            RuleFor(x => x.TransactionDate).NotEmpty();
-            RuleFor(x => x.TransactionType).NotEmpty();
+            builder.MapPost("/api/v1/users/{userId}/transactions",
+                    async (
+                        [FromRoute] string userId,
+                        [FromBody] CreateTransactionRequest request,
+                        [FromServices] ITransactionsService service,
+                        CancellationToken cancellationToken) =>
+                    {
+                        return await HandleAsync(userId, request, service, cancellationToken);
+                    }
+                )
+                .Produces<string>((int)HttpStatusCode.OK)
+                .Produces((int)HttpStatusCode.BadRequest)
+                .Produces<string>((int)HttpStatusCode.BadRequest)
+                .WithDisplayName("New Transaction")
+                .WithName("CreateTransaction")
+                .WithTags("Transactions")
+                .WithOpenApi();
         }
     }
 
@@ -107,29 +120,19 @@ public class CreateTransactionEndpoint
         if (result.IsFailed)
             return Results.BadRequest(result.Errors.Select(x => x.Message));
 
-        var response = ApiResponse<string>.Ok(result.Value);
+        var response = ApiResponse<TransactionDto>.Ok(result.Value);
 
         return Results.Ok(response);
     }
 
-    public sealed class Endpoint : ICarterModule
+    public sealed class Validator : AbstractValidator<CreateTransactionRequest>
     {
-        public void AddRoutes(IEndpointRouteBuilder app)
+        public Validator()
         {
-            app.MapPost("/api/v1/users/{userId}/transactions",
-                    async (
-                            [FromRoute] string userId,
-                            [FromBody] CreateTransactionRequest request,
-                            [FromServices] ITransactionsService service,
-                            CancellationToken cancellationToken) =>
-                        await HandleAsync(userId, request, service, cancellationToken))
-                .Produces<string>((int)HttpStatusCode.OK)
-                .Produces((int)HttpStatusCode.BadRequest)
-                .Produces<string>((int)HttpStatusCode.BadRequest)
-                .WithDisplayName("New Transaction")
-                .WithName("CreateTransaction")
-                .WithTags("Transactions")
-                .WithOpenApi();
+            RuleFor(x => x).NotNull();
+            RuleFor(x => x.UserId).NotEmpty();
+            RuleFor(x => x.TransactionDate).NotEmpty();
+            RuleFor(x => x.TransactionType).NotEmpty();
         }
     }
 }

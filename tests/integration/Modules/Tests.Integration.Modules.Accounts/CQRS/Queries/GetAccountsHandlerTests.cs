@@ -68,7 +68,7 @@ public class GetAccountsHandlerTests : IClassFixture<AccountsTestDbContextFixtur
                     Assert.IsType<LineOfCreditAccountDto>(accountDto);
                     break;
                 default:
-                    Assert.Fail("The dto's type does not match its AccountTypes");
+                    Assert.Fail("The dto's type does not match its AccountType");
                     break;
             }
         }

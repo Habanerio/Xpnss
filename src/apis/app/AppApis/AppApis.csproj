@@ -12,6 +12,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Remove="Models\Responses\**" />
+      <Content Remove="Models\Responses\**" />
+      <EmbeddedResource Remove="Models\Responses\**" />
+      <None Remove="Models\Responses\**" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Aspire.MongoDB.Driver" Version="8.2.1" />
         <PackageReference Include="Carter" Version="8.2.1" />
         <PackageReference Include="FluentResults" Version="3.16.0" />
@@ -30,13 +37,13 @@
         <ProjectReference Include="..\..\..\aspire\Defaults\Defaults.csproj" />
         <ProjectReference Include="..\..\..\habanerio\Habanerio.Core.Dbs\Habanerio.Core.Dbs.MongoDB.EFCore\Habanerio.Core.Dbs.MongoDB.EFCore.csproj" />
         <ProjectReference Include="..\..\..\modules\accounts\Accounts\Accounts.csproj" />
+        <ProjectReference Include="..\..\..\modules\categories\Categories\Categories.csproj" />
         <ProjectReference Include="..\..\..\modules\transactions\Transactions\Transactions.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <Folder Include="Endpoints\Authentication\" />
         <Folder Include="Managers\" />
-        <Folder Include="Models\Responses\" />
     </ItemGroup>
 
 </Project>

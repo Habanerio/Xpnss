@@ -1,15 +1,13 @@
 using System.Collections.ObjectModel;
 using FluentResults;
 using Habanerio.Xpnss.Modules.Accounts.Data;
-using MongoDB.Bson;
 
 namespace Habanerio.Xpnss.Modules.Accounts.Interfaces;
 
 public interface IAccountsRepository
 {
-    //Result<ObjectId> Add(AccountDto accountDto);
 
-    Task<Result<ObjectId>> AddAsync(AccountDocument account, CancellationToken cancellationToken = default);
+    Task<Result<AccountDocument>> AddAsync(AccountDocument account, CancellationToken cancellationToken = default);
 
     Task<Result<AccountDocument>> GetByIdAsync(
         string userId,
@@ -18,9 +16,10 @@ public interface IAccountsRepository
 
     Task<Result<ReadOnlyCollection<ChangeHistory>>> GetChangeHistoryAsync(string userId,
         string accountId,
+        string timeZone,
         CancellationToken cancellationToken = default);
 
-    Task<Result<IEnumerable<AccountDocument>>> ListByUserIdAsync(
+    Task<Result<IEnumerable<AccountDocument>>> ListAsync(
         string userId,
         CancellationToken cancellationToken = default);
 

@@ -29,7 +29,7 @@ public class GetAccounts
 
             try
             {
-                var docsResult = await _repository.ListByUserIdAsync(request.UserId, cancellationToken);
+                var docsResult = await _repository.ListAsync(request.UserId, cancellationToken);
 
                 if (docsResult.IsFailed)
                     return Result.Fail(docsResult.Errors);

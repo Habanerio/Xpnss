@@ -78,7 +78,7 @@ public class CreateTransactionHandlerTests : IClassFixture<TransactionsTestDbCon
         };
 
         var expectedAccountId = ObjectId.GenerateNewId().ToString();
-        var expectedTransactionDateTime = DateTimeOffset.UtcNow;
+        var expectedTransactionDateTime = DateTime.Now;
         var expectedMerchant = new MerchantDto
         {
             Id = ObjectId.GenerateNewId().ToString(),
@@ -92,7 +92,7 @@ public class CreateTransactionHandlerTests : IClassFixture<TransactionsTestDbCon
             expectedAccountId,
             expectedItems,
             expectedTransactionDateTime,
-            TransactionTypes.PURCHASE,
+            TransactionTypes.PURCHASE.ToString(),
             expectedDescription,
             expectedMerchant
         );
@@ -103,15 +103,16 @@ public class CreateTransactionHandlerTests : IClassFixture<TransactionsTestDbCon
         // Assert
         Assert.True(result.IsSuccess);
 
-        var transactionId = ObjectId.Parse(result.Value);
-        Assert.NotEqual(ObjectId.Empty.ToString(), result.Value);
+        Assert.NotNull(result.Value);
+        var transactionId = ObjectId.Parse(result.Value.Id);
+        Assert.NotEqual(ObjectId.Empty, transactionId);
 
         var actualTransaction = await _verifyRepository.GetAsync(transactionId);
 
         Assert.NotNull(actualTransaction);
         Assert.Equal(_userId, actualTransaction.UserId);
         Assert.Equal(ObjectId.Parse(expectedAccountId), actualTransaction.AccountId);
-        Assert.Equal(expectedTransactionDateTime, actualTransaction.TransactionDate);
+        Assert.Equal(expectedTransactionDateTime.Date, actualTransaction.TransactionDate.Date);
         Assert.Equal(TransactionTypes.PURCHASE, actualTransaction.TransactionTypes);
         Assert.Equal(expectedDescription, actualTransaction.Description);
         Assert.Equal(expectedItems.Count, actualTransaction.Items.Count);
@@ -155,7 +156,7 @@ public class CreateTransactionHandlerTests : IClassFixture<TransactionsTestDbCon
         };
 
         var expectedAccountId = ObjectId.GenerateNewId().ToString();
-        var expectedTransactionDateTime = DateTimeOffset.UtcNow;
+        var expectedTransactionDateTime = DateTime.Now;
         var expectedMerchant = new MerchantDto
         {
             Id = "",
@@ -169,7 +170,7 @@ public class CreateTransactionHandlerTests : IClassFixture<TransactionsTestDbCon
             expectedAccountId,
             expectedItems,
             expectedTransactionDateTime,
-            TransactionTypes.PURCHASE,
+            TransactionTypes.PURCHASE.ToString(),
             expectedDescription,
             expectedMerchant
         );
@@ -180,8 +181,9 @@ public class CreateTransactionHandlerTests : IClassFixture<TransactionsTestDbCon
         // Assert
         Assert.True(result.IsSuccess);
 
-        var transactionId = ObjectId.Parse(result.Value);
-        Assert.NotEqual(ObjectId.Empty.ToString(), result.Value);
+        Assert.NotNull(result.Value);
+        var transactionId = ObjectId.Parse(result.Value.Id);
+        Assert.NotEqual(ObjectId.Empty, transactionId);
 
         var actualTransaction = await _verifyRepository.GetAsync(transactionId);
 

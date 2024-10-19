@@ -35,21 +35,22 @@ public class UpdateAccountDetails
             var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
             if (!validationResult.IsValid)
-                return Result.Fail<AccountDto>(validationResult.Errors[0].ErrorMessage);
+                return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
             var result = await _repository.UpdateDetailsAsync(request.UserId,
                 request.AccountId,
                 request.Name,
                 request.Description,
-                request.DisplayColor, cancellationToken);
+                request.DisplayColor,
+                cancellationToken);
 
             if (result.IsFailed)
-                return Result.Fail<AccountDto>(result.Errors);
+                return Result.Fail(result.Errors);
 
             var dto = Mappers.DocumentToDtoMappings.Map(result.Value);
 
             if (dto is null)
-                return Result.Fail<AccountDto>("Failed to map AccountDocument to AccountDto");
+                return Result.Fail("Failed to map AccountDocument to AccountDto");
 
             return Result.Ok(dto);
         }

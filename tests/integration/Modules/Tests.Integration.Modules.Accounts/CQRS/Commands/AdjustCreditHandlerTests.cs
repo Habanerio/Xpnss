@@ -53,10 +53,10 @@ public class AdjustCreditHandlerTests : IClassFixture<AccountsTestDbContextFixtu
     [Theory]
     [InlineData(AccountTypes.CreditCard)]
     [InlineData(AccountTypes.LineOfCredit)]
-    public async Task Can_Adjust_CreditLimit(AccountTypes accountTypes)
+    public async Task Can_Adjust_CreditLimit(AccountTypes accountType)
     {
         var accountId = _availableAccounts
-            .First(x => x.type == accountTypes)
+            .First(x => x.type == accountType)
             .accountId;
 
         var accountDocument = (await _verifyRepository.FirstOrDefaultAsync(a =>

@@ -1,6 +1,6 @@
 using Habanerio.Xpnss.Modules.Accounts.Common;
 using Habanerio.Xpnss.Modules.Accounts.CQRS.Commands;
-using Habanerio.Xpnss.Modules.Accounts.Data;
+using Habanerio.Xpnss.Modules.Accounts.DTOs;
 using Habanerio.Xpnss.Modules.Accounts.Interfaces;
 using MongoDB.Bson;
 using Tests.Integration.Common;
@@ -52,28 +52,24 @@ public class CreateAccountHandlerTests : IClassFixture<AccountsTestDbContextFixt
         var result = await _testHandler.Handle(command, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-        var accountId = Assert.IsType<string>(result.Value);
+        var accountDto = Assert.IsType<CashAccountDto>(result.Value);
 
-        var actualAccountDoc = await _verifyRepository
-            .FirstOrDefaultAsync(a =>
-                a.Id.ToString() == accountId && a.UserId == _userId);
+        Assert.NotNull(accountDto);
+        Assert.NotEqual(ObjectId.Empty.ToString(), accountDto.Id);
+        Assert.Equal(_userId, accountDto.UserId);
+        Assert.Equal(AccountTypes.Cash.ToString(), accountDto.AccountType);
+        Assert.Equal(command.Name, accountDto.Name);
+        Assert.Equal(command.Description, accountDto.Description);
+        Assert.Equal(command.Balance, accountDto.Balance);
+        Assert.Equal(command.DisplayColor, accountDto.DisplayColor);
 
-        Assert.NotNull(actualAccountDoc);
-        Assert.NotEqual(ObjectId.Empty, actualAccountDoc.Id);
-        Assert.Equal(_userId, actualAccountDoc.UserId);
-        Assert.Equal(AccountTypes.Cash, actualAccountDoc.AccountTypes);
-        Assert.Equal(command.Name, actualAccountDoc.Name);
-        Assert.Equal(command.Description, actualAccountDoc.Description);
-        Assert.Equal(command.Balance, actualAccountDoc.Balance);
-        Assert.Equal(command.DisplayColor, actualAccountDoc.DisplayColor);
+        Assert.False(accountDto.IsCredit);
+        Assert.False(accountDto.IsDeleted);
 
-        Assert.False(actualAccountDoc.IsCredit);
-        Assert.False(actualAccountDoc.IsDeleted);
-
-        Assert.NotNull(actualAccountDoc.DateCreated);
-        Assert.Equal(DateTime.UtcNow.Date, actualAccountDoc.DateCreated.Date);
-        Assert.Null(actualAccountDoc.DateUpdated);
-        Assert.Null(actualAccountDoc.DateDeleted);
+        Assert.NotNull(accountDto.DateCreated);
+        Assert.Equal(DateTime.UtcNow.Date, accountDto.DateCreated.Date);
+        Assert.Null(accountDto.DateUpdated);
+        Assert.Null(accountDto.DateDeleted);
 
         // Due to how the extended properties are added in the handler, this will fail.
         //Assert.Equal(0, actualAccountDoc.ExtendedProps.Count);
@@ -95,30 +91,26 @@ public class CreateAccountHandlerTests : IClassFixture<AccountsTestDbContextFixt
         var result = await _testHandler.Handle(command, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-        var accountId = Assert.IsType<string>(result.Value);
+        var accountDto = Assert.IsType<CheckingAccountDto>(result.Value);
 
-        var actualAccountDoc = (await _verifyRepository
-            .FirstOrDefaultAsync(a =>
-                a.Id.ToString() == accountId && a.UserId == _userId)) as CheckingAccount;
+        Assert.NotNull(accountDto);
+        Assert.NotEqual(ObjectId.Empty.ToString(), accountDto.Id);
+        Assert.Equal(_userId, accountDto.UserId);
+        Assert.Equal(AccountTypes.Checking.ToString(), accountDto.AccountType);
+        Assert.Equal(command.Name, accountDto.Name);
+        Assert.Equal(command.Description, accountDto.Description);
+        Assert.Equal(command.Balance, accountDto.Balance);
+        Assert.Equal(command.DisplayColor, accountDto.DisplayColor);
 
-        Assert.NotNull(actualAccountDoc);
-        Assert.NotEqual(ObjectId.Empty, actualAccountDoc.Id);
-        Assert.Equal(_userId, actualAccountDoc.UserId);
-        Assert.Equal(AccountTypes.Checking, actualAccountDoc.AccountTypes);
-        Assert.Equal(command.Name, actualAccountDoc.Name);
-        Assert.Equal(command.Description, actualAccountDoc.Description);
-        Assert.Equal(command.Balance, actualAccountDoc.Balance);
-        Assert.Equal(command.DisplayColor, actualAccountDoc.DisplayColor);
+        Assert.False(accountDto.IsCredit);
+        Assert.False(accountDto.IsDeleted);
 
-        Assert.False(actualAccountDoc.IsCredit);
-        Assert.False(actualAccountDoc.IsDeleted);
+        Assert.NotNull(accountDto.DateCreated);
+        Assert.Equal(DateTime.UtcNow.Date, accountDto.DateCreated.Date);
+        Assert.Null(accountDto.DateUpdated);
+        Assert.Null(accountDto.DateDeleted);
 
-        Assert.NotNull(actualAccountDoc.DateCreated);
-        Assert.Equal(DateTime.UtcNow.Date, actualAccountDoc.DateCreated.Date);
-        Assert.Null(actualAccountDoc.DateUpdated);
-        Assert.Null(actualAccountDoc.DateDeleted);
-
-        Assert.Equal(command.OverDraftAmount, actualAccountDoc.OverDraftAmount);
+        Assert.Equal(command.OverDraftAmount, accountDto.OverDraftAmount);
     }
 
     [Fact]
@@ -137,30 +129,26 @@ public class CreateAccountHandlerTests : IClassFixture<AccountsTestDbContextFixt
         var result = await _testHandler.Handle(command, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-        var accountId = Assert.IsType<string>(result.Value);
+        var accountDto = Assert.IsType<SavingsAccountDto>(result.Value);
 
-        var actualAccountDoc = (await _verifyRepository
-            .FirstOrDefaultAsync(a =>
-                a.Id.ToString() == accountId && a.UserId == _userId)) as SavingsAccount;
+        Assert.NotNull(accountDto);
+        Assert.NotEqual(ObjectId.Empty.ToString(), accountDto.Id);
+        Assert.Equal(_userId, accountDto.UserId);
+        Assert.Equal(AccountTypes.Savings.ToString(), accountDto.AccountType);
+        Assert.Equal(command.Name, accountDto.Name);
+        Assert.Equal(command.Description, accountDto.Description);
+        Assert.Equal(command.Balance, accountDto.Balance);
+        Assert.Equal(command.DisplayColor, accountDto.DisplayColor);
 
-        Assert.NotNull(actualAccountDoc);
-        Assert.NotEqual(ObjectId.Empty, actualAccountDoc.Id);
-        Assert.Equal(_userId, actualAccountDoc.UserId);
-        Assert.Equal(AccountTypes.Savings, actualAccountDoc.AccountTypes);
-        Assert.Equal(command.Name, actualAccountDoc.Name);
-        Assert.Equal(command.Description, actualAccountDoc.Description);
-        Assert.Equal(command.Balance, actualAccountDoc.Balance);
-        Assert.Equal(command.DisplayColor, actualAccountDoc.DisplayColor);
+        Assert.False(accountDto.IsCredit);
+        Assert.False(accountDto.IsDeleted);
 
-        Assert.False(actualAccountDoc.IsCredit);
-        Assert.False(actualAccountDoc.IsDeleted);
+        Assert.NotNull(accountDto.DateCreated);
+        Assert.Equal(DateTime.UtcNow.Date, accountDto.DateCreated.Date);
+        Assert.Null(accountDto.DateUpdated);
+        Assert.Null(accountDto.DateDeleted);
 
-        Assert.NotNull(actualAccountDoc.DateCreated);
-        Assert.Equal(DateTime.UtcNow.Date, actualAccountDoc.DateCreated.Date);
-        Assert.Null(actualAccountDoc.DateUpdated);
-        Assert.Null(actualAccountDoc.DateDeleted);
-
-        Assert.Equal(command.InterestRate, actualAccountDoc.InterestRate);
+        Assert.Equal(command.InterestRate, accountDto.InterestRate);
     }
 
     [Fact]
@@ -180,31 +168,27 @@ public class CreateAccountHandlerTests : IClassFixture<AccountsTestDbContextFixt
         var result = await _testHandler.Handle(command, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-        var accountId = Assert.IsType<string>(result.Value);
+        var accountDto = Assert.IsType<CreditCardAccountDto>(result.Value);
 
-        var actualAccountDoc = (await _verifyRepository
-            .FirstOrDefaultAsync(a =>
-                a.Id.ToString() == accountId && a.UserId == _userId)) as CreditCardAccount;
+        Assert.NotNull(accountDto);
+        Assert.NotEqual(ObjectId.Empty.ToString(), accountDto.Id);
+        Assert.Equal(_userId, accountDto.UserId);
+        Assert.Equal(AccountTypes.CreditCard.ToString(), accountDto.AccountType);
+        Assert.Equal(command.Name, accountDto.Name);
+        Assert.Equal(command.Description, accountDto.Description);
+        Assert.Equal(command.Balance, accountDto.Balance);
+        Assert.Equal(command.DisplayColor, accountDto.DisplayColor);
 
-        Assert.NotNull(actualAccountDoc);
-        Assert.NotEqual(ObjectId.Empty, actualAccountDoc.Id);
-        Assert.Equal(_userId, actualAccountDoc.UserId);
-        Assert.Equal(AccountTypes.CreditCard, actualAccountDoc.AccountTypes);
-        Assert.Equal(command.Name, actualAccountDoc.Name);
-        Assert.Equal(command.Description, actualAccountDoc.Description);
-        Assert.Equal(command.Balance, actualAccountDoc.Balance);
-        Assert.Equal(command.DisplayColor, actualAccountDoc.DisplayColor);
+        Assert.True(accountDto.IsCredit);
+        Assert.False(accountDto.IsDeleted);
 
-        Assert.True(actualAccountDoc.IsCredit);
-        Assert.False(actualAccountDoc.IsDeleted);
+        Assert.NotNull(accountDto.DateCreated);
+        Assert.Equal(DateTime.UtcNow.Date, accountDto.DateCreated.Date);
+        Assert.Null(accountDto.DateUpdated);
+        Assert.Null(accountDto.DateDeleted);
 
-        Assert.NotNull(actualAccountDoc.DateCreated);
-        Assert.Equal(DateTime.UtcNow.Date, actualAccountDoc.DateCreated.Date);
-        Assert.Null(actualAccountDoc.DateUpdated);
-        Assert.Null(actualAccountDoc.DateDeleted);
-
-        Assert.Equal(command.CreditLimit, actualAccountDoc.CreditLimit);
-        Assert.Equal(command.InterestRate, actualAccountDoc.InterestRate);
+        Assert.Equal(command.CreditLimit, accountDto.CreditLimit);
+        Assert.Equal(command.InterestRate, accountDto.InterestRate);
     }
 
     [Fact]
@@ -224,35 +208,31 @@ public class CreateAccountHandlerTests : IClassFixture<AccountsTestDbContextFixt
         var result = await _testHandler.Handle(command, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-        var accountId = Assert.IsType<string>(result.Value);
+        var accountDto = Assert.IsType<LineOfCreditAccountDto>(result.Value);
 
-        var actualAccountDoc = (await _verifyRepository
-            .FirstOrDefaultAsync(a =>
-                a.Id.ToString() == accountId && a.UserId == _userId)) as LineOfCreditAccount;
+        Assert.NotNull(accountDto);
 
-        Assert.NotNull(actualAccountDoc);
+        Assert.NotEqual(ObjectId.Empty.ToString(), accountDto.Id);
 
-        Assert.NotEqual(ObjectId.Empty, actualAccountDoc.Id);
+        Assert.Equal(AccountTypes.LineOfCredit.ToString(), accountDto.AccountType);
 
-        Assert.Equal(AccountTypes.LineOfCredit, actualAccountDoc.AccountTypes);
+        Assert.Equal(_userId, accountDto.UserId);
 
-        Assert.Equal(_userId, actualAccountDoc.UserId);
+        Assert.Equal(command.Name, accountDto.Name);
+        Assert.Equal(command.Description, accountDto.Description);
+        Assert.Equal(command.Balance, accountDto.Balance);
+        Assert.Equal(command.DisplayColor, accountDto.DisplayColor);
 
-        Assert.Equal(command.Name, actualAccountDoc.Name);
-        Assert.Equal(command.Description, actualAccountDoc.Description);
-        Assert.Equal(command.Balance, actualAccountDoc.Balance);
-        Assert.Equal(command.DisplayColor, actualAccountDoc.DisplayColor);
+        Assert.True(accountDto.IsCredit);
+        Assert.False(accountDto.IsDeleted);
 
-        Assert.True(actualAccountDoc.IsCredit);
-        Assert.False(actualAccountDoc.IsDeleted);
-
-        Assert.NotNull(actualAccountDoc.DateCreated);
-        Assert.Equal(DateTime.UtcNow.Date, actualAccountDoc.DateCreated.Date);
-        Assert.Null(actualAccountDoc.DateUpdated);
-        Assert.Null(actualAccountDoc.DateDeleted);
+        Assert.NotNull(accountDto.DateCreated);
+        Assert.Equal(DateTime.UtcNow.Date, accountDto.DateCreated.Date);
+        Assert.Null(accountDto.DateUpdated);
+        Assert.Null(accountDto.DateDeleted);
 
 
-        Assert.Equal(command.CreditLimit, actualAccountDoc.CreditLimit);
-        Assert.Equal(command.InterestRate, actualAccountDoc.InterestRate);
+        Assert.Equal(command.CreditLimit, accountDto.CreditLimit);
+        Assert.Equal(command.InterestRate, accountDto.InterestRate);
     }
 }

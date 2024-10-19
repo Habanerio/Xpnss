@@ -19,7 +19,8 @@ public class UpdateCreditLimit
     public record Command(
         string UserId,
         string AccountId,
-        decimal CreditLimit) : IAccountsCommand<Result<decimal>>, IRequest;
+        decimal CreditLimit,
+        string Reason = "") : IAccountsCommand<Result<decimal>>, IRequest;
 
     public class Handler : IRequestHandler<Command, Result<decimal>>
     {
@@ -37,32 +38,29 @@ public class UpdateCreditLimit
             var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
             if (!validationResult.IsValid)
-                return Result.Fail<decimal>(validationResult.Errors[0].ErrorMessage);
+                return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
             var existingResult =
                 await _repository.GetByIdAsync(request.UserId, request.AccountId, cancellationToken);
 
             if (existingResult.IsFailed)
-                return Result.Fail<decimal>(existingResult.Errors);
+                return Result.Fail(existingResult.Errors);
 
             var existingAccount = existingResult.Value;
 
-            var dto = Mappers.DocumentToDtoMappings.Map(existingAccount);
+            if (!(existingAccount is IHasCreditLimit creditLimitAccount))
+                return Result.Fail($"The Account Type `{existingAccount.AccountType}` does not support Credit Limits");
 
-            if (dto is not IHasCreditLimit creditLimitDto)
-                return Result.Fail($"The Account Type `{existingAccount.AccountTypes}` does not support Credit Limits");
+            var previousCreditLimit = creditLimitAccount.CreditLimit;
 
-            creditLimitDto.CreditLimit = request.CreditLimit;
+            creditLimitAccount.CreditLimit = request.CreditLimit;
 
-            existingAccount = Mappers.DtoToDocumentMappings.Map(dto);
-
-            if (existingAccount is null)
-                return Result.Fail<decimal>("Failed to map AccountDto to Account");
+            // No AddChangeHistory for Updates (only Adjustments)
 
             var result = await _repository.UpdateAsync(existingAccount, cancellationToken);
 
             if (result.IsFailed)
-                return Result.Fail<decimal>(result.Errors);
+                return Result.Fail(result.Errors);
 
             return Result.Ok(request.CreditLimit);
         }

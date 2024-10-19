@@ -12,7 +12,7 @@ public class BaseFunctionalApisTests
 
     protected const string API_VERSION = "v1";
 
-    protected const string USER_ID = "some-not-so-random-id-for-testing";
+    protected const string USER_ID = "test-user-id";
 
     protected const int DEFAULT_PAGE_NO = 1;
     protected const int DEFAULT_PAGE_SIZE = 25;

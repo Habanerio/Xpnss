@@ -2,6 +2,7 @@ using FluentResults;
 using FluentValidation;
 using Habanerio.Xpnss.Modules.Accounts.Common;
 using Habanerio.Xpnss.Modules.Accounts.Data;
+using Habanerio.Xpnss.Modules.Accounts.DTOs;
 using Habanerio.Xpnss.Modules.Accounts.Interfaces;
 using MediatR;
 
@@ -24,14 +25,14 @@ public class CreateAccount
         decimal CreditLimit = 0,
         decimal InterestRate = 0,
         decimal OverDraftAmount = 0,
-        string DisplayColor = "") : IAccountsCommand<Result<string>>, IRequest;
+        string DisplayColor = "") : IAccountsCommand<Result<AccountDto>>, IRequest;
 
-    public class Handler(IAccountsRepository repository) : IRequestHandler<Command, Result<string>>
+    public class Handler(IAccountsRepository repository) : IRequestHandler<Command, Result<AccountDto>>
     {
         private readonly IAccountsRepository _repository = repository ??
                                                            throw new ArgumentNullException(nameof(repository));
 
-        public async Task<Result<string>> Handle(Command request, CancellationToken cancellationToken)
+        public async Task<Result<AccountDto>> Handle(Command request, CancellationToken cancellationToken)
         {
             var validator = new Validator();
 
@@ -47,7 +48,12 @@ public class CreateAccount
             if (!result.IsSuccess)
                 return Result.Fail(result.Errors?[0].Message ?? "Could not save the Account");
 
-            return Result.Ok(result.Value.ToString());
+            var accountDto = Mappers.DocumentToDtoMappings.Map(result.Value);
+
+            if (accountDto is null)
+                return Result.Fail("Failed to map AccountDocument to AccountDto");
+
+            return Result.Ok(accountDto);
         }
 
         private AccountDocument GetAccount(Command request)
@@ -102,7 +108,7 @@ public class CreateAccount
         {
             RuleFor(x => x).NotNull();
             RuleFor(x => x.UserId).NotEmpty();
-            //RuleFor(x => x.AccountTypes).IsInEnum();
+            //RuleFor(x => x.AccountType).IsInEnum();
             RuleFor(x => x.Name).NotEmpty();
         }
     }

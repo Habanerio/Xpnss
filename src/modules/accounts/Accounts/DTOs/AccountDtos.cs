@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Habanerio.Xpnss.Modules.Accounts.Common;
 using Habanerio.Xpnss.Modules.Accounts.Interfaces;
 
@@ -120,7 +120,8 @@ public record AccountDto
 
 public record CashAccountDto : AccountDto
 {
-    private CashAccountDto() : base(AccountTypes.Cash, false) { }
+    [JsonConstructor]
+    public CashAccountDto() : base(AccountTypes.Cash, false) { }
 
     public CashAccountDto(
         string id,
@@ -157,7 +158,8 @@ public record CheckingAccountDto :
 
     //public bool IsOverDrafted { get; set; }
 
-    private CheckingAccountDto() : base(AccountTypes.Checking, false) { }
+    [JsonConstructor]
+    public CheckingAccountDto() : base(AccountTypes.Checking, false) { }
 
     public CheckingAccountDto(
         string id,
@@ -197,7 +199,8 @@ public record SavingsAccountDto : AccountDto, IHasInterestRate
 {
     public decimal InterestRate { get; set; }
 
-    private SavingsAccountDto() : base(AccountTypes.Savings, false) { }
+    [JsonConstructor]
+    public SavingsAccountDto() : base(AccountTypes.Savings, false) { }
 
     public SavingsAccountDto(
         string id,
@@ -241,7 +244,7 @@ public abstract record CreditAccountDto : AccountDto, IHasCreditLimit, IHasInter
 
     protected CreditAccountDto(AccountTypes accountTypes) : base(accountTypes, true) { }
 
-    public CreditAccountDto(
+    protected CreditAccountDto(
         string id,
         string userId,
         AccountTypes accountTypes,
@@ -281,7 +284,8 @@ public abstract record CreditAccountDto : AccountDto, IHasCreditLimit, IHasInter
 
 public record CreditCardAccountDto : CreditAccountDto
 {
-    private CreditCardAccountDto() : base(AccountTypes.CreditCard) { }
+    [JsonConstructor]
+    public CreditCardAccountDto() : base(AccountTypes.CreditCard) { }
 
     public CreditCardAccountDto(string id,
         string userId,
@@ -316,7 +320,8 @@ public record CreditCardAccountDto : CreditAccountDto
 
 public record LineOfCreditAccountDto : CreditAccountDto
 {
-    private LineOfCreditAccountDto() : base(AccountTypes.LineOfCredit) { }
+    [JsonConstructor]
+    public LineOfCreditAccountDto() : base(AccountTypes.LineOfCredit) { }
 
     public LineOfCreditAccountDto(
         string id,

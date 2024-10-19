@@ -7,7 +7,7 @@ using Habanerio.Xpnss.Modules.Transactions.Interfaces;
 using MongoDB.Bson;
 using Moq;
 
-namespace Transactions.CQRS.Commands;
+namespace Habanerio.Xpnss.Tests.Unit.Modules.Transactions.CQRS.Commands;
 
 public class CreateTransactionTests
 {
@@ -45,6 +45,17 @@ public class CreateTransactionTests
     public async Task CanCall_CreateTransaction()
     {
         // Arrange
+        var expectedUserId = "test-user-id";
+        var expectedAccountId = ObjectId.GenerateNewId();
+        var expectedTransactionDate = DateTime.UtcNow;
+        var expectedDescription = "Some description";
+        var expectedMerchant = new MerchantDto
+        {
+            Id = ObjectId.GenerateNewId().ToString(),
+            Name = "Merchant Name",
+            Location = "Merchant Location"
+        };
+
         var expectedItems = new List<TransactionItemDto>
         {
             new()
@@ -62,31 +73,44 @@ public class CreateTransactionTests
         };
 
         var command = new CreateTransaction.Command(
-            ObjectId.GenerateNewId().ToString(),
-            ObjectId.GenerateNewId().ToString(),
+            expectedUserId,
+            expectedAccountId.ToString(),
             expectedItems,
-            DateTimeOffset.Now,
-            TransactionTypes.CHARGE,
-            "Some description",
-            new MerchantDto
-            {
-                Id = ObjectId.GenerateNewId().ToString(),
-                Name = "Merchant Name",
-                Location = "Merchant Location"
-            }
+            expectedTransactionDate,
+            TransactionTypes.CHARGE.ToString(),
+            expectedDescription,
+            expectedMerchant
         );
+
+        var expectedDocument = new TransactionDocument()
+        {
+            Id = ObjectId.GenerateNewId(),
+            AccountId = expectedAccountId,
+            UserId = expectedUserId,
+            TransactionDate = expectedTransactionDate,
+            TransactionTypes = TransactionTypes.CHARGE,
+            Items = expectedItems.Select(i =>
+                new TransactionItem(
+                    ObjectId.GenerateNewId(),
+                    i.Amount,
+                    i.Description,
+                    !string.IsNullOrWhiteSpace(i.CategoryId) ? ObjectId.Parse(i.CategoryId) : ObjectId.Empty
+                )).ToList(),
+        };
 
         _repository.Setup(x =>
                 x.AddAsync(It.IsAny<TransactionDocument>(),
                     It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Ok(ObjectId.GenerateNewId()));
+            .ReturnsAsync(Result.Ok(expectedDocument));
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.True(!string.IsNullOrWhiteSpace(result.Value));
+        Assert.NotNull(result.Value);
+        Assert.True(!string.IsNullOrWhiteSpace(result.Value.Id));
+        Assert.Equal(expectedDocument.Id.ToString(), result.Value.Id);
     }
 
     [Fact]
@@ -118,8 +142,8 @@ public class CreateTransactionTests
                     Description = ""
                 }
             },
-            DateTimeOffset.Now,
-            TransactionTypes.CHARGE,
+            DateTime.Now,
+            TransactionTypes.CHARGE.ToString(),
             "Some description",
             new MerchantDto
             {
@@ -153,8 +177,8 @@ public class CreateTransactionTests
                     Description = ""
                 }
             },
-            DateTimeOffset.Now,
-            TransactionTypes.CHARGE,
+            DateTime.Now,
+            TransactionTypes.CHARGE.ToString(),
             "Some description",
             new MerchantDto
             {
@@ -177,8 +201,8 @@ public class CreateTransactionTests
             ObjectId.GenerateNewId().ToString(),
             ObjectId.GenerateNewId().ToString(),
             new List<TransactionItemDto>(),
-            DateTimeOffset.Now,
-            TransactionTypes.CHARGE,
+            DateTime.Now,
+            TransactionTypes.CHARGE.ToString(),
             "Some description",
             new MerchantDto
             {

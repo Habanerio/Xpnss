@@ -8,8 +8,6 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace Habanerio.Xpnss.Modules.Accounts.Data;
 
-//[Table("MoneyAccount")]
-//[BsonDiscriminator(RootClass = true)]
 [BsonCollection("money_accounts")]
 public class AccountDocument : MongoDocument//, IMongoDocument
 {
@@ -19,7 +17,7 @@ public class AccountDocument : MongoDocument//, IMongoDocument
 
     [BsonElement("account_type")]
     [BsonRepresentation(BsonType.String)]
-    public AccountTypes AccountTypes { get; set; }
+    public AccountTypes AccountType { get; set; }
 
     /// <summary>
     /// Name of the specific account type
@@ -70,29 +68,8 @@ public class AccountDocument : MongoDocument//, IMongoDocument
         Id = ObjectId.GenerateNewId();
         ChangeHistory = [];
         MonthlyTotals = [];
+        DateCreated = DateTime.UtcNow;
     }
-
-    //public static AccountDocument New(
-    //    string userId,
-    //    string name,
-    //    AccountTypes accountTypes,
-    //    string description,
-    //    decimal balance,
-    //    string displayColor)
-    //{
-    //    return new AccountDocument
-    //    {
-    //        Id = ObjectId.GenerateNewId(),
-    //        UserId = userId,
-    //        AccountTypes = accountTypes,
-    //        Name = name,
-    //        Balance = balance,
-    //        DisplayColor = displayColor,
-    //        Description = description,
-    //        DateCreated = DateTimeOffset.UtcNow,
-    //        ChangeHistory = [],
-    //    };
-    //}
 
     public void AddChangeHistory(string userId, string property, string oldValue, string newValue, string reason)
     {
@@ -122,12 +99,11 @@ public class CashAccount : AccountDocument
         {
             Id = ObjectId.GenerateNewId(),
             UserId = userId,
-            AccountTypes = AccountTypes.Cash,
+            AccountType = AccountTypes.Cash,
             Name = name,
             Balance = balance,
             DisplayColor = displayColor,
             Description = description,
-            DateCreated = DateTime.UtcNow,
             ChangeHistory = [],
         };
     }
@@ -150,13 +126,12 @@ public class CheckingAccount : AccountDocument
         {
             Id = ObjectId.GenerateNewId(),
             UserId = userId,
-            AccountTypes = AccountTypes.Checking,
+            AccountType = AccountTypes.Checking,
             Name = name,
             Balance = balance,
             DisplayColor = displayColor,
             Description = description,
             OverDraftAmount = overDraftAmount,
-            DateCreated = DateTime.UtcNow,
             ChangeHistory = [],
         };
     }
@@ -179,13 +154,12 @@ public class SavingsAccount : AccountDocument, IHasInterestRate
         {
             Id = ObjectId.GenerateNewId(),
             UserId = userId,
-            AccountTypes = AccountTypes.Savings,
+            AccountType = AccountTypes.Savings,
             Name = name,
             Balance = balance,
             DisplayColor = displayColor,
             Description = description,
             InterestRate = interestRate,
-            DateCreated = DateTime.UtcNow,
             ChangeHistory = [],
         };
     }
@@ -220,14 +194,13 @@ public class CreditCardAccount : CreditAccount
         {
             Id = ObjectId.GenerateNewId(),
             UserId = userId,
-            AccountTypes = AccountTypes.CreditCard,
+            AccountType = AccountTypes.CreditCard,
             Name = name,
             Balance = balance,
             DisplayColor = displayColor,
             Description = description,
             CreditLimit = creditLimit,
             InterestRate = interestRate,
-            DateCreated = DateTime.UtcNow,
             ChangeHistory = [],
         };
     }
@@ -248,14 +221,13 @@ public class LineOfCreditAccount : CreditAccount
         {
             Id = ObjectId.GenerateNewId(),
             UserId = userId,
-            AccountTypes = AccountTypes.LineOfCredit,
+            AccountType = AccountTypes.LineOfCredit,
             Name = name,
             Balance = balance,
             DisplayColor = displayColor,
             Description = description,
             CreditLimit = creditLimit,
             InterestRate = interestRate,
-            DateCreated = DateTime.UtcNow,
             ChangeHistory = [],
         };
     }

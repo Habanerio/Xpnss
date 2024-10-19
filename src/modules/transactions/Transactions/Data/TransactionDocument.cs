@@ -37,7 +37,7 @@ public class TransactionDocument : MongoDocument
     public decimal TotalPaid { get; set; }
 
     [BsonElement("transaction_date")]
-    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    [BsonDateTimeOptions(DateOnly = true)]
     public DateTime TransactionDate { get; set; }
 
     [BsonElement("transaction_type")]
@@ -69,7 +69,7 @@ public class TransactionDocument : MongoDocument
     public static TransactionDocument New(
         string userId,
         string accountId,
-        DateTimeOffset transactionDate,
+        DateTime transactionDate,
         List<TransactionItem> transactionItems,
         TransactionTypes transactionTypes,
         string description = "",
@@ -82,7 +82,7 @@ public class TransactionDocument : MongoDocument
             AccountId = ObjectId.Parse(accountId),
             Items = transactionItems,
             Merchant = merchant,
-            TransactionDate = transactionDate.UtcDateTime,
+            TransactionDate = transactionDate.ToUniversalTime().Date,
             TransactionTypes = transactionTypes,
             Description = description,
             DateCreated = DateTime.UtcNow
@@ -95,7 +95,7 @@ public class TransactionDocument : MongoDocument
         return transaction;
     }
 
-    public decimal AddPayment(string userId, decimal amount, DateTimeOffset paymentDate)
+    public decimal AddPayment(string userId, decimal amount, DateTime paymentDate)
     {
         var paymentToApply = amount > TotalOwing ? TotalOwing : amount;
         var remaining = amount > TotalOwing ? amount - TotalOwing : 0;
@@ -105,7 +105,7 @@ public class TransactionDocument : MongoDocument
         return remaining;
     }
 
-    private void ApplyPayment(decimal amount, DateTimeOffset paymentDate)
+    private void ApplyPayment(decimal amount, DateTime paymentDate)
     {
         TotalPaid += amount;
         Payments.Add(TransactionPayment.New(amount, paymentDate));
@@ -114,7 +114,7 @@ public class TransactionDocument : MongoDocument
 
         if (TotalOwing <= 0)
         {
-            DatePaid = paymentDate.UtcDateTime;
+            DatePaid = paymentDate.ToUniversalTime();
         }
     }
 

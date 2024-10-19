@@ -2,7 +2,7 @@ using Habanerio.Xpnss.Modules.Transactions.CQRS.Queries;
 using Habanerio.Xpnss.Modules.Transactions.Interfaces;
 using Moq;
 
-namespace Transactions.CQRS.Queries;
+namespace Habanerio.Xpnss.Tests.Unit.Modules.Transactions.CQRS.Queries;
 
 public class GetTransactionsByUserIdTests
 {

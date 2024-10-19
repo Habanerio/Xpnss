@@ -12,15 +12,17 @@ public class TransactionsRepository : MongoDbRepository<TransactionDocument>, IT
         base(new TransactionsDbContext(options))
     { }
 
-    public async Task<Result<ObjectId>> AddAsync(
+    public async Task<Result<TransactionDocument>> AddAsync(
         TransactionDocument transaction,
         CancellationToken cancellationToken = default)
     {
         try
         {
+            transaction.DateCreated = DateTime.UtcNow;
+
             await base.AddDocumentAsync(transaction, cancellationToken);
 
-            return transaction.Id;
+            return transaction;
         }
         catch (Exception e)
         {
@@ -54,15 +56,21 @@ public class TransactionsRepository : MongoDbRepository<TransactionDocument>, IT
     public async Task<Result<IEnumerable<TransactionDocument>>> ListAsync(
         string userId,
         string accountId = "",
-        DateTimeOffset? startDate = null,
-        DateTimeOffset? endDate = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        string userTimeZone = "",
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(userId))
             return Result.Fail("UserId cannot be null or empty");
 
-        var newEndDate = endDate ?? DateTimeOffset.UtcNow;
-        var newStartDate = startDate ?? newEndDate.AddMonths(-1);
+        var newEndDate = string.IsNullOrWhiteSpace(userTimeZone) ?
+            DateTime.UtcNow :
+            TimeZoneInfo.ConvertTimeToUtc(endDate ?? DateTime.Now, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
+
+        var newStartDate = string.IsNullOrWhiteSpace(userTimeZone) ?
+            startDate ?? newEndDate.AddMonths(-1) :
+            TimeZoneInfo.ConvertTimeToUtc(startDate ?? newEndDate.AddMonths(-1), TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
 
         ObjectId? accountObjectId = !string.IsNullOrWhiteSpace(accountId) ?
             ObjectId.Parse(accountId) :

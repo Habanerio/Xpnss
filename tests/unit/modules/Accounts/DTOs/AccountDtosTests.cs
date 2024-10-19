@@ -575,7 +575,7 @@ public class AccountDtoTests
 {
     private readonly AccountDto _testClass;
     private IFixture _fixture;
-    private AccountTypes _accountType;
+    private AccountType _accountType;
     private bool _isCredit;
     private string _id;
     private string _userId;
@@ -590,7 +590,7 @@ public class AccountDtoTests
     public AccountDtoTests()
     {
         _fixture = new Fixture().Customize(new AutoMoqCustomization());
-        _accountType = _fixture.Create<AccountTypes>();
+        _accountType = _fixture.Create<AccountType>();
         _isCredit = _fixture.Create<bool>();
         _id = _fixture.Create<string>();
         _userId = _fixture.Create<string>();
@@ -653,13 +653,13 @@ public class AccountDtoTests
     public void CanSet_And_Get_AccountType()
     {
         // Arrange
-        var testValue = _fixture.Create<AccountTypes>();
+        var testValue = _fixture.Create<AccountType>();
 
         // Act
-        _testClass.AccountTypes = testValue;
+        _testClass.AccountType = testValue;
 
         // Assert
-        Assert.Equal(testValue, _testClass.AccountTypes);
+        Assert.Equal(testValue, _testClass.AccountType);
     }
 
     [Fact]

@@ -1,6 +1,6 @@
 namespace Habanerio.Xpnss.Modules.Transactions.DTOs;
 
-public record TransactionDto
+public sealed record TransactionDto
 {
     public string Id { get; init; }
 
@@ -29,7 +29,7 @@ public record TransactionDto
     public DateTimeOffset? DatePaid { get; init; }
 }
 
-public record TransactionItemDto
+public sealed record TransactionItemDto
 {
     public string Id { get; init; }
 
@@ -48,7 +48,7 @@ public record TransactionItemDto
     //public decimal Owing => Amount - Paid;
 }
 
-public record MerchantDto
+public sealed record MerchantDto
 {
     public string Id { get; init; }
 

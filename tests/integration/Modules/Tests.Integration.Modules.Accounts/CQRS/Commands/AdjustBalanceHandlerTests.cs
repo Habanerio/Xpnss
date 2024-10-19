@@ -56,9 +56,9 @@ public class AdjustBalanceHandlerTests : IClassFixture<AccountsTestDbContextFixt
     [InlineData(AccountTypes.Savings)]
     [InlineData(AccountTypes.CreditCard)]
     [InlineData(AccountTypes.LineOfCredit)]
-    public async Task Can_Adjust_Balance(AccountTypes accountTypes)
+    public async Task Can_Adjust_Balance(AccountTypes accountType)
     {
-        var accountId = _availableAccounts.First(x => x.type == accountTypes).accountId;
+        var accountId = _availableAccounts.First(x => x.type == accountType).accountId;
 
         var cashAccountDocument = await _verifyRepository.FirstOrDefaultAsync(a =>
             a.Id == ObjectId.Parse(accountId) && a.UserId == _userId);

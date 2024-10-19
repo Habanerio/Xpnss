@@ -14,17 +14,17 @@ public class CreateTransaction
         string UserId,
         string AccountId,
         IEnumerable<TransactionItemDto> Items,
-        DateTimeOffset TransactionDate,
+        DateTime TransactionDate,
         string TransactionType,
         string Description = "",
-        MerchantDto? Merchant = null) : ITransactionsCommand<Result<string>>, IRequest;
+        MerchantDto? Merchant = null) : ITransactionsCommand<Result<TransactionDto>>, IRequest;
 
-    public class Handler(ITransactionsRepository repository) : IRequestHandler<Command, Result<string>>
+    public class Handler(ITransactionsRepository repository) : IRequestHandler<Command, Result<TransactionDto>>
     {
         private readonly ITransactionsRepository _repository = repository ??
                                                                throw new ArgumentNullException(nameof(repository));
 
-        public async Task<Result<string>> Handle(Command request, CancellationToken cancellationToken)
+        public async Task<Result<TransactionDto>> Handle(Command request, CancellationToken cancellationToken)
         {
             var validator = new Validator();
 
@@ -60,10 +60,15 @@ public class CreateTransaction
 
             var result = await _repository.AddAsync(transactionDoc, cancellationToken);
 
-            if (!result.IsSuccess)
+            if (result.IsFailed)
                 return Result.Fail(result.Errors?[0].Message ?? "Could not save the Transaction");
 
-            return Result.Ok(result.Value.ToString());
+            var transactionDto = Mappers.DocumentToDtoMappings.Map(result.Value);
+
+            if (transactionDto is null)
+                return Result.Fail("Failed to map TransactionDocument to TransactionDto");
+
+            return transactionDto;
         }
     }
 

@@ -4,6 +4,7 @@ using Carter;
 using FluentValidation;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
 using Habanerio.Xpnss.Modules.Accounts.CQRS.Commands;
+using Habanerio.Xpnss.Modules.Accounts.DTOs;
 using Habanerio.Xpnss.Modules.Accounts.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -36,20 +37,6 @@ public class CreateAccountEndpoint
         public decimal OverDraftAmount { get; set; }
 
         public string DisplayColor { get; set; } = "#ff0000";
-    }
-
-    public sealed class Validator : AbstractValidator<CreateAccountRequest>
-    {
-        public Validator()
-        {
-            RuleFor(x => x).NotNull();
-            RuleFor(x => x.UserId).NotEmpty();
-            RuleFor(x => x.Name).NotEmpty();
-            RuleFor(x => x.AccountType).NotEmpty();
-            RuleFor(x => x.CreditLimit).GreaterThanOrEqualTo(0);
-            RuleFor(x => x.InterestRate).GreaterThanOrEqualTo(0)
-                .LessThanOrEqualTo(100);
-        }
     }
 
     public static async Task<IResult> HandleAsync(
@@ -85,7 +72,7 @@ public class CreateAccountEndpoint
         if (result.IsFailed)
             return Results.BadRequest(result.Errors.Select(x => x.Message));
 
-        var response = ApiResponse<string>.Ok(result.Value);
+        var response = ApiResponse<AccountDto>.Ok(result.Value);
 
         return Results.Ok(response);
     }
@@ -100,14 +87,32 @@ public class CreateAccountEndpoint
                         [FromBody] CreateAccountRequest request,
                         [FromServices] IAccountsService service,
                         CancellationToken cancellationToken) =>
-                            await HandleAsync(userId, request, service, cancellationToken))
-                .Produces<string>((int)HttpStatusCode.OK)
+                    {
+                        var result = await HandleAsync(userId, request, service, cancellationToken);
+
+                        return result;
+                    })
+                .Produces<AccountDto>((int)HttpStatusCode.OK)
                 .Produces((int)HttpStatusCode.BadRequest)
                 .Produces<string>((int)HttpStatusCode.BadRequest)
                 .WithDisplayName("New Account")
                 .WithName("CreateAccount")
                 .WithTags("Accounts")
                 .WithOpenApi();
+        }
+    }
+
+    public sealed class Validator : AbstractValidator<CreateAccountRequest>
+    {
+        public Validator()
+        {
+            RuleFor(x => x).NotNull();
+            RuleFor(x => x.UserId).NotEmpty();
+            RuleFor(x => x.Name).NotEmpty();
+            RuleFor(x => x.AccountType).NotEmpty();
+            RuleFor(x => x.CreditLimit).GreaterThanOrEqualTo(0);
+            RuleFor(x => x.InterestRate).GreaterThanOrEqualTo(0)
+                .LessThanOrEqualTo(100);
         }
     }
 }

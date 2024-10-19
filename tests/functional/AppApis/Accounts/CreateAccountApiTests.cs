@@ -3,7 +3,10 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Accounts;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
+using Habanerio.Xpnss.Modules.Accounts.Common;
+using Habanerio.Xpnss.Modules.Accounts.DTOs;
 using Microsoft.AspNetCore.Mvc.Testing;
+using MongoDB.Bson;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis.Accounts;
 
@@ -24,8 +27,8 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
             AccountType = "Cash",
             Name = "Test Cash Account",
             Description = "Test Cash Account Description",
-            Balance = 0,
-            DisplayColor = "#000000"
+            Balance = 111111,
+            DisplayColor = "#123ABC"
         };
 
         // Act
@@ -38,14 +41,28 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<string>>(content, new JsonSerializerOptions
+        var apiResponse = JsonSerializer.Deserialize<ApiResponse<CashAccountDto>>(content, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         });
 
         Assert.NotNull(apiResponse);
-        Assert.True(!string.IsNullOrWhiteSpace(apiResponse.Data));
         Assert.True(apiResponse.IsSuccess);
+        Assert.NotNull(apiResponse.Data);
+
+        var accountDto = Assert.IsType<CashAccountDto>(apiResponse.Data);
+        Assert.True(!accountDto.Id.Equals(ObjectId.Empty));
+        Assert.Equal(USER_ID, accountDto.UserId);
+        Assert.Equal(AccountTypes.Cash.ToString(), accountDto.AccountType);
+        Assert.Equal(request.Name, accountDto.Name);
+        Assert.Equal(request.Balance, accountDto.Balance);
+        Assert.Equal(request.Description, accountDto.Description);
+        Assert.Equal(request.DisplayColor, accountDto.DisplayColor);
+        Assert.Equal(DateTime.UtcNow, accountDto.DateCreated, TimeSpan.FromSeconds(5));
+        Assert.Null(accountDto.DateUpdated);
+        Assert.Null(accountDto.DateDeleted);
+        Assert.True(!accountDto.IsCredit);
+        Assert.True(!accountDto.IsDeleted);
     }
 
     [Fact]
@@ -58,8 +75,9 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
             AccountType = "Checking",
             Name = "Test Checking Account",
             Description = "Test Checking Account Description",
-            Balance = 0,
-            DisplayColor = "#000000"
+            Balance = 34534,
+            OverDraftAmount = 4232,
+            DisplayColor = "#0df000"
         };
 
         // Act
@@ -71,14 +89,29 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<string>>(content, new JsonSerializerOptions
+        var apiResponse = JsonSerializer.Deserialize<ApiResponse<CheckingAccountDto>>(content, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         });
 
         Assert.NotNull(apiResponse);
-        Assert.True(!string.IsNullOrWhiteSpace(apiResponse.Data));
         Assert.True(apiResponse.IsSuccess);
+        Assert.NotNull(apiResponse.Data);
+
+        var accountDto = Assert.IsType<CheckingAccountDto>(apiResponse.Data);
+        Assert.True(!accountDto.Id.Equals(ObjectId.Empty));
+        Assert.Equal(USER_ID, accountDto.UserId);
+        Assert.Equal(AccountTypes.Checking.ToString(), accountDto.AccountType);
+        Assert.Equal(request.Name, accountDto.Name);
+        Assert.Equal(request.Balance, accountDto.Balance);
+        Assert.Equal(request.Description, accountDto.Description);
+        Assert.Equal(request.DisplayColor, accountDto.DisplayColor);
+        Assert.Equal(request.OverDraftAmount, accountDto.OverDraftAmount);
+        Assert.Equal(DateTime.UtcNow, accountDto.DateCreated, TimeSpan.FromSeconds(5));
+        Assert.Null(accountDto.DateUpdated);
+        Assert.Null(accountDto.DateDeleted);
+        Assert.True(!accountDto.IsCredit);
+        Assert.True(!accountDto.IsDeleted);
     }
 
     [Fact]
@@ -105,14 +138,29 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<string>>(content, new JsonSerializerOptions
+        var apiResponse = JsonSerializer.Deserialize<ApiResponse<SavingsAccountDto>>(content, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         });
 
         Assert.NotNull(apiResponse);
-        Assert.True(!string.IsNullOrWhiteSpace(apiResponse.Data));
         Assert.True(apiResponse.IsSuccess);
+        Assert.NotNull(apiResponse.Data);
+
+        var accountDto = Assert.IsType<SavingsAccountDto>(apiResponse.Data);
+        Assert.True(!accountDto.Id.Equals(ObjectId.Empty));
+        Assert.Equal(USER_ID, accountDto.UserId);
+        Assert.Equal(AccountTypes.Savings.ToString(), accountDto.AccountType);
+        Assert.Equal(request.Name, accountDto.Name);
+        Assert.Equal(request.Balance, accountDto.Balance);
+        Assert.Equal(request.Description, accountDto.Description);
+        Assert.Equal(request.DisplayColor, accountDto.DisplayColor);
+        Assert.Equal(request.InterestRate, accountDto.InterestRate);
+        Assert.Equal(DateTime.UtcNow, accountDto.DateCreated, TimeSpan.FromSeconds(5));
+        Assert.Null(accountDto.DateUpdated);
+        Assert.Null(accountDto.DateDeleted);
+        Assert.True(!accountDto.IsCredit);
+        Assert.True(!accountDto.IsDeleted);
     }
 
     [Fact]
@@ -125,7 +173,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
             AccountType = "CreditCard",
             Name = "Test Credit Card Account",
             Description = "Test Credit Card Account Description",
-            Balance = 0,
+            Balance = 64534,
             CreditLimit = 1000,
             InterestRate = 10,
             DisplayColor = "#000000"
@@ -140,14 +188,30 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<string>>(content, new JsonSerializerOptions
+        var apiResponse = JsonSerializer.Deserialize<ApiResponse<CreditCardAccountDto>>(content, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         });
 
         Assert.NotNull(apiResponse);
-        Assert.True(!string.IsNullOrWhiteSpace(apiResponse.Data));
         Assert.True(apiResponse.IsSuccess);
+        Assert.NotNull(apiResponse.Data);
+
+        var accountDto = Assert.IsType<CreditCardAccountDto>(apiResponse.Data);
+        Assert.True(!accountDto.Id.Equals(ObjectId.Empty));
+        Assert.Equal(USER_ID, accountDto.UserId);
+        Assert.Equal(AccountTypes.CreditCard.ToString(), accountDto.AccountType);
+        Assert.Equal(request.Name, accountDto.Name);
+        Assert.Equal(request.Balance, accountDto.Balance);
+        Assert.Equal(request.CreditLimit, accountDto.CreditLimit);
+        Assert.Equal(request.Description, accountDto.Description);
+        Assert.Equal(request.DisplayColor, accountDto.DisplayColor);
+        Assert.Equal(request.InterestRate, accountDto.InterestRate);
+        Assert.Equal(DateTime.UtcNow, accountDto.DateCreated, TimeSpan.FromSeconds(5));
+        Assert.Null(accountDto.DateUpdated);
+        Assert.Null(accountDto.DateDeleted);
+        Assert.True(accountDto.IsCredit);
+        Assert.True(!accountDto.IsDeleted);
     }
 
     [Fact]
@@ -175,14 +239,30 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<string>>(content, new JsonSerializerOptions
+        var apiResponse = JsonSerializer.Deserialize<ApiResponse<LineOfCreditAccountDto>>(content, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         });
 
         Assert.NotNull(apiResponse);
-        Assert.True(!string.IsNullOrWhiteSpace(apiResponse.Data));
         Assert.True(apiResponse.IsSuccess);
+        Assert.NotNull(apiResponse.Data);
+
+        var accountDto = Assert.IsType<LineOfCreditAccountDto>(apiResponse.Data);
+        Assert.True(!accountDto.Id.Equals(ObjectId.Empty));
+        Assert.Equal(USER_ID, accountDto.UserId);
+        Assert.Equal(AccountTypes.LineOfCredit.ToString(), accountDto.AccountType);
+        Assert.Equal(request.Name, accountDto.Name);
+        Assert.Equal(request.Balance, accountDto.Balance);
+        Assert.Equal(request.CreditLimit, accountDto.CreditLimit);
+        Assert.Equal(request.Description, accountDto.Description);
+        Assert.Equal(request.DisplayColor, accountDto.DisplayColor);
+        Assert.Equal(request.InterestRate, accountDto.InterestRate);
+        Assert.Equal(DateTime.UtcNow, accountDto.DateCreated, TimeSpan.FromSeconds(5));
+        Assert.Null(accountDto.DateUpdated);
+        Assert.Null(accountDto.DateDeleted);
+        Assert.True(accountDto.IsCredit);
+        Assert.True(!accountDto.IsDeleted);
     }
 
 
@@ -243,7 +323,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         var request = new CreateAccountEndpoint.CreateAccountRequest
         {
             UserId = USER_ID,
-            //AccountTypeId = (int)AccountTypes.Cash,
+            //AccountTypeId = (int)AccountType.Cash,
             Name = "Test Cash Account",
             Description = "Test Cash Account Description",
             Balance = 0,

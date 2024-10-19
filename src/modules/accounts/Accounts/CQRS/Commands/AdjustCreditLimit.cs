@@ -35,18 +35,17 @@ public class AdjustCreditLimit
             var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
             if (!validationResult.IsValid)
-                return Result.Fail<decimal>(validationResult.Errors[0].ErrorMessage);
+                return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
             var existingResult =
                 await _repository.GetByIdAsync(request.UserId, request.AccountId, cancellationToken);
 
             if (existingResult.IsFailed)
-                return Result.Fail<decimal>(existingResult.Errors);
+                return Result.Fail(existingResult.Errors);
 
             // Check if the account supports Credit Limits
             if (existingResult.Value is not IHasCreditLimit)
-                return Result.Fail<decimal>($"The Account Type `{existingResult.Value.AccountTypes}` does not support Credit Limits");
-            //return Result.Fail<decimal>($"The Account Type `{existingResult.Value.GetType().Name}` does not support Credit Limits");
+                return Result.Fail($"The Account Type `{existingResult.Value.AccountType}` does not support Credit Limits");
 
             var existingAccount = existingResult.Value;
 
@@ -68,7 +67,7 @@ public class AdjustCreditLimit
             var result = await _repository.UpdateAsync(existingAccount, cancellationToken);
 
             if (result.IsFailed)
-                return Result.Fail<decimal>(result.Errors);
+                return Result.Fail(result.Errors);
 
             return Result.Ok(request.CreditLimit);
         }

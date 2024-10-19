@@ -11,8 +11,11 @@ public class GetTransactions
     public record Query(
         string UserId,
         string AccountId = "",
-        DateTimeOffset? FromDate = null,
-        DateTimeOffset? ToDate = null) : ITransactionsQuery<Result<IEnumerable<TransactionDto>>>;
+        DateTime? FromDate = null,
+        DateTime? ToDate = null) : ITransactionsQuery<Result<IEnumerable<TransactionDto>>>
+    {
+        public string TimeZone { get; set; }
+    }
 
     public class Handler : IRequestHandler<Query, Result<IEnumerable<TransactionDto>>>
     {
@@ -38,6 +41,7 @@ public class GetTransactions
                 request.AccountId,
                 request.FromDate,
                 request.ToDate,
+                request.TimeZone,
                 cancellationToken);
 
             if (docsResult.IsFailed)
