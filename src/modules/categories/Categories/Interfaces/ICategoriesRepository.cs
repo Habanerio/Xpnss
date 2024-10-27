@@ -11,8 +11,7 @@ public interface ICategoriesRepository
 
     Task<Result<CategoryDocument>> GetByIdAsync(
         string userId,
-        string parentCategoryId,
-        string childCategoryId = "",
+        string categoryId,
         CancellationToken cancellationToken = default);
 
     Task<Result<IEnumerable<CategoryDocument>>> ListAsync(

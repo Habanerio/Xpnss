@@ -16,6 +16,8 @@ public sealed record TransactionDto
 
     public MerchantDto? Merchant { get; init; }
 
+    public bool IsCredit { get; init; }
+
     public bool IsPaid => Paid >= Amount;
 
     public IReadOnlyCollection<TransactionItemDto> Items { get; init; } = [];

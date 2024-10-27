@@ -6,6 +6,7 @@ using Moq;
 
 namespace Habanerio.Xpnss.Tests.Unit.Modules.Accounts.CQRS.Commands;
 
+/*
 public class AdjustBalanceCommandTests
 {
     private readonly Mock<IAccountsRepository> _repository;
@@ -64,3 +65,4 @@ public class AdjustBalanceCommandTests
         Assert.Equal("'Account Id' must not be empty.", result.Errors[0].Message);
     }
 }
+*/

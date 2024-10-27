@@ -19,7 +19,7 @@ public class CreateTransactionHandlerTests : IClassFixture<TransactionsTestDbCon
 
     private readonly CreateTransaction.Handler _testHandler;
 
-    private readonly string _userId = "1";
+    private readonly string _userId = "test-user-id";
 
     public CreateTransactionHandlerTests(TransactionsTestDbContextFixture dbContextFixture, ITestOutputHelper outputHelper)
     {
@@ -92,7 +92,7 @@ public class CreateTransactionHandlerTests : IClassFixture<TransactionsTestDbCon
             expectedAccountId,
             expectedItems,
             expectedTransactionDateTime,
-            TransactionTypes.PURCHASE.ToString(),
+            TransactionTypes.Keys.PURCHASE.ToString(),
             expectedDescription,
             expectedMerchant
         );
@@ -113,7 +113,7 @@ public class CreateTransactionHandlerTests : IClassFixture<TransactionsTestDbCon
         Assert.Equal(_userId, actualTransaction.UserId);
         Assert.Equal(ObjectId.Parse(expectedAccountId), actualTransaction.AccountId);
         Assert.Equal(expectedTransactionDateTime.Date, actualTransaction.TransactionDate.Date);
-        Assert.Equal(TransactionTypes.PURCHASE, actualTransaction.TransactionTypes);
+        Assert.Equal(TransactionTypes.Keys.PURCHASE, actualTransaction.TransactionType);
         Assert.Equal(expectedDescription, actualTransaction.Description);
         Assert.Equal(expectedItems.Count, actualTransaction.Items.Count);
         Assert.Equal(actualTransaction.TotalAmount, actualTransaction.Items.Sum(i => i.Amount));
@@ -170,7 +170,7 @@ public class CreateTransactionHandlerTests : IClassFixture<TransactionsTestDbCon
             expectedAccountId,
             expectedItems,
             expectedTransactionDateTime,
-            TransactionTypes.PURCHASE.ToString(),
+            TransactionTypes.Keys.PURCHASE.ToString(),
             expectedDescription,
             expectedMerchant
         );

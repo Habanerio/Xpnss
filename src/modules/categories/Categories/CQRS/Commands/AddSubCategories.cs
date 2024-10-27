@@ -6,6 +6,9 @@ using MediatR;
 
 namespace Habanerio.Xpnss.Modules.Categories.CQRS.Commands;
 
+/// <summary>
+/// Adds a collection of one or more Sub Categories to an existing Category
+/// </summary>
 public class AddSubCategories
 {
     public record Command(
@@ -28,7 +31,7 @@ public class AddSubCategories
             if (!validationResult.IsValid)
                 return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
-            var parentResult = await _repository.GetByIdAsync(request.UserId, request.ParentCategoryId, "", cancellationToken);
+            var parentResult = await _repository.GetByIdAsync(request.UserId, request.ParentCategoryId, cancellationToken);
 
             if (parentResult.IsFailed || parentResult.ValueOrDefault is null)
                 return Result.Fail(parentResult.Errors[0].Message ?? "Could not find the Parent Category");
@@ -36,7 +39,11 @@ public class AddSubCategories
             var parentDoc = parentResult.ValueOrDefault;
 
             var subCategoryDtos = request.SubCategories.ToArray();
-            var sortOrder = 1;
+            var sortOrder = parentDoc.SubCategories.Any() ?
+                parentDoc.SubCategories.Max(s => s.SortOrder) :
+                0;
+
+            sortOrder++;
 
             foreach (var subCategoryDto in subCategoryDtos.OrderBy(s => s.SortOrder).ThenBy(s => s.Name))
             {
@@ -57,7 +64,7 @@ public class AddSubCategories
             if (result.IsFailed)
                 return Result.Fail(result.Errors[0].Message ?? "Could not save the Category");
 
-            var parentCategoryDto = Mappers.DocumentToDtoMappings.Map(result.Value);
+            var parentCategoryDto = Mappers.DocumentToDtoMappings.Map(parentDoc);
 
             if (parentCategoryDto is null)
                 return Result.Fail<CategoryDto>("Failed to map CategoryDocument to CategoryDto");

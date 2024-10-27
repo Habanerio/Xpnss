@@ -19,6 +19,8 @@ public class AdjustBalance
         string UserId,
         string AccountId,
         decimal Balance,
+        DateTime DateOfChange,
+        string Timezone,
         string Reason = "") : IAccountsCommand<Result<decimal>>, IRequest;
 
     public class Handler : IRequestHandler<Command, Result<decimal>>
@@ -51,11 +53,15 @@ public class AdjustBalance
 
             existingAccount.Balance = request.Balance;
 
+            // var dateChangedUtc = string.IsNullOrWhiteSpace(request.Timezone) ? DateTime.UtcNow :
+            //    TimeZoneInfo.ConvertTimeToUtc(request.DateChanged, TimeZoneInfo.FindSystemTimeZoneById(request.Timezone));
+
             existingAccount.AddChangeHistory(
                 existingAccount.UserId,
                 nameof(existingAccount.Balance),
                 previousBalance.ToString(CultureInfo.InvariantCulture),
                 existingAccount.Balance.ToString(CultureInfo.InvariantCulture),
+                request.DateOfChange.ToUniversalTime(),
                 request.Reason);
 
             var result = await _repository.UpdateAsync(existingAccount, cancellationToken);

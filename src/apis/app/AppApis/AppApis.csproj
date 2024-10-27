@@ -12,9 +12,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Remove="Endpoints\Authentication\**" />
       <Compile Remove="Models\Responses\**" />
+      <Content Remove="Endpoints\Authentication\**" />
       <Content Remove="Models\Responses\**" />
+      <EmbeddedResource Remove="Endpoints\Authentication\**" />
       <EmbeddedResource Remove="Models\Responses\**" />
+      <None Remove="Endpoints\Authentication\**" />
       <None Remove="Models\Responses\**" />
     </ItemGroup>
 
@@ -30,7 +34,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.8.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -39,11 +43,6 @@
         <ProjectReference Include="..\..\..\modules\accounts\Accounts\Accounts.csproj" />
         <ProjectReference Include="..\..\..\modules\categories\Categories\Categories.csproj" />
         <ProjectReference Include="..\..\..\modules\transactions\Transactions\Transactions.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="Endpoints\Authentication\" />
-        <Folder Include="Managers\" />
     </ItemGroup>
 
 </Project>

@@ -1,5 +1,6 @@
 using FluentResults;
 using FluentValidation;
+using Habanerio.Xpnss.Modules.Common.Events;
 using Habanerio.Xpnss.Modules.Transactions.Common;
 using Habanerio.Xpnss.Modules.Transactions.Data;
 using Habanerio.Xpnss.Modules.Transactions.DTOs;
@@ -19,8 +20,12 @@ public class CreateTransaction
         string Description = "",
         MerchantDto? Merchant = null) : ITransactionsCommand<Result<TransactionDto>>, IRequest;
 
+    //public class Handler(IMediator mediator, ITransactionsRepository repository) : IRequestHandler<Command, Result<TransactionDto>>
     public class Handler(ITransactionsRepository repository) : IRequestHandler<Command, Result<TransactionDto>>
     {
+        //private readonly IMediator _mediator = mediator ??
+        //                                       throw new ArgumentNullException(nameof(mediator));
+
         private readonly ITransactionsRepository _repository = repository ??
                                                                throw new ArgumentNullException(nameof(repository));
 
@@ -54,7 +59,8 @@ public class CreateTransaction
                             i.Description,
                             i.CategoryId)
                     ).ToList(),
-                (TransactionTypes)Enum.Parse(typeof(TransactionTypes), request.TransactionType),
+                TransactionTypes.ToTransactionType(request.TransactionType),
+                //(TransactionType.Keys)Enum.Parse(typeof(TransactionType), request.TransactionType),
                 request.Description,
                 merchant);
 
@@ -67,6 +73,16 @@ public class CreateTransaction
 
             if (transactionDto is null)
                 return Result.Fail("Failed to map TransactionDocument to TransactionDto");
+
+            //var transactionAddedEvent = new TransactionAddedEvent
+            //{
+            //    UserId = transactionDto.UserId,
+            //    AccountId = transactionDto.AccountId,
+            //    Amount = transactionDto.Amount,
+            //    IsCredit = transactionDto.IsCredit
+            //};
+
+            //await _mediator.Publish(transactionAddedEvent, cancellationToken);
 
             return transactionDto;
         }

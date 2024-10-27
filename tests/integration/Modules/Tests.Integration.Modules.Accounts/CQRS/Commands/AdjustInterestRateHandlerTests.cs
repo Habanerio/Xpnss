@@ -1,5 +1,6 @@
 using Habanerio.Xpnss.Modules.Accounts.Common;
 using Habanerio.Xpnss.Modules.Accounts.CQRS.Commands;
+using Habanerio.Xpnss.Modules.Accounts.Data;
 using Habanerio.Xpnss.Modules.Accounts.Interfaces;
 using MongoDB.Bson;
 using Tests.Integration.Common;
@@ -22,7 +23,7 @@ public class AdjustInterestRateHandlerTests : IClassFixture<AccountsTestDbContex
 
     private readonly string _userId = "test-user-id";
 
-    private readonly List<(string UserId, string accountId, AccountTypes type)> _availableAccounts;
+    private readonly List<(string UserId, AccountDocument Account)> _availableAccounts;
 
     public AdjustInterestRateHandlerTests(AccountsTestDbContextFixture dbContextFixture, ITestOutputHelper outputHelper)
     {
@@ -56,9 +57,9 @@ public class AdjustInterestRateHandlerTests : IClassFixture<AccountsTestDbContex
     [InlineData(AccountTypes.Savings)]
     public async Task Can_Adjust_InterestRate(AccountTypes accountTypes)
     {
-        var accountId = _availableAccounts
-            .First(x => x.type == accountTypes)
-            .accountId;
+        var actualAccount = _availableAccounts
+            .First(x => x.Account.AccountType == accountTypes);
+        var accountId = actualAccount.Account.Id.ToString();
 
         var accountDocument = await _verifyRepository.FirstOrDefaultAsync(a =>
             a.Id == ObjectId.Parse(accountId) && a.UserId == _userId);
@@ -73,6 +74,7 @@ public class AdjustInterestRateHandlerTests : IClassFixture<AccountsTestDbContex
             "test-user-id",
             accountDocument.Id.ToString(),
             expected,
+            DateTime.Now,
             "Updated by `Can_Adjust_InterestRate`");
 
         // Act
@@ -106,7 +108,9 @@ public class AdjustInterestRateHandlerTests : IClassFixture<AccountsTestDbContex
     [Fact]
     public async Task CanNot_Adjust_InterestRate_InterestRate_OverLimit()
     {
-        var accountId = _availableAccounts.First(x => x.type == AccountTypes.CreditCard).accountId;
+        var actualAccount = _availableAccounts
+            .First(x => x.Account.AccountType == AccountTypes.CreditCard);
+        var accountId = actualAccount.Account.Id.ToString();
 
         var cashAccountDocument = await _verifyRepository.FirstOrDefaultAsync(a =>
             a.Id == ObjectId.Parse(accountId) && a.UserId == _userId);
@@ -117,6 +121,7 @@ public class AdjustInterestRateHandlerTests : IClassFixture<AccountsTestDbContex
             "test-user-id",
             cashAccountDocument.Id.ToString(),
             expected,
+            DateTime.Now,
             "Updated by `Can_Adjust_InterestRate`");
 
         // Act
@@ -130,7 +135,9 @@ public class AdjustInterestRateHandlerTests : IClassFixture<AccountsTestDbContex
     [Fact]
     public async Task CanNot_Adjust_InterestRate_InterestRate_UnderLimit()
     {
-        var accountId = _availableAccounts.First(x => x.type == AccountTypes.CreditCard).accountId;
+        var actualAccount = _availableAccounts
+            .First(x => x.Account.AccountType == AccountTypes.CreditCard);
+        var accountId = actualAccount.Account.Id.ToString();
 
         var cashAccountDocument = await _verifyRepository.FirstOrDefaultAsync(a =>
             a.Id == ObjectId.Parse(accountId) && a.UserId == _userId);
@@ -141,6 +148,7 @@ public class AdjustInterestRateHandlerTests : IClassFixture<AccountsTestDbContex
             "test-user-id",
             cashAccountDocument.Id.ToString(),
             expected,
+            DateTime.Now,
             "Updated by `Can_Adjust_InterestRate`");
 
         // Act
@@ -156,7 +164,9 @@ public class AdjustInterestRateHandlerTests : IClassFixture<AccountsTestDbContex
     [InlineData(AccountTypes.Checking)]
     public async Task Cannot_Adjust_InterestRate_Invalid_AccountType(AccountTypes accountTypes)
     {
-        var accountId = _availableAccounts.First(x => x.type == accountTypes).accountId;
+        var actualAccount = _availableAccounts
+            .First(x => x.Account.AccountType == accountTypes);
+        var accountId = actualAccount.Account.Id.ToString();
 
         var cashAccountDocument = await _verifyRepository.FirstOrDefaultAsync(a =>
             a.Id == ObjectId.Parse(accountId) && a.UserId == _userId);
@@ -169,6 +179,7 @@ public class AdjustInterestRateHandlerTests : IClassFixture<AccountsTestDbContex
             "test-user-id",
             cashAccountDocument.Id.ToString(),
             expected,
+            DateTime.Now,
             "Updated by `Can_Adjust_InterestRate`");
 
         // Act
@@ -185,7 +196,12 @@ public class AdjustInterestRateHandlerTests : IClassFixture<AccountsTestDbContex
     [InlineData(null)]
     public async Task CanNotCall_Adjust_InterestRate_WithEmpty_UserId_IsFailed(string value)
     {
-        var result = await _testHandler.Handle(new AdjustInterestRate.Command(value, "1111111", 1000, ""), CancellationToken.None);
+        var result = await _testHandler.Handle(new AdjustInterestRate.Command(
+            value,
+            "1111111",
+            1000,
+            DateTime.Now,
+            ""), CancellationToken.None);
 
         Assert.True(result.IsFailed);
         Assert.Equal("'User Id' must not be empty.", result.Errors[0].Message);
@@ -197,7 +213,12 @@ public class AdjustInterestRateHandlerTests : IClassFixture<AccountsTestDbContex
     [InlineData(null)]
     public async Task CanNotCall_Adjust_InterestRate_WithEmpty_Account_IsFailed(string value)
     {
-        var result = await _testHandler.Handle(new AdjustInterestRate.Command("test-user-id", value, 1000, ""), CancellationToken.None);
+        var result = await _testHandler.Handle(new AdjustInterestRate.Command(
+            "test-user-id",
+            value,
+            1000,
+            DateTime.Now,
+            ""), CancellationToken.None);
 
         Assert.True(result.IsFailed);
         Assert.Equal("'Account Id' must not be empty.", result.Errors[0].Message);
@@ -208,7 +229,12 @@ public class AdjustInterestRateHandlerTests : IClassFixture<AccountsTestDbContex
     {
         var accountId = "sdfgsdf7gsd9fgsdfg";
 
-        var result = await _testHandler.Handle(new AdjustInterestRate.Command("test-user-id", accountId, 10, ""), CancellationToken.None);
+        var result = await _testHandler.Handle(new AdjustInterestRate.Command(
+            "test-user-id",
+            accountId,
+            10,
+            DateTime.Now,
+            ""), CancellationToken.None);
 
         Assert.True(result.IsFailed);
         Assert.Equal($"Invalid AccountId: `{accountId}`", result.Errors[0].Message);

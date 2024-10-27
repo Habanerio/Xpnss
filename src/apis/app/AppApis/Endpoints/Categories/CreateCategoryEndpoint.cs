@@ -1,13 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 using Carter;
 using FluentValidation;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
 using Habanerio.Xpnss.Modules.Categories.CQRS.Commands;
 using Habanerio.Xpnss.Modules.Categories.DTOs;
 using Habanerio.Xpnss.Modules.Categories.Interfaces;
-using Habanerio.Xpnss.Modules.Transactions.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using static Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Transactions.CreateTransactionEndpoint;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Categories;
 
@@ -23,7 +22,7 @@ public class CreateCategoryEndpoint
 
         public string Description { get; init; } = "";
 
-        public string? ParentCategoryId { get; init; } = null;
+        public string? ParentId { get; init; } = null;
 
         public int SortOrder { get; init; } = 99;
     }
@@ -40,7 +39,13 @@ public class CreateCategoryEndpoint
                     CancellationToken cancellationToken) =>
                 {
                     return await HandleAsync(userId, request, service, cancellationToken);
-                });
+                })
+                .Produces<ApiResponse<CategoryDto>>((int)HttpStatusCode.OK)
+                .Produces<string>((int)HttpStatusCode.BadRequest)
+                .WithDisplayName("New Category")
+                .WithName("CreateCategory")
+                .WithTags("Categories")
+                .WithOpenApi();
         }
     }
 

@@ -17,6 +17,7 @@ public class AdjustCreditLimit
         string UserId,
         string AccountId,
         decimal CreditLimit,
+        DateTime DateOfChange,
         string Reason = "") : IAccountsCommand<Result<decimal>>, IRequest;
 
     public class Handler : IRequestHandler<Command, Result<decimal>>
@@ -51,6 +52,9 @@ public class AdjustCreditLimit
 
             var existingCreditLimitAccount = existingAccount as IHasCreditLimit;
 
+            if (existingCreditLimitAccount is null)
+                return Result.Fail($"The Account Type `{existingAccount.AccountType}` does not support Credit Limits");
+
             var previousCreditLimit = existingCreditLimitAccount.CreditLimit;
 
             // Updating the existingCreditLimitAccount.CreditLimit will update the existingAccount.CreditLimit.
@@ -62,6 +66,7 @@ public class AdjustCreditLimit
                 nameof(IHasCreditLimit.CreditLimit),
                 previousCreditLimit.ToString(CultureInfo.InvariantCulture),
                 request.CreditLimit.ToString(CultureInfo.InvariantCulture),
+                request.DateOfChange.ToUniversalTime(),
                 request.Reason);
 
             var result = await _repository.UpdateAsync(existingAccount, cancellationToken);

@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\modules\accounts\Accounts\Accounts.csproj" />
+    <ProjectReference Include="..\..\..\src\modules\categories\Categories\Categories.csproj" />
     <ProjectReference Include="..\..\..\src\modules\transactions\Transactions\Transactions.csproj" />
   </ItemGroup>
 

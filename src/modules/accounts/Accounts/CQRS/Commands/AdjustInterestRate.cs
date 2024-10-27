@@ -17,6 +17,7 @@ public class AdjustInterestRate
         string UserId,
         string AccountId,
         decimal InterestRate,
+        DateTime DateOfChange,
         string Reason = "") : IAccountsCommand<Result<decimal>>, IRequest;
 
     public class Handler : IRequestHandler<Command, Result<decimal>>
@@ -61,6 +62,7 @@ public class AdjustInterestRate
                 nameof(IHasInterestRate.InterestRate),
                 previousInterestRate.ToString(CultureInfo.InvariantCulture),
                 request.InterestRate.ToString(CultureInfo.InvariantCulture),
+                request.DateOfChange.ToUniversalTime(),
                 request.Reason);
 
             var result = await _repository.UpdateAsync(existingAccount, cancellationToken);

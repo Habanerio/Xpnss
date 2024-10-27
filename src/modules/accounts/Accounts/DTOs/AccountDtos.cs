@@ -24,6 +24,10 @@ public record AccountDto
 
     public bool IsDeleted => DateDeleted.HasValue;
 
+    public List<MonthlyTotalsDto> MonthlyDepositTotals { get; set; } = new();
+
+    public List<MonthlyTotalsDto> MonthlyWithdrawTotals { get; set; } = new();
+
     public DateTime DateCreated { get; set; }
 
     public DateTime? DateUpdated { get; set; }

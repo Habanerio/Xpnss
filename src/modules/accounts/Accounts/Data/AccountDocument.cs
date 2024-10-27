@@ -57,21 +57,21 @@ public class AccountDocument : MongoDocument//, IMongoDocument
     public DateTime? DateDeleted { get; set; }
 
     [BsonElement("change_history")]
-    public List<ChangeHistory> ChangeHistory { get; set; }
+    public List<ChangeHistory> ChangeHistory { get; set; } = new();
 
-    [BsonElement("monthly_totals")]
-    public List<MonthlyTotal> MonthlyTotals { get; set; }
+    [BsonElement("monthly_deposit_totals")]
+    public List<MonthlyTotal> MonthlyDepositTotals { get; set; } = new();
 
+    [BsonElement("monthly_withdraw_totals")]
+    public List<MonthlyTotal> MonthlyWithdrawTotals { get; set; } = new();
 
     public AccountDocument()
     {
         Id = ObjectId.GenerateNewId();
-        ChangeHistory = [];
-        MonthlyTotals = [];
         DateCreated = DateTime.UtcNow;
     }
 
-    public void AddChangeHistory(string userId, string property, string oldValue, string newValue, string reason)
+    public void AddChangeHistory(string userId, string property, string oldValue, string newValue, DateTime dateChanged, string reason)
     {
         ChangeHistory.Add(new ChangeHistory
         {
@@ -81,8 +81,90 @@ public class AccountDocument : MongoDocument//, IMongoDocument
             OldValues = oldValue,
             NewValues = newValue,
             Reason = reason,
-            DateChanged = DateTime.UtcNow,
+            DateChanged = dateChanged.Date,
         });
+    }
+
+    public virtual void Deposit(DateTime date, decimal amount)
+    {
+        var monthlyTotal = MonthlyDepositTotals.Find(x => x.Year == date.Year && x.Month == date.Month);
+
+        if (monthlyTotal == null)
+        {
+            monthlyTotal = new MonthlyTotal
+            {
+                Year = date.Year,
+                Month = date.Month,
+                Total = amount,
+                TransactionCount = 1,
+            };
+
+            MonthlyDepositTotals.Add(monthlyTotal);
+        }
+        else
+        {
+            monthlyTotal.Total += amount;
+            monthlyTotal.TransactionCount++;
+        }
+
+        UpdateBalanceFromHistory();
+    }
+
+    public virtual void Withdraw(DateTime date, decimal amount)
+    {
+        var monthlyTotal = MonthlyWithdrawTotals.Find(x => x.Year == date.Year && x.Month == date.Month);
+
+        if (monthlyTotal == null)
+        {
+            monthlyTotal = new MonthlyTotal
+            {
+                Year = date.Year,
+                Month = date.Month,
+                Total = amount,
+                TransactionCount = 1,
+            };
+
+            MonthlyWithdrawTotals.Add(monthlyTotal);
+        }
+        else
+        {
+            monthlyTotal.Total += amount;
+            monthlyTotal.TransactionCount++;
+        }
+
+        UpdateBalanceFromHistory();
+    }
+
+    /// <summary>
+    /// Removes an amount from one or the other Monthly Totals.
+    /// This is used when a transaction is deleted.
+    /// </summary>
+    /// <param name="isDeposit"></param>
+    /// <param name="date"></param>
+    /// <param name="amount"></param>
+    public void RemoveFromMonthlyTotals(bool isDeposit, DateTime date, decimal amount)
+    {
+        var monthlyTotals = isDeposit ? MonthlyDepositTotals : MonthlyWithdrawTotals;
+
+        var monthlyTotal = monthlyTotals.Find(x => x.Year == date.Year && x.Month == date.Month);
+
+        if (monthlyTotal != null)
+        {
+            monthlyTotal.Total += amount;
+            monthlyTotal.TransactionCount--;
+
+            UpdateBalanceFromHistory();
+        }
+    }
+
+    internal void UpdateBalanceFromHistory()
+    {
+        var deposits = MonthlyDepositTotals.Sum(x => x.Total);
+        var withdraws = MonthlyWithdrawTotals.Sum(x => x.Total);
+
+        //var balanceHistories = ChangeHistory.FindAll(x => x.Property == "Balance");
+
+        Balance = deposits - withdraws;
     }
 }
 
@@ -109,7 +191,7 @@ public class CashAccount : AccountDocument
     }
 }
 
-public class CheckingAccount : AccountDocument
+public class CheckingAccount : CashAccount
 {
     [BsonElement("overdraft_limit")]
     public decimal OverDraftAmount { get; set; }
@@ -137,7 +219,7 @@ public class CheckingAccount : AccountDocument
     }
 }
 
-public class SavingsAccount : AccountDocument, IHasInterestRate
+public class SavingsAccount : CashAccount, IHasInterestRate
 {
     [BsonElement("interest_rate")]
     public decimal InterestRate { get; set; }
@@ -258,7 +340,7 @@ public sealed class ChangeHistory
     public string Reason { get; set; } = "";
 
     [BsonElement("date_changed")]
-    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    [BsonDateTimeOptions(DateOnly = true)]
     public DateTime DateChanged { get; set; }
 }
 

@@ -38,7 +38,9 @@ public class AdjustCreditLimitCommand
         var command = new AdjustCreditLimit.Command(
             value,
             ObjectId.GenerateNewId().ToString(),
-            5000);
+            5000,
+            DateTime.Now,
+            "");
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -55,7 +57,8 @@ public class AdjustCreditLimitCommand
         var command = new AdjustCreditLimit.Command(
             "1",
             value,
-            5000);
+            5000,
+            DateTime.Now);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -69,12 +72,13 @@ public class AdjustCreditLimitCommand
         var command = new AdjustCreditLimit.Command(
             "1",
             ObjectId.GenerateNewId().ToString(),
-            -0.00001m);
+            -0.00001m,
+            DateTime.Now);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
         Assert.True(result.IsFailed);
-        Assert.Equal("'Credit Limit' must be greater than or equal to '0'.", 
+        Assert.Equal("'Credit Limit' must be greater than or equal to '0'.",
             result.Errors[0].Message);
     }
 }

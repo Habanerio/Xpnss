@@ -54,6 +54,22 @@ public static class DocumentToDtoMappings
                     cashDoc.DateUpdated,
                     cashDoc.DateDeleted);
 
+                cash.MonthlyDepositTotals = cashDoc.MonthlyDepositTotals.Select(t => new MonthlyTotalsDto()
+                {
+                    Month = t.Month,
+                    Year = t.Year,
+                    Total = t.Total,
+                    TransactionCount = t.TransactionCount
+                }).ToList();
+
+                cash.MonthlyDepositTotals = cashDoc.MonthlyWithdrawTotals.Select(t => new MonthlyTotalsDto()
+                {
+                    Month = t.Month,
+                    Year = t.Year,
+                    Total = t.Total,
+                    TransactionCount = t.TransactionCount
+                }).ToList();
+
                 return cash;
 
             case AccountTypes.Checking:
@@ -70,6 +86,22 @@ public static class DocumentToDtoMappings
                     checkingDoc.DateUpdated,
                     checkingDoc.DateDeleted);
 
+                checking.MonthlyDepositTotals = checkingDoc.MonthlyDepositTotals.Select(t => new MonthlyTotalsDto()
+                {
+                    Month = t.Month,
+                    Year = t.Year,
+                    Total = t.Total,
+                    TransactionCount = t.TransactionCount
+                }).ToList();
+
+                checking.MonthlyDepositTotals = checkingDoc.MonthlyWithdrawTotals.Select(t => new MonthlyTotalsDto()
+                {
+                    Month = t.Month,
+                    Year = t.Year,
+                    Total = t.Total,
+                    TransactionCount = t.TransactionCount
+                }).ToList();
+
                 return checking;
 
             case AccountTypes.Savings:
@@ -85,6 +117,22 @@ public static class DocumentToDtoMappings
                     savingsDoc.DateCreated,
                     savingsDoc.DateUpdated,
                     savingsDoc.DateDeleted);
+
+                savings.MonthlyDepositTotals = savingsDoc.MonthlyDepositTotals.Select(t => new MonthlyTotalsDto()
+                {
+                    Month = t.Month,
+                    Year = t.Year,
+                    Total = t.Total,
+                    TransactionCount = t.TransactionCount
+                }).ToList();
+
+                savings.MonthlyDepositTotals = savingsDoc.MonthlyWithdrawTotals.Select(t => new MonthlyTotalsDto()
+                {
+                    Month = t.Month,
+                    Year = t.Year,
+                    Total = t.Total,
+                    TransactionCount = t.TransactionCount
+                }).ToList();
 
                 return savings;
 
@@ -103,6 +151,22 @@ public static class DocumentToDtoMappings
                     dateUpdated: creditCardDoc.DateUpdated,
                     dateDeleted: creditCardDoc.DateDeleted);
 
+                creditCard.MonthlyDepositTotals = creditCardDoc.MonthlyDepositTotals.Select(t => new MonthlyTotalsDto()
+                {
+                    Month = t.Month,
+                    Year = t.Year,
+                    Total = t.Total,
+                    TransactionCount = t.TransactionCount
+                }).ToList();
+
+                creditCard.MonthlyDepositTotals = creditCardDoc.MonthlyWithdrawTotals.Select(t => new MonthlyTotalsDto()
+                {
+                    Month = t.Month,
+                    Year = t.Year,
+                    Total = t.Total,
+                    TransactionCount = t.TransactionCount
+                }).ToList();
+
                 return creditCard;
 
             case AccountTypes.LineOfCredit:
@@ -119,6 +183,22 @@ public static class DocumentToDtoMappings
                     dateCreated: locDoc.DateCreated,
                     dateUpdated: locDoc.DateUpdated,
                     dateDeleted: locDoc.DateDeleted);
+
+                lineOfCredit.MonthlyDepositTotals = locDoc.MonthlyDepositTotals.Select(t => new MonthlyTotalsDto()
+                {
+                    Month = t.Month,
+                    Year = t.Year,
+                    Total = t.Total,
+                    TransactionCount = t.TransactionCount
+                }).ToList();
+
+                lineOfCredit.MonthlyDepositTotals = locDoc.MonthlyWithdrawTotals.Select(t => new MonthlyTotalsDto()
+                {
+                    Month = t.Month,
+                    Year = t.Year,
+                    Total = t.Total,
+                    TransactionCount = t.TransactionCount
+                }).ToList();
 
                 return lineOfCredit;
 

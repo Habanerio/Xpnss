@@ -9,12 +9,24 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Accounts;
 
+/*
 public class AdjustBalanceEndpoint
 {
+    /// <summary>
+    /// Adjusts the balance of an account.
+    /// This is for when a correction needs to be made to the balance of an account.
+    /// It is not for when the balance needs to be updated due to a transaction.
+    /// </summary>
+    /// <param name="UserId">The Id of the User</param>
+    /// <param name="AccountId">The Id of the Account that the Balance belongs to</param>
+    /// <param name="NewBalance">The adjusted Balance</param>
+    /// <param name="DateChanged">The date for which the adjustment applies to (NOT the date that adjustment was entered into the system)</param>
+    /// <param name="Reason">The reason why the adjustment was made</param>
     public sealed record AdjustBalanceRequest(
         [Required] string UserId,
         [Required] string AccountId,
         [Required] decimal NewBalance,
+        [Required] DateTime DateChanged,
         string Reason = "");
 
 
@@ -43,6 +55,7 @@ public class AdjustBalanceEndpoint
             userId,
             request.AccountId,
             request.NewBalance,
+            request.DateChanged,
             request.Reason);
 
         var result = await service.ExecuteAsync(command, cancellationToken);
@@ -78,3 +91,4 @@ public class AdjustBalanceEndpoint
         }
     }
 }
+*/

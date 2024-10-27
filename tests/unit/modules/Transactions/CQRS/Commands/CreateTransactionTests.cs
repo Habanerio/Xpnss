@@ -77,7 +77,7 @@ public class CreateTransactionTests
             expectedAccountId.ToString(),
             expectedItems,
             expectedTransactionDate,
-            TransactionTypes.CHARGE.ToString(),
+            TransactionTypes.Keys.CHARGE.ToString(),
             expectedDescription,
             expectedMerchant
         );
@@ -88,7 +88,7 @@ public class CreateTransactionTests
             AccountId = expectedAccountId,
             UserId = expectedUserId,
             TransactionDate = expectedTransactionDate,
-            TransactionTypes = TransactionTypes.CHARGE,
+            TransactionType = TransactionTypes.Keys.CHARGE,
             Items = expectedItems.Select(i =>
                 new TransactionItem(
                     ObjectId.GenerateNewId(),
@@ -143,7 +143,7 @@ public class CreateTransactionTests
                 }
             },
             DateTime.Now,
-            TransactionTypes.CHARGE.ToString(),
+            TransactionTypes.Keys.CHARGE.ToString(),
             "Some description",
             new MerchantDto
             {
@@ -178,7 +178,7 @@ public class CreateTransactionTests
                 }
             },
             DateTime.Now,
-            TransactionTypes.CHARGE.ToString(),
+            TransactionTypes.Keys.CHARGE.ToString(),
             "Some description",
             new MerchantDto
             {
@@ -202,7 +202,7 @@ public class CreateTransactionTests
             ObjectId.GenerateNewId().ToString(),
             new List<TransactionItemDto>(),
             DateTime.Now,
-            TransactionTypes.CHARGE.ToString(),
+            TransactionTypes.Keys.CHARGE.ToString(),
             "Some description",
             new MerchantDto
             {

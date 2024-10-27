@@ -46,6 +46,23 @@ public class CreateCategory
             if (categoryDto is null)
                 return Result.Fail("Failed to map CategoryDocument to CategoryDto");
 
+            // If the Category is created, and we can map it to a DTO,
+            // we need to update the SortOrder of all Categories
+            // This is just in case there are duplicate sort orders or gaps
+            var allCategories = (await _repository.ListAsync(request.UserId, cancellationToken))
+                .Value
+                .OrderBy(c => c.SortOrder).ThenBy(c => c.Name)
+                .ToList();
+
+            var newSortOrder = 1;
+            foreach (var allCategory in allCategories)
+            {
+                allCategory.SortOrder = newSortOrder;
+                await _repository.UpdateAsync(request.UserId, allCategory, cancellationToken);
+
+                newSortOrder++;
+            }
+
             return categoryDto;
         }
 
@@ -55,6 +72,7 @@ public class CreateCategory
             {
                 RuleFor(x => x.UserId).NotEmpty();
                 RuleFor(x => x.Name).NotEmpty();
+                RuleFor(x => x.SortOrder).GreaterThan(0);
             }
         }
     }

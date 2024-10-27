@@ -8,7 +8,7 @@ namespace Habanerio.Xpnss.Modules.Categories.CQRS.Queries;
 
 public class GetCategories
 {
-    public record Query(string UserId) : IRequest<Result<IEnumerable<CategoryDto>>> { }
+    public record Query(string UserId) : ICategoriesQuery<Result<IEnumerable<CategoryDto>>>;
 
     public class Handler(ICategoriesRepository repository) : IRequestHandler<Query, Result<IEnumerable<CategoryDto>>>
     {

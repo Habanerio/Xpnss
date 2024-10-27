@@ -1,5 +1,6 @@
 using Habanerio.Xpnss.Modules.Accounts.Common;
 using Habanerio.Xpnss.Modules.Accounts.CQRS.Commands;
+using Habanerio.Xpnss.Modules.Accounts.Data;
 using Habanerio.Xpnss.Modules.Accounts.Interfaces;
 using MongoDB.Bson;
 using Tests.Integration.Common;
@@ -22,7 +23,7 @@ public class AdjustCreditHandlerTests : IClassFixture<AccountsTestDbContextFixtu
 
     private readonly string _userId = "test-user-id";
 
-    private readonly List<(string UserId, string accountId, AccountTypes type)> _availableAccounts;
+    private readonly List<(string UserId, AccountDocument Account)> _availableAccounts;
 
     public AdjustCreditHandlerTests(AccountsTestDbContextFixture dbContextFixture, ITestOutputHelper outputHelper)
     {
@@ -55,14 +56,18 @@ public class AdjustCreditHandlerTests : IClassFixture<AccountsTestDbContextFixtu
     [InlineData(AccountTypes.LineOfCredit)]
     public async Task Can_Adjust_CreditLimit(AccountTypes accountType)
     {
-        var accountId = _availableAccounts
-            .First(x => x.type == accountType)
-            .accountId;
+        var actualAccount = _availableAccounts
+            .First(x => x.Account.AccountType == accountType);
+
+        var accountId = actualAccount.Account.Id.ToString();
 
         var accountDocument = (await _verifyRepository.FirstOrDefaultAsync(a =>
             a.Id == ObjectId.Parse(accountId) && a.UserId == _userId));
 
         var creditAccount = accountDocument as IHasCreditLimit;
+
+        if (creditAccount is null)
+            throw new InvalidOperationException("The account does not have a Credit Limit");
 
         var previous = creditAccount.CreditLimit;
 
@@ -73,6 +78,7 @@ public class AdjustCreditHandlerTests : IClassFixture<AccountsTestDbContextFixtu
             "test-user-id",
             accountDocument.Id.ToString(),
             expected,
+            DateTime.Now,
             "Updated by `Can_Adjust_CreditLimit`");
 
         // Act
@@ -109,7 +115,8 @@ public class AdjustCreditHandlerTests : IClassFixture<AccountsTestDbContextFixtu
     [InlineData(AccountTypes.Savings)]
     public async Task Cannot_Adjust_CreditLimit_Invalid_AccountType(AccountTypes accountTypes)
     {
-        var accountId = _availableAccounts.First(x => x.type == accountTypes).accountId;
+        var actualAccount = _availableAccounts.First(x => x.Account.AccountType == accountTypes);
+        var accountId = actualAccount.Account.Id.ToString();
 
         var accountDocument = await _verifyRepository.FirstOrDefaultAsync(a =>
             a.Id == ObjectId.Parse(accountId) && a.UserId == _userId);
@@ -118,6 +125,7 @@ public class AdjustCreditHandlerTests : IClassFixture<AccountsTestDbContextFixtu
             "test-user-id",
             accountDocument.Id.ToString(),
             100000,
+            DateTime.Now,
             "Updated by `Can_Adjust_CreditLimit`");
 
         // Act
@@ -134,7 +142,12 @@ public class AdjustCreditHandlerTests : IClassFixture<AccountsTestDbContextFixtu
     [InlineData(null)]
     public async Task CanNotCall_Adjust_CreditLimit_WithEmpty_UserId_IsFailed(string value)
     {
-        var result = await _testHandler.Handle(new AdjustCreditLimit.Command(value, "1111111", 1000, ""), CancellationToken.None);
+        var result = await _testHandler.Handle(new AdjustCreditLimit.Command(
+            value,
+            "1111111",
+            1000,
+            DateTime.Now,
+            ""), CancellationToken.None);
 
         Assert.True(result.IsFailed);
         Assert.Equal("'User Id' must not be empty.", result.Errors[0].Message);
@@ -146,7 +159,12 @@ public class AdjustCreditHandlerTests : IClassFixture<AccountsTestDbContextFixtu
     [InlineData(null)]
     public async Task CanNotCall_Adjust_CreditLimit_WithEmpty_Account_IsFailed(string value)
     {
-        var result = await _testHandler.Handle(new AdjustCreditLimit.Command("test-user-id", value, 1000, ""), CancellationToken.None);
+        var result = await _testHandler.Handle(new AdjustCreditLimit.Command(
+            "test-user-id",
+            value,
+            1000,
+            DateTime.Now,
+            ""), CancellationToken.None);
 
         Assert.True(result.IsFailed);
         Assert.Equal("'Account Id' must not be empty.", result.Errors[0].Message);
@@ -157,7 +175,12 @@ public class AdjustCreditHandlerTests : IClassFixture<AccountsTestDbContextFixtu
     {
         var accountId = "sdfgsdf7gsd9fgsdfg";
 
-        var result = await _testHandler.Handle(new AdjustCreditLimit.Command("test-user-id", accountId, 1000, ""), CancellationToken.None);
+        var result = await _testHandler.Handle(new AdjustCreditLimit.Command(
+            "test-user-id",
+            accountId,
+            1000,
+            DateTime.Now,
+            ""), CancellationToken.None);
 
         Assert.True(result.IsFailed);
         Assert.Equal($"Invalid AccountId: `{accountId}`", result.Errors[0].Message);

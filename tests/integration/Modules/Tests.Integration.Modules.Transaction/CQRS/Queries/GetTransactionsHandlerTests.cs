@@ -1,4 +1,5 @@
 using Habanerio.Xpnss.Modules.Transactions.CQRS.Queries;
+using Habanerio.Xpnss.Modules.Transactions.Data;
 using Habanerio.Xpnss.Modules.Transactions.Interfaces;
 using Tests.Integration.Common;
 using Xunit.Abstractions;
@@ -10,15 +11,13 @@ public class GetTransactionsHandlerTests : IClassFixture<TransactionsTestDbConte
 {
     private readonly ITestOutputHelper _outputHelper;
 
-    private readonly List<(string UserId, string TransactionId, string AccountId)> _actualTransactions;
+    private readonly List<(string UserId, TransactionDocument Transaction)> _actualTransactions;
 
     private readonly ITransactionsRepository _transactionsRepository;
 
-    private readonly TestTransactionsRepository _verifyRepository;
-
     private readonly GetTransactions.Handler _testHandler;
 
-    private readonly string _userId = "1";
+    private readonly string _userId = "test-user-id";
 
     public GetTransactionsHandlerTests(TransactionsTestDbContextFixture dbContextFixture, ITestOutputHelper outputHelper)
     {
@@ -82,7 +81,7 @@ public class GetTransactionsHandlerTests : IClassFixture<TransactionsTestDbConte
     public async Task CanCall_Handle_GetTransactionsByAccountId()
     {
         var userAccountIds = _actualTransactions.Where(x => x.UserId == _userId)
-            .Select(x => x.AccountId)
+            .Select(x => x.Transaction.AccountId)
             .Distinct()
             .ToList();
 
@@ -92,7 +91,7 @@ public class GetTransactionsHandlerTests : IClassFixture<TransactionsTestDbConte
             // Act
             var query = new GetTransactions.Query(
                 _userId,
-                userAccountId,
+                userAccountId.ToString(),
                 FromDate: DateTime.UtcNow.AddYears(-1));
 
             var results = await _testHandler.Handle(

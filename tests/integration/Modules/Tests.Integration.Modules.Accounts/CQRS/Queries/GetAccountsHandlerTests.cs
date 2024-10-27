@@ -1,5 +1,6 @@
 using Habanerio.Xpnss.Modules.Accounts.Common;
 using Habanerio.Xpnss.Modules.Accounts.CQRS.Queries;
+using Habanerio.Xpnss.Modules.Accounts.Data;
 using Habanerio.Xpnss.Modules.Accounts.DTOs;
 using Habanerio.Xpnss.Modules.Accounts.Interfaces;
 
@@ -24,7 +25,7 @@ public class GetAccountsHandlerTests : IClassFixture<AccountsTestDbContextFixtur
 
     private readonly string _userId = "test-user-id";
 
-    private readonly List<(string UserId, string AccountId, AccountTypes AccountType)> _availableAccounts;
+    private readonly List<(string UserId, AccountDocument)> _availableAccounts;
 
     public GetAccountsHandlerTests(AccountsTestDbContextFixture dbContextFixture, ITestOutputHelper outputHelper)
     {

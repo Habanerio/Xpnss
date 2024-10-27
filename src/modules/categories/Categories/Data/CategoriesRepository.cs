@@ -6,12 +6,9 @@ using MongoDB.Bson;
 
 namespace Habanerio.Xpnss.Modules.Categories.Data;
 
-public class CategoriesRepository : MongoDbRepository<CategoryDocument>, ICategoriesRepository
+public class CategoriesRepository(IOptions<MongoDbSettings> options)
+    : MongoDbRepository<CategoryDocument>(new CategoriesDbContext(options)), ICategoriesRepository
 {
-    protected CategoriesRepository(IOptions<MongoDbSettings> options) : base(new CategoriesDbContext(options))
-    { }
-
-
     public async Task<Result<CategoryDocument>> AddAsync(CategoryDocument category, CancellationToken cancellationToken = default)
     {
         category.DateCreated = DateTime.UtcNow;
@@ -23,41 +20,24 @@ public class CategoriesRepository : MongoDbRepository<CategoryDocument>, ICatego
 
     public async Task<Result<CategoryDocument>> GetByIdAsync(
         string userId,
-        string parentCategoryId,
-        string childCategoryId = "",
+        string categoryId,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(userId))
             return Result.Fail("UserId cannot be null or empty");
 
-        if (!ObjectId.TryParse(parentCategoryId, out var parentObjectId) ||
+        if (!ObjectId.TryParse(categoryId, out var parentObjectId) ||
             parentObjectId.Equals(ObjectId.Empty))
-            return Result.Fail($"Invalid Parent CategoryId: `{parentCategoryId}`");
-
-        var childObjectId = ObjectId.Empty;
-
-        if (!string.IsNullOrWhiteSpace(childCategoryId))
-        {
-            if (!ObjectId.TryParse(childCategoryId, out childObjectId))
-                return Result.Fail($"Invalid Child CategoryId: `{childCategoryId}`");
-        }
+            return Result.Fail($"Invalid Parent CategoryId: `{categoryId}`");
 
         var parentDoc = await FirstOrDefaultAsync(a =>
-                                    a.Id.Equals(parentObjectId) && a.UserId.Equals(userId),
-                                cancellationToken);
+                a.Id.Equals(parentObjectId) && a.UserId.Equals(userId),
+            cancellationToken);
 
         if (parentDoc is null)
-            return Result.Fail($"Parent Category not found for Parent CategoryId: `{parentCategoryId}`");
+            return Result.Fail($"Parent Category not found for Parent CategoryId: `{categoryId}`");
 
-        if (childObjectId.Equals(ObjectId.Empty))
-            return Result.Ok(parentDoc);
-
-        var childDoc = parentDoc.SubCategories.Find(c => c.Id.Equals(childObjectId));
-
-        if (childDoc is null)
-            return Result.Fail($"Child Category not found for Child CategoryId: `{childCategoryId}`");
-
-        return Result.Ok(childDoc);
+        return Result.Ok(parentDoc);
     }
 
     public async Task<Result<IEnumerable<CategoryDocument>>> ListAsync(string userId, CancellationToken cancellationToken = default)

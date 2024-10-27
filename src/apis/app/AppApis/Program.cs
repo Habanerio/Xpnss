@@ -1,7 +1,9 @@
 using Carter;
 using Habanerio.Core.Dbs.MongoDb;
+using Habanerio.Xpnss.Apis.App.AppApis.Managers;
 using Habanerio.Xpnss.Modules.Accounts;
 using Habanerio.Xpnss.Modules.Accounts.Common;
+using Habanerio.Xpnss.Modules.Categories;
 using Habanerio.Xpnss.Modules.Transactions;
 using Microsoft.AspNetCore.Http.Json;
 
@@ -32,7 +34,10 @@ public class Program
 
         builder.Services.AddCors();
 
+        builder.Services.AddScoped<IAccountTransactionManager, AccountTransactionManager>();
+
         builder.Services.AddAccountsModule();
+        builder.Services.AddCategoriesModule();
         builder.Services.AddTransactionsModule();
 
         // AddDocument services to the container.

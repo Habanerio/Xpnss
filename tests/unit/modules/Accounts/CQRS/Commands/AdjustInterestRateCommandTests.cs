@@ -38,7 +38,8 @@ public class AdjustInterestRateCommandTests
         var command = new AdjustInterestRate.Command(
             value,
             ObjectId.GenerateNewId().ToString(),
-            12.99m);
+            12.99m,
+            DateTime.Now);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -55,7 +56,8 @@ public class AdjustInterestRateCommandTests
         var command = new AdjustInterestRate.Command(
             "1",
             value,
-            12.99m);
+            12.99m,
+            DateTime.Now);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -71,7 +73,8 @@ public class AdjustInterestRateCommandTests
         var command = new AdjustInterestRate.Command(
             "1",
             ObjectId.GenerateNewId().ToString(),
-            value);
+            value,
+            DateTime.Now);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 

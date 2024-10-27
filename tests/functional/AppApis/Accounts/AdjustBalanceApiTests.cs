@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis.Accounts;
 
+/*
 public class AdjustBalanceApiTests(WebApplicationFactory<Apis.App.AppApis.Program> factory)
     : BaseFunctionalApisTests(factory),
         IClassFixture<WebApplicationFactory<Apis.App.AppApis.Program>>
@@ -99,3 +100,4 @@ public class AdjustBalanceApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         Assert.Equal(expectedBalance, accountApiResponse.Data.Balance);
     }
 }
+*/

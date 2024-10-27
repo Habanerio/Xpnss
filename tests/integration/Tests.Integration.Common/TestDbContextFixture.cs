@@ -1,8 +1,9 @@
 using Habanerio.Core.Dbs.MongoDb;
 using Habanerio.Core.Dbs.MongoDb.Interfaces;
-using Habanerio.Xpnss.Modules.Accounts.Common;
 using Habanerio.Xpnss.Modules.Accounts.Data;
 using Habanerio.Xpnss.Modules.Accounts.Interfaces;
+using Habanerio.Xpnss.Modules.Categories.Data;
+using Habanerio.Xpnss.Modules.Categories.Interfaces;
 using Habanerio.Xpnss.Modules.Transactions.Common;
 using Habanerio.Xpnss.Modules.Transactions.Data;
 using Habanerio.Xpnss.Modules.Transactions.Interfaces;
@@ -46,7 +47,7 @@ public class AccountsTestDbContextFixture : TestDbContainerFixture
 
     public TestAccountsRepository VerifyAccountsRepository { get; set; }
 
-    public List<(string UserId, string AccountId, AccountTypes AccountType)> AvailableAccounts = [];
+    public List<(string UserId, AccountDocument Account)> AvailableAccounts = [];
 
     public override async Task InitializeAsync()
     {
@@ -121,12 +122,87 @@ public class AccountsTestDbContextFixture : TestDbContainerFixture
             var result = await AccountsRepository.AddAsync(accountDoc);
 
             if (result.IsSuccess)
-                AvailableAccounts.Add((accountDoc.UserId, result.Value.Id.ToString(), accountDoc.AccountType));
+                AvailableAccounts.Add((accountDoc.UserId, result.Value));
         }
-
-        //Thread.Sleep(500);
     }
 }
+
+
+[CollectionDefinition(nameof(CategoriesMongoCollection))]
+public class CategoriesMongoCollection : ICollectionFixture<CategoriesTestDbContextFixture> { }
+
+public class CategoriesTestDbContextFixture : TestDbContainerFixture
+{
+    private IMongoDbContext<CategoryDocument>? _dbContext;
+
+    public IMongoDbContext<CategoryDocument> DbContext => _dbContext;
+
+    public ICategoriesRepository CategoriesRepository { get; set; }
+
+    public TestCategoriesRepository VerifyCategoriesRepository { get; set; }
+
+    public List<(string UserId, CategoryDocument Category)> ActualCategories = [];
+
+    public override async Task InitializeAsync()
+    {
+        await base.InitializeAsync();
+
+        var options = Options.Create(new MongoDbSettings
+        {
+            ConnectionString = ConnectionString,
+            DatabaseName = "Xpnss-Test",
+            EnableDetailedErrors = true,
+            EnableSensitiveDataLogging = true
+        });
+
+        _dbContext = new TestDbContext.TestCategoriesDbContext(options);
+
+        CategoriesRepository = new CategoriesRepository(options);
+        VerifyCategoriesRepository = new TestCategoriesRepository(options);
+
+        await PopulateData();
+    }
+
+    public override async Task DisposeAsync()
+    {
+        await base.DisposeAsync();
+    }
+
+    private async Task PopulateData()
+    {
+        var categoryDocs = new List<CategoryDocument>
+        {
+            CategoryDocument.New("test-user-id", "Test Category 6", "Test Category 6 Description",6),
+            CategoryDocument.New("test-user-id", "Test Category 1", "Test Category 1 Description", 1),
+            CategoryDocument.New("test-user-id", "Test Category 5", "Test Category 5 Description",5),
+            CategoryDocument.New("test-user-id", "Test Category 3", "Test Category 3 Description",3),
+            CategoryDocument.New("test-user-id", "Test Category 2", "Test Category 2 Description",2),
+            CategoryDocument.New("test-user-id", "Test Category 4", "Test Category 4 Description",4),
+        };
+
+        categoryDocs[0].AddSubCategory(
+            "Test Category 6 - SubCategory 1",
+            "Test Category 6 - SubCategory 1 Description",
+            1);
+        categoryDocs[0].AddSubCategory(
+            "Test Category 6 - SubCategory 3",
+            "Test Category 6 - SubCategory 3 Description",
+            3);
+        categoryDocs[0].AddSubCategory(
+            "Test Category 6 - SubCategory 2",
+            "Test Category 6 - SubCategory 2 Description",
+            2);
+
+        foreach (var categoryDoc in categoryDocs)
+        {
+            var result = await CategoriesRepository.AddAsync(categoryDoc);
+
+            if (result.IsSuccess)
+                ActualCategories.Add((categoryDoc.UserId, result.Value));
+        }
+    }
+}
+
 
 [CollectionDefinition(nameof(TransactionsMongoCollection))]
 public class TransactionsMongoCollection : ICollectionFixture<TransactionsTestDbContextFixture> { }
@@ -141,7 +217,7 @@ public class TransactionsTestDbContextFixture : TestDbContainerFixture
 
     public TestTransactionsRepository VerifyTransactionsRepository { get; set; }
 
-    public List<(string UserId, string TransactionId, string AccountId)> ActualTransactions = [];
+    public List<(string UserId, TransactionDocument Transaction)> ActualTransactions = [];
 
     public override async Task InitializeAsync()
     {
@@ -195,7 +271,7 @@ public class TransactionsTestDbContextFixture : TestDbContainerFixture
                 {
                     TransactionItem.New(100, "Test Transaction 1", categoryIds[0])
                 },
-                TransactionTypes.PURCHASE,
+                TransactionTypes.Keys.PURCHASE,
                 "Test Transaction 1",
                 TransactionMerchant.New("Test Merchant 1", "Test Merchant Location 1")),
             TransactionDocument.New(
@@ -206,7 +282,7 @@ public class TransactionsTestDbContextFixture : TestDbContainerFixture
                 {
                     TransactionItem.New(200, "Test Transaction 2", categoryIds[1])
                 },
-                TransactionTypes.PURCHASE,
+                TransactionTypes.Keys.PURCHASE,
                 "Test Transaction 2",
                 TransactionMerchant.New("Test Merchant 2", "Test Merchant Location 2")),
             TransactionDocument.New(
@@ -217,7 +293,7 @@ public class TransactionsTestDbContextFixture : TestDbContainerFixture
                 {
                     TransactionItem.New(300, "Test Transaction 3", categoryIds[0])
                 },
-                TransactionTypes.PURCHASE,
+                TransactionTypes.Keys.PURCHASE,
                 "Test Transaction 3",
                 TransactionMerchant.New("Test Merchant 3", "Test Merchant Location 3")),
             TransactionDocument.New(
@@ -228,7 +304,7 @@ public class TransactionsTestDbContextFixture : TestDbContainerFixture
                 {
                     TransactionItem.New(400, "Test Transaction 4", categoryIds[1])
                 },
-                TransactionTypes.PURCHASE,
+                TransactionTypes.Keys.PURCHASE,
                 "Test Transaction 4",
                 TransactionMerchant.New("Test Merchant 4", "Test Merchant Location 4")),
             TransactionDocument.New(
@@ -239,7 +315,7 @@ public class TransactionsTestDbContextFixture : TestDbContainerFixture
                 {
                     TransactionItem.New(500, "Test Transaction 5", categoryIds[0])
                 },
-                TransactionTypes.PURCHASE,
+                TransactionTypes.Keys.PURCHASE,
                 "Test Transaction 5",
                 TransactionMerchant.New("Test Merchant 5", "Test Merchant Location 5")),
             TransactionDocument.New(
@@ -250,7 +326,7 @@ public class TransactionsTestDbContextFixture : TestDbContainerFixture
                 {
                     TransactionItem.New(600, "Test Transaction 6", categoryIds[1])
                 },
-                TransactionTypes.PURCHASE,
+                TransactionTypes.Keys.PURCHASE,
                 "Test Transaction 6",
                 TransactionMerchant.New("Test Merchant 6", "Test Merchant Location 6")),
         };
@@ -260,7 +336,7 @@ public class TransactionsTestDbContextFixture : TestDbContainerFixture
             var result = await TransactionsRepository.AddAsync(transactionDoc);
 
             if (result.IsSuccess)
-                ActualTransactions.Add((transactionDoc.UserId, result.Value.ToString(), transactionDoc.AccountId.ToString()));
+                ActualTransactions.Add((transactionDoc.UserId, result.Value));
         }
     }
 }

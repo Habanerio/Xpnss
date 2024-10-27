@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Transactions;
 
-public class GetTransactionsEndpoint
+public sealed class GetTransactionsEndpoint
 {
     public sealed record GetTransactionsRequest
     {
@@ -32,7 +32,7 @@ public class GetTransactionsEndpoint
         GetTransactionsRequest request,
         string userTimeZone,
         ITransactionsService service,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(userId))
             return Results.BadRequest("User Id is required");

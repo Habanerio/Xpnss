@@ -1,3 +1,4 @@
+using Habanerio.Xpnss.Modules.Transactions.Common;
 using Habanerio.Xpnss.Modules.Transactions.Data;
 using Habanerio.Xpnss.Modules.Transactions.DTOs;
 
@@ -32,11 +33,12 @@ public static class DocumentToDtoMappings
             AccountId = document.AccountId.ToString(),
             Amount = document.TotalAmount,
             Description = document.Description,
+            IsCredit = TransactionTypes.IsCredit(document.TransactionType),
             Items = Map(document.Items.AsEnumerable()).ToList().AsReadOnly(),
             Merchant = Map(document.Merchant),
             Paid = document.TotalPaid,
             TransactionDate = document.TransactionDate,
-            TransactionType = document.TransactionTypes.ToString(),
+            TransactionType = document.TransactionType.ToString(),
             DatePaid = document.DatePaid,
         };
     }

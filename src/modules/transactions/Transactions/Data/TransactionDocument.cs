@@ -41,7 +41,7 @@ public class TransactionDocument : MongoDocument
     public DateTime TransactionDate { get; set; }
 
     [BsonElement("transaction_type")]
-    public TransactionTypes TransactionTypes { get; set; }
+    public TransactionTypes.Keys TransactionType { get; set; }
 
     [BsonElement("date_paid")]
     [BsonDateTimeOptions(DateOnly = true)]
@@ -71,7 +71,7 @@ public class TransactionDocument : MongoDocument
         string accountId,
         DateTime transactionDate,
         List<TransactionItem> transactionItems,
-        TransactionTypes transactionTypes,
+        TransactionTypes.Keys transactionTypes,
         string description = "",
         TransactionMerchant? merchant = null
     )
@@ -83,7 +83,7 @@ public class TransactionDocument : MongoDocument
             Items = transactionItems,
             Merchant = merchant,
             TransactionDate = transactionDate.ToUniversalTime().Date,
-            TransactionTypes = transactionTypes,
+            TransactionType = transactionTypes,
             Description = description,
             DateCreated = DateTime.UtcNow
         };

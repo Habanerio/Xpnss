@@ -1,80 +1,80 @@
-using Habanerio.Xpnss.Modules.Accounts.CQRS.Commands;
-using Habanerio.Xpnss.Modules.Accounts.Interfaces;
-using MongoDB.Bson;
-using Moq;
+//using Habanerio.Xpnss.Modules.Accounts.CQRS.Commands;
+//using Habanerio.Xpnss.Modules.Accounts.Interfaces;
+//using MongoDB.Bson;
+//using Moq;
 
-namespace Habanerio.Xpnss.Tests.Unit.Modules.Accounts.CQRS.Commands;
+//namespace Habanerio.Xpnss.Tests.Unit.Modules.Accounts.CQRS.Commands;
 
-public class UpdateCreditLimitCommandTests
-{
-    private readonly Mock<IAccountsRepository> _repository;
+//public class UpdateCreditLimitCommandTests
+//{
+//    private readonly Mock<IAccountsRepository> _repository;
 
-    private readonly UpdateCreditLimit.Handler _handler;
+//    private readonly UpdateCreditLimit.Handler _handler;
 
-    public UpdateCreditLimitCommandTests()
-    {
-        _repository = new Mock<IAccountsRepository>();
+//    public UpdateCreditLimitCommandTests()
+//    {
+//        _repository = new Mock<IAccountsRepository>();
 
-        _handler = new UpdateCreditLimit.Handler(_repository.Object);
-    }
+//        _handler = new UpdateCreditLimit.Handler(_repository.Object);
+//    }
 
-    [Fact]
-    public void Cannot_Instantiate_Handler_WithNull_Repository_ThrowsException()
-    {
-        IAccountsRepository repository = null;
+//    [Fact]
+//    public void Cannot_Instantiate_Handler_WithNull_Repository_ThrowsException()
+//    {
+//        IAccountsRepository repository = null;
 
-        var error = Assert.Throws<ArgumentNullException>(() =>
-            new UpdateCreditLimit.Handler(repository));
+//        var error = Assert.Throws<ArgumentNullException>(() =>
+//            new UpdateCreditLimit.Handler(repository));
 
-        Assert.Equal("Value cannot be null. (Parameter 'repository')", error.Message);
-    }
+//        Assert.Equal("Value cannot be null. (Parameter 'repository')", error.Message);
+//    }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
-    [InlineData(null)]
-    public async Task CannotCall_AddAccount_WithInvalid_UserId_ReturnsFailed(string? value)
-    {
-        var command = new UpdateCreditLimit.Command(
-            value,
-            ObjectId.GenerateNewId().ToString(),
-            5000);
+//    [Theory]
+//    [InlineData("")]
+//    [InlineData(" ")]
+//    [InlineData(null)]
+//    public async Task CannotCall_AddAccount_WithInvalid_UserId_ReturnsFailed(string? value)
+//    {
+//        var command = new UpdateCreditLimit.Command(
+//            value,
+//            ObjectId.GenerateNewId().ToString(),
+//            5000);
 
-        var result = await _handler.Handle(command, CancellationToken.None);
+//        var result = await _handler.Handle(command, CancellationToken.None);
 
-        Assert.True(result.IsFailed);
-        Assert.Equal("'User Id' must not be empty.", result.Errors[0].Message);
-    }
+//        Assert.True(result.IsFailed);
+//        Assert.Equal("'User Id' must not be empty.", result.Errors[0].Message);
+//    }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
-    [InlineData(null)]
-    public async Task CannotCall_AddAccount_WithInvalid_AccountId_ReturnsFailed(string? value)
-    {
-        var command = new UpdateCreditLimit.Command(
-            "1",
-            value,
-            5000);
+//    [Theory]
+//    [InlineData("")]
+//    [InlineData(" ")]
+//    [InlineData(null)]
+//    public async Task CannotCall_AddAccount_WithInvalid_AccountId_ReturnsFailed(string? value)
+//    {
+//        var command = new UpdateCreditLimit.Command(
+//            "1",
+//            value,
+//            5000);
 
-        var result = await _handler.Handle(command, CancellationToken.None);
+//        var result = await _handler.Handle(command, CancellationToken.None);
 
-        Assert.True(result.IsFailed);
-        Assert.Equal("'Account Id' must not be empty.", result.Errors[0].Message);
-    }
+//        Assert.True(result.IsFailed);
+//        Assert.Equal("'Account Id' must not be empty.", result.Errors[0].Message);
+//    }
 
-    [Fact]
-    public async Task CannotCall_AddAccount_WithInvalid_CreditLimit_ReturnsFailed()
-    {
-        var command = new UpdateCreditLimit.Command(
-            "1",
-            ObjectId.GenerateNewId().ToString(),
-            -0.00001m);
+//    [Fact]
+//    public async Task CannotCall_AddAccount_WithInvalid_CreditLimit_ReturnsFailed()
+//    {
+//        var command = new UpdateCreditLimit.Command(
+//            "1",
+//            ObjectId.GenerateNewId().ToString(),
+//            -0.00001m);
 
-        var result = await _handler.Handle(command, CancellationToken.None);
+//        var result = await _handler.Handle(command, CancellationToken.None);
 
-        Assert.True(result.IsFailed);
-        Assert.Equal("'Credit Limit' must be greater than or equal to '0'.",
-            result.Errors[0].Message);
-    }
-}
+//        Assert.True(result.IsFailed);
+//        Assert.Equal("'Credit Limit' must be greater than or equal to '0'.",
+//            result.Errors[0].Message);
+//    }
+//}
