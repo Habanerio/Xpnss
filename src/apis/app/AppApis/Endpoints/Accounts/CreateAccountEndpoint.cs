@@ -1,11 +1,10 @@
-using System.ComponentModel.DataAnnotations;
 using System.Net;
 using Carter;
 using FluentValidation;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Modules.Accounts.CQRS.Commands;
-using Habanerio.Xpnss.Modules.Accounts.DTOs;
-using Habanerio.Xpnss.Modules.Accounts.Interfaces;
+using Habanerio.Xpnss.Application.Accounts.Commands.CreateAccount;
+using Habanerio.Xpnss.Application.Accounts.DTOs;
+using Habanerio.Xpnss.Domain.Accounts.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Accounts;
@@ -13,70 +12,8 @@ namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Accounts;
 /// <summary>
 /// Single Endpoint for creating any of the accounts.
 /// </summary>
-public class CreateAccountEndpoint
+public class CreateAccountEndpoint : BaseEndpoint
 {
-    public record CreateAccountRequest
-    {
-        [Required]
-        public string UserId { get; set; }
-
-        [Required]
-        public string AccountType { get; set; }
-
-        [Required]
-        public string Name { get; set; } = "";
-
-        public string Description { get; set; } = "";
-
-        public decimal Balance { get; set; }
-
-        public decimal CreditLimit { get; set; }
-
-        public decimal InterestRate { get; set; }
-
-        public decimal OverDraftAmount { get; set; }
-
-        public string DisplayColor { get; set; } = "#ff0000";
-    }
-
-    public static async Task<IResult> HandleAsync(
-        string userId,
-        CreateAccountRequest request,
-        IAccountsService service,
-        CancellationToken cancellationToken)
-    {
-        ArgumentNullException.ThrowIfNull(request);
-        ArgumentNullException.ThrowIfNull(service);
-
-        var validator = new Validator();
-        var validationResult = await validator.ValidateAsync(request, cancellationToken);
-
-        if (!validationResult.IsValid)
-            return Results.BadRequest(
-                validationResult.Errors
-                    .Select(x => x.ErrorMessage));
-
-        var command = new CreateAccount.Command(
-            request.UserId,
-            request.AccountType,
-            request.Name,
-            request.Description,
-            request.Balance,
-            request.CreditLimit,
-            request.InterestRate,
-            request.OverDraftAmount,
-            request.DisplayColor);
-
-        var result = await service.ExecuteAsync(command, cancellationToken);
-
-        if (result.IsFailed)
-            return Results.BadRequest(result.Errors.Select(x => x.Message));
-
-        var response = ApiResponse<AccountDto>.Ok(result.Value);
-
-        return Results.Ok(response);
-    }
-
     public sealed class Endpoint : ICarterModule
     {
         public void AddRoutes(IEndpointRouteBuilder app)
@@ -84,17 +21,14 @@ public class CreateAccountEndpoint
             app.MapPost("/api/v1/users/{userId}/accounts",
                     async (
                         [FromRoute] string userId,
-                        [FromBody] CreateAccountRequest request,
+                        [FromBody] CreateAccountCommand command,
                         [FromServices] IAccountsService service,
                         CancellationToken cancellationToken) =>
                     {
-                        var result = await HandleAsync(userId, request, service, cancellationToken);
-
-                        return result;
+                        return await HandleAsync(userId, command, service, cancellationToken);
                     })
                 .Produces<AccountDto>((int)HttpStatusCode.OK)
-                .Produces((int)HttpStatusCode.BadRequest)
-                .Produces<string>((int)HttpStatusCode.BadRequest)
+                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
                 .WithDisplayName("New Account")
                 .WithName("CreateAccount")
                 .WithTags("Accounts")
@@ -102,7 +36,35 @@ public class CreateAccountEndpoint
         }
     }
 
-    public sealed class Validator : AbstractValidator<CreateAccountRequest>
+    public static async Task<IResult> HandleAsync(
+        string userId,
+        CreateAccountCommand command,
+        IAccountsService service,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(service);
+
+        if (string.IsNullOrWhiteSpace(userId))
+            return BadRequestWithErrors("User Id is required");
+
+        var validator = new Validator();
+        var validationResult = await validator.ValidateAsync(command, cancellationToken);
+
+        if (!validationResult.IsValid)
+            return BadRequestWithErrors(validationResult.Errors);
+
+        var result = await service.CommandAsync(command, cancellationToken);
+
+        if (result.IsFailed)
+            return BadRequestWithErrors(result.Errors);
+
+        var response = ApiResponse<AccountDto>.Ok(result.Value);
+
+        return Results.Ok(response);
+    }
+
+    public sealed class Validator : AbstractValidator<CreateAccountCommand>
     {
         public Validator()
         {

@@ -1,11 +1,8 @@
 using Carter;
 using Habanerio.Core.Dbs.MongoDb;
-using Habanerio.Xpnss.Apis.App.AppApis.Managers;
-using Habanerio.Xpnss.Modules.Accounts;
-using Habanerio.Xpnss.Modules.Accounts.Common;
-using Habanerio.Xpnss.Modules.Categories;
-using Habanerio.Xpnss.Modules.Transactions;
-using Microsoft.AspNetCore.Http.Json;
+using Habanerio.Xpnss.Application.Setups;
+using Habanerio.Xpnss.Domain.Events;
+using Habanerio.Xpnss.Infrastructure.Events;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis;
 
@@ -25,20 +22,23 @@ public class Program
         builder.Services.AddOptions<MongoDbSettings>()
         .BindConfiguration("XpnssMongoDBSettings");
 
+        /* Added to .AddAccountsModule()
         builder.Services.Configure<JsonOptions>(o =>
         {
             o.SerializerOptions.Converters.Add(new AccountDtoConverter());
         });
+        */
 
         builder.Services.AddCarter();
 
         builder.Services.AddCors();
 
-        builder.Services.AddScoped<IAccountTransactionManager, AccountTransactionManager>();
-
         builder.Services.AddAccountsModule();
         builder.Services.AddCategoriesModule();
+        builder.Services.AddMerchantsModule();
         builder.Services.AddTransactionsModule();
+
+        builder.Services.AddScoped<IEventDispatcher, DomainEventDispatcher>();
 
         // AddDocument services to the container.
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

@@ -1,6 +1,6 @@
 using Habanerio.Core.Dbs.MongoDb;
-using Habanerio.Xpnss.Modules.Accounts.Data;
-using Habanerio.Xpnss.Modules.Accounts.Interfaces;
+using Habanerio.Xpnss.Infrastructure.Documents;
+using Habanerio.Xpnss.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
@@ -15,7 +15,10 @@ public class BaseFunctionalApisTests
 
     protected readonly IConfiguration Config;
 
-    protected readonly IAccountsRepository AccountsRepository;
+    protected readonly MongoDbRepository<AccountDocument> AccountDocumentsRepository;
+    protected readonly MongoDbRepository<CategoryDocument> CategoryDocumentsRepository;
+    protected readonly MongoDbRepository<MerchantDocument> MerchantDocumentsRepository;
+    protected readonly MongoDbRepository<TransactionDocument> TransactionDocumentsRepository;
 
     protected const string API_VERSION = "v1";
 
@@ -27,10 +30,6 @@ public class BaseFunctionalApisTests
     protected BaseFunctionalApisTests(WebApplicationFactory<Apis.App.AppApis.Program> factory)
     {
         _factory = factory;
-        //_factory.WithWebHostBuilder(builder =>
-        //{
-        //    builder.UseEnvironment("Test");
-        //});
 
         HttpClient = _factory.CreateClient();
 
@@ -42,23 +41,15 @@ public class BaseFunctionalApisTests
         Config.GetSection("XpnssMongoDBSettings").Bind(mongoDbSettings);
         var options = Options.Create(mongoDbSettings);
 
-        AccountsRepository = new AccountsRepository(options);
+        AccountDocumentsRepository = new AccountsRepository(options);
+        CategoryDocumentsRepository = new CategoriesRepository(options);
+        MerchantDocumentsRepository = new MerchantsRepository(options);
+        TransactionDocumentsRepository = new TransactionsRepository(options);
 
+        //TODO: Add Api Key
         //Config = AppConfigSettingsManager.GetConfigs();
         //var apiKey = Config.GetValue<string>("ApiKey");
 
         //HttpClient.DefaultRequestHeaders.AddDocument("xpnss-api-key", apiKey);
-    }
-
-    protected async Task<IEnumerable<AccountDocument>> GetAccountDocsAsync()
-    {
-        var accountsResults = await AccountsRepository.ListAsync(USER_ID, CancellationToken.None);
-
-        if (accountsResults.IsFailed)
-            throw new Exception($"Failed to get accounts: {accountsResults.Errors[0].Message}");
-
-        var accounts = accountsResults.Value;
-
-        return accounts;
     }
 }

@@ -1,64 +1,16 @@
-using System.ComponentModel.DataAnnotations;
 using System.Net;
 using Carter;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Modules.Transactions.CQRS.Queries;
-using Habanerio.Xpnss.Modules.Transactions.DTOs;
-using Habanerio.Xpnss.Modules.Transactions.Interfaces;
+using Habanerio.Xpnss.Application.Transactions.DTOs;
+using Habanerio.Xpnss.Application.Transactions.Queries.GetTransactions;
+using Habanerio.Xpnss.Domain.Merchants.Interfaces;
+using Habanerio.Xpnss.Domain.Transactions.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Transactions;
 
-public sealed class GetTransactionsEndpoint
+public sealed class GetTransactionsEndpoint : BaseEndpoint
 {
-    public sealed record GetTransactionsRequest
-    {
-        [Required]
-        public string UserId { get; set; }
-
-        public string AccountId { get; set; } = "";
-
-        public DateTime? StartDate { get; set; }
-
-        public DateTime? EndDate { get; set; }
-
-        //public int Page { get; set; } = 1;
-
-        //public int PageSize { get; set; } = 10;
-    }
-
-    public static async Task<IResult> HandleAsync(
-        string userId,
-        GetTransactionsRequest request,
-        string userTimeZone,
-        ITransactionsService service,
-        CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrWhiteSpace(userId))
-            return Results.BadRequest("User Id is required");
-
-        var query = new GetTransactions.Query(
-            userId,
-            request.AccountId,
-            FromDate: request.StartDate,
-            ToDate: request.EndDate)
-        {
-            TimeZone = userTimeZone
-        };
-
-        var result = await service.ExecuteAsync(query, cancellationToken);
-
-        if (!result.IsSuccess)
-            return Results.BadRequest(result.Errors.Select(x => x.Message));
-
-        if (result.ValueOrDefault is null)
-            return Results.NotFound();
-
-        var response = ApiResponse<IEnumerable<TransactionDto>>.Ok(result.Value);
-
-        return Results.Ok(response);
-    }
-
     public sealed class Endpoint : ICarterModule
     {
         public void AddRoutes(IEndpointRouteBuilder app)
@@ -67,13 +19,14 @@ public sealed class GetTransactionsEndpoint
                     async (
                         HttpRequest httpRequest,
                         [FromRoute] string userId,
-                        [FromBody] GetTransactionsRequest request,
-                        [FromServices] ITransactionsService service,
+                        [FromBody] GetTransactionsQuery request,
+                        [FromServices] ITransactionsService transactionsService,
+                        [FromServices] IMerchantsService merchantsService,
                         CancellationToken cancellationToken) =>
                     {
-                        var userTimeZone = httpRequest.Headers["X-User-Timezone"].FirstOrDefault();
+                        var userTimeZone = httpRequest.Headers["X-User-Timezone"].FirstOrDefault() ?? string.Empty;
 
-                        return await HandleAsync(userId, request, userTimeZone, service, cancellationToken);
+                        return await HandleAsync(userId, request, userTimeZone, transactionsService, merchantsService, cancellationToken);
                     })
                 .Produces<ApiResponse<IEnumerable<TransactionDto>>>((int)HttpStatusCode.OK)
                 .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
@@ -83,5 +36,32 @@ public sealed class GetTransactionsEndpoint
                 .WithTags("Transactions")
                 .WithOpenApi();
         }
+    }
+
+    public static async Task<IResult> HandleAsync(
+        string userId,
+        GetTransactionsQuery query,
+        string userTimeZone,
+        ITransactionsService transactionsService,
+        IMerchantsService merchantsService,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(transactionsService);
+        ArgumentNullException.ThrowIfNull(merchantsService);
+
+        if (string.IsNullOrWhiteSpace(userId))
+            return Results.BadRequest("User Id is required");
+
+        var result = await transactionsService.QueryAsync(query, cancellationToken);
+
+        if (result.IsFailed)
+            return BadRequestWithErrors(result.Errors);
+
+        if (result.ValueOrDefault is null)
+            return Results.NotFound();
+
+        var response = ApiResponse<IEnumerable<TransactionDto>>.Ok(result.Value);
+
+        return Results.Ok(response);
     }
 }

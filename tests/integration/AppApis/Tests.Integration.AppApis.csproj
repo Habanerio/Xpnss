@@ -26,7 +26,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\src\apis\app\AppApis\AppApis.csproj" />
-        <ProjectReference Include="..\Tests.Integration.Common\Tests.Integration.Common.csproj" />
     </ItemGroup>
 
     <ItemGroup>

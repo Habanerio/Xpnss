@@ -5,7 +5,7 @@ public interface IHasDateUpdated
     DateTime DateUpdated { get; set; }
 }
 
-public interface IHasDateTimeOffsetUpdated
+public interface IHasDateTimeUpdated
 {
-    DateTimeOffset DateUpdated { get; set; }
+    DateTime DateUpdated { get; set; }
 }

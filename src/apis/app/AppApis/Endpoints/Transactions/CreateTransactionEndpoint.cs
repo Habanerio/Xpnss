@@ -1,57 +1,18 @@
-using System.ComponentModel.DataAnnotations;
 using System.Net;
 using Carter;
 using FluentValidation;
-using Habanerio.Xpnss.Apis.App.AppApis.Managers;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Modules.Transactions.DTOs;
+using Habanerio.Xpnss.Application.Merchants.Commands.CreateMerchant;
+using Habanerio.Xpnss.Application.Transactions.Commands;
+using Habanerio.Xpnss.Application.Transactions.DTOs;
+using Habanerio.Xpnss.Domain.Merchants.Interfaces;
+using Habanerio.Xpnss.Domain.Transactions.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Transactions;
 
-public class CreateTransactionEndpoint
+public class CreateTransactionEndpoint : BaseEndpoint
 {
-    public record CreateTransactionRequest
-    {
-        [Required]
-        public string UserId { get; set; }
-
-        [Required]
-        public string AccountId { get; set; }
-
-        public string Description { get; set; } = "";
-
-        public List<TransactionItem> Items { get; set; } = [];
-
-        public Merchant? TransactionMerchant { get; set; } = null;
-
-        [Required]
-        public DateTime TransactionDate { get; set; }
-
-        [Required]
-        public string TransactionType { get; set; } = "";
-
-        public record TransactionItem
-        {
-            public string Id { get; init; } = "";
-
-            public string CategoryId { get; init; } = "";
-
-            public string Description { get; init; } = "";
-
-            public decimal Amount { get; init; }
-        }
-
-        public record Merchant
-        {
-            public string Id { get; init; } = "";
-
-            public string Name { get; init; } = "";
-
-            public string Location { get; init; } = "";
-        }
-    }
-
     public sealed class Endpoint : ICarterModule
     {
         public void AddRoutes(IEndpointRouteBuilder builder)
@@ -59,16 +20,16 @@ public class CreateTransactionEndpoint
             builder.MapPost("/api/v1/users/{userId}/transactions",
                     async (
                         [FromRoute] string userId,
-                        [FromBody] CreateTransactionRequest request,
-                        [FromServices] IAccountTransactionManager manager,
+                        [FromBody] CreateTransactionCommand command,
+                        [FromServices] ITransactionsService transactionsService,
+                        [FromServices] IMerchantsService merchantsService,
                         CancellationToken cancellationToken) =>
                     {
-                        return await HandleAsync(userId, request, manager, cancellationToken);
+                        return await HandleAsync(userId, command, transactionsService, merchantsService, cancellationToken);
                     }
                 )
                 .Produces<ApiResponse<TransactionDto>>((int)HttpStatusCode.OK)
-                .Produces((int)HttpStatusCode.BadRequest)
-                .Produces<string>((int)HttpStatusCode.BadRequest)
+                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
                 .WithDisplayName("New Transaction")
                 .WithName("CreateTransaction")
                 .WithTags("Transactions")
@@ -78,55 +39,70 @@ public class CreateTransactionEndpoint
 
     public static async Task<IResult> HandleAsync(
         string userId,
-        CreateTransactionRequest request,
-        IAccountTransactionManager manager,
+        CreateTransactionCommand command,
+        ITransactionsService transactionsService,
+        IMerchantsService merchantsService,
         CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(request);
-        ArgumentNullException.ThrowIfNull(manager);
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(transactionsService);
+        ArgumentNullException.ThrowIfNull(merchantsService);
+
+        if (string.IsNullOrWhiteSpace(userId))
+            return BadRequestWithErrors("User Id is required");
 
         var validator = new Validator();
-        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+        var validationResult = await validator.ValidateAsync(command, cancellationToken);
 
         if (!validationResult.IsValid)
-            return Results.BadRequest(
-                validationResult.Errors
-                    .Select(x => x.ErrorMessage));
+            return BadRequestWithErrors(validationResult.Errors);
 
-        var result = await manager.AddTransactionAsync(request, cancellationToken);
+        var merchantId = command.Merchant?.Id ?? string.Empty;
+        var merchantName = command.Merchant?.Name ?? string.Empty;
+        var merchantLocation = command.Merchant?.Location ?? string.Empty;
 
-        //var command = new CreateTransaction.Command(
-        //    userId,
-        //    request.AccountId,
-        //    request.Items.Select(i => new TransactionItemDto
-        //    {
-        //        Amount = i.Amount,
-        //        CategoryId = i.CategoryId,
-        //        Description = i.Description
-        //    }),
-        //    request.TransactionDate,
-        //    request.TransactionType,
-        //    request.Description,
-        //    request.TransactionMerchant is not null
-        //        ? new MerchantDto
-        //        {
-        //            Id = request.TransactionMerchant.Id,
-        //            Name = request.TransactionMerchant.Name,
-        //            Location = request.TransactionMerchant.Location
-        //        }
-        //        : null);
+        // If the MerchantId is empty, but the Merchant Name is not, create a new Merchant.
+        // If the MerchantId is empty and the Merchant Name is empty, then ignore.
+        if (string.IsNullOrWhiteSpace(merchantId) && !string.IsNullOrWhiteSpace(merchantName))
+        {
+            var merchantCommand = new CreateMerchantCommand(
+                userId,
+                merchantName,
+                merchantLocation);
 
-        //var result = await service.ExecuteAsync(command, cancellationToken);
+            var merchantResult = await merchantsService.CommandAsync(merchantCommand, cancellationToken);
 
-        if (result.IsFailed)
-            return Results.BadRequest(result.Errors.Select(x => x.Message));
+            if (merchantResult.IsSuccess)
+            {
+                command = command with
+                {
+                    Merchant = command.Merchant with
+                    {
+                        Id = merchantResult.Value.Id
+                    }
+                };
+            }
+        }
 
-        var response = ApiResponse<TransactionDto>.Ok(result.Value);
+        var transactionResult = await transactionsService.CommandAsync(command, cancellationToken);
+
+        if (transactionResult.IsFailed)
+            return BadRequestWithErrors(transactionResult.Errors);
+
+        var transactionDto = transactionResult.ValueOrDefault;
+
+        if (transactionDto is null)
+            return Results.BadRequest($"An error occurred while trying to return Transaction #{transactionResult.Value.Id}");
+
+        transactionDto.MerchantName = merchantName;
+        transactionDto.MerchantLocation = merchantLocation;
+
+        var response = ApiResponse<TransactionDto>.Ok(transactionDto);
 
         return Results.Ok(response);
     }
 
-    public sealed class Validator : AbstractValidator<CreateTransactionRequest>
+    public sealed class Validator : AbstractValidator<CreateTransactionCommand>
     {
         public Validator()
         {

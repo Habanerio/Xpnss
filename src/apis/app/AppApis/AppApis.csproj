@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
@@ -6,20 +6,21 @@
         <RootNamespace>Habanerio.Xpnss.Apis.App.AppApis</RootNamespace>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <UserSecretsId>2ba04289-a6b0-40a6-b027-549b083bcf84</UserSecretsId>
+        <!--<UserSecretsId>2ba04289-a6b0-40a6-b027-549b083bcf84</UserSecretsId>-->
+        <UserSecretsId>f52db4d2-3417-4b82-8573-dc0aea50279f</UserSecretsId>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <DockerfileContext>..\..\..\..</DockerfileContext>
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Remove="Endpoints\Authentication\**" />
-      <Compile Remove="Models\Responses\**" />
-      <Content Remove="Endpoints\Authentication\**" />
-      <Content Remove="Models\Responses\**" />
-      <EmbeddedResource Remove="Endpoints\Authentication\**" />
-      <EmbeddedResource Remove="Models\Responses\**" />
-      <None Remove="Endpoints\Authentication\**" />
-      <None Remove="Models\Responses\**" />
+        <Compile Remove="Endpoints\Authentication\**" />
+        <Compile Remove="Models\Responses\**" />
+        <Content Remove="Endpoints\Authentication\**" />
+        <Content Remove="Models\Responses\**" />
+        <EmbeddedResource Remove="Endpoints\Authentication\**" />
+        <EmbeddedResource Remove="Models\Responses\**" />
+        <None Remove="Endpoints\Authentication\**" />
+        <None Remove="Models\Responses\**" />
     </ItemGroup>
 
     <ItemGroup>
@@ -40,9 +41,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\..\aspire\Defaults\Defaults.csproj" />
         <ProjectReference Include="..\..\..\habanerio\Habanerio.Core.Dbs\Habanerio.Core.Dbs.MongoDB.EFCore\Habanerio.Core.Dbs.MongoDB.EFCore.csproj" />
-        <ProjectReference Include="..\..\..\modules\accounts\Accounts\Accounts.csproj" />
-        <ProjectReference Include="..\..\..\modules\categories\Categories\Categories.csproj" />
-        <ProjectReference Include="..\..\..\modules\transactions\Transactions\Transactions.csproj" />
+        <ProjectReference Include="..\..\..\Xpnss.Application\Xpnss.Application.csproj" />
     </ItemGroup>
 
 </Project>

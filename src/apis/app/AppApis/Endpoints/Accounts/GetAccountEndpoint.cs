@@ -1,42 +1,15 @@
 using System.Net;
 using Carter;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Modules.Accounts.CQRS.Queries;
-using Habanerio.Xpnss.Modules.Accounts.DTOs;
-using Habanerio.Xpnss.Modules.Accounts.Interfaces;
+using Habanerio.Xpnss.Application.Accounts.DTOs;
+using Habanerio.Xpnss.Application.Accounts.Queries.GetAccount;
+using Habanerio.Xpnss.Domain.Accounts.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Accounts;
 
-public class GetAccountEndpoint
+public class GetAccountEndpoint : BaseEndpoint
 {
-    public static async Task<IResult> HandleAsync(
-        string userId,
-        string accountId,
-        IAccountsService service,
-        CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrWhiteSpace(userId))
-            return Results.BadRequest("User Id is required");
-
-        if (string.IsNullOrWhiteSpace(accountId))
-            return Results.BadRequest("Account Id is required");
-
-        var query = new GetAccount.Query(userId, accountId);
-
-        var result = await service.ExecuteAsync(query, cancellationToken);
-
-        if (!result.IsSuccess)
-            return Results.BadRequest(result.Errors.Select(x => x.Message));
-
-        if (result.ValueOrDefault is null)
-            return Results.NotFound();
-
-        var response = ApiResponse<AccountDto>.Ok(result.Value);
-
-        return Results.Ok(response);
-    }
-
     public sealed class Endpoint : ICarterModule
     {
         public void AddRoutes(IEndpointRouteBuilder app)
@@ -58,5 +31,34 @@ public class GetAccountEndpoint
                 .WithTags("Accounts")
                 .WithOpenApi();
         }
+    }
+
+    public static async Task<IResult> HandleAsync(
+        string userId,
+        string accountId,
+        IAccountsService service,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(service);
+
+        if (string.IsNullOrWhiteSpace(userId))
+            return BadRequestWithErrors("User Id is required");
+
+        if (string.IsNullOrWhiteSpace(accountId))
+            return BadRequestWithErrors("Account Id is required");
+
+        var query = new GetAccountQuery(userId, accountId);
+
+        var result = await service.QueryAsync(query, cancellationToken);
+
+        if (result.IsFailed)
+            return BadRequestWithErrors(result.Errors);
+
+        if (result.ValueOrDefault is null)
+            return Results.NotFound();
+
+        var response = ApiResponse<AccountDto>.Ok(result.Value);
+
+        return Results.Ok(response);
     }
 }

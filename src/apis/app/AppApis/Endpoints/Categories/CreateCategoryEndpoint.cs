@@ -1,47 +1,31 @@
-using System.ComponentModel.DataAnnotations;
 using System.Net;
 using Carter;
 using FluentValidation;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Modules.Categories.CQRS.Commands;
-using Habanerio.Xpnss.Modules.Categories.DTOs;
-using Habanerio.Xpnss.Modules.Categories.Interfaces;
+using Habanerio.Xpnss.Application.Categories.Commands.CreateCategory;
+using Habanerio.Xpnss.Application.Categories.DTOs;
+using Habanerio.Xpnss.Domain.Categories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Categories;
 
-public class CreateCategoryEndpoint
+public class CreateCategoryEndpoint : BaseEndpoint
 {
-    public sealed record CreateCategoryRequest
-    {
-        [Required]
-        public string UserId { get; init; } = "";
-
-        [Required]
-        public string Name { get; init; } = "";
-
-        public string Description { get; init; } = "";
-
-        public string? ParentId { get; init; } = null;
-
-        public int SortOrder { get; init; } = 99;
-    }
-
     public sealed class Endpoint : ICarterModule
     {
-        public void AddRoutes(IEndpointRouteBuilder builder)
+        public void AddRoutes(IEndpointRouteBuilder app)
         {
-            builder.MapPost("/api/v1/users/{userId}/categories",
+            app.MapPost("/api/v1/users/{userId}/categories",
                 async (
                     [FromRoute] string userId,
-                    [FromBody] CreateCategoryRequest request,
+                    [FromBody] CreateCategoryCommand command,
                     [FromServices] ICategoriesService service,
                     CancellationToken cancellationToken) =>
                 {
-                    return await HandleAsync(userId, request, service, cancellationToken);
+                    return await HandleAsync(userId, command, service, cancellationToken);
                 })
                 .Produces<ApiResponse<CategoryDto>>((int)HttpStatusCode.OK)
-                .Produces<string>((int)HttpStatusCode.BadRequest)
+                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
                 .WithDisplayName("New Category")
                 .WithName("CreateCategory")
                 .WithTags("Categories")
@@ -51,38 +35,33 @@ public class CreateCategoryEndpoint
 
     public static async Task<IResult> HandleAsync(
         string userId,
-        CreateCategoryRequest request,
+        CreateCategoryCommand command,
         ICategoriesService service,
         CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(command);
         ArgumentNullException.ThrowIfNull(service);
 
+        if (string.IsNullOrWhiteSpace(userId))
+            return BadRequestWithErrors("User Id is required");
+
         var validator = new Validator();
-        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+        var validationResult = await validator.ValidateAsync(command, cancellationToken);
 
         if (!validationResult.IsValid)
-            return Results.BadRequest(
-                validationResult.Errors
-                    .Select(x => x.ErrorMessage));
+            return BadRequestWithErrors(validationResult.Errors);
 
-        var command = new CreateCategory.Command(
-            request.UserId,
-            request.Name,
-            request.Description,
-            request.SortOrder);
+        var result = await service.CommandAsync(command, cancellationToken);
 
-        var result = await service.ExecuteAsync(command, cancellationToken);
-
-        if (!result.IsSuccess)
-            return Results.BadRequest(result.Errors.Select(x => x.Message));
+        if (result.IsFailed)
+            return BadRequestWithErrors(result.Errors);
 
         var response = ApiResponse<CategoryDto>.Ok(result.Value);
 
         return Results.Ok(response);
     }
 
-    public class Validator : AbstractValidator<CreateCategoryRequest>
+    public class Validator : AbstractValidator<CreateCategoryCommand>
     {
         public Validator()
         {

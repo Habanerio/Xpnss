@@ -1,28 +1,50 @@
 using System.Net;
 using Carter;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Modules.Categories.CQRS.Queries;
-using Habanerio.Xpnss.Modules.Categories.DTOs;
-using Habanerio.Xpnss.Modules.Categories.Interfaces;
+using Habanerio.Xpnss.Application.Categories.DTOs;
+using Habanerio.Xpnss.Application.Categories.Queries.GetCategories;
+using Habanerio.Xpnss.Domain.Categories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Categories;
 
-public sealed class GetCategoriesEndpoint
+public sealed class GetCategoriesEndpoint : BaseEndpoint
 {
+    public sealed class Endpoint : ICarterModule
+    {
+        public void AddRoutes(IEndpointRouteBuilder app)
+        {
+            app.MapGet("/api/v1/users/{userId}/categories",
+                    async (
+                        [FromRoute] string userId,
+                        [FromServices] ICategoriesService service,
+                        CancellationToken cancellationToken) =>
+                    {
+                        return await HandleAsync(userId, service, cancellationToken);
+                    })
+                .Produces<ApiResponse<IEnumerable<CategoryDto>>>((int)HttpStatusCode.OK)
+                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
+                .WithDisplayName("Get Categories")
+                .WithName("GetCategories")
+                .WithTags("Categories")
+                .WithOpenApi();
+        }
+    }
+
     public static async Task<IResult> HandleAsync(
         string userId,
         ICategoriesService service,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(service);
         if (string.IsNullOrWhiteSpace(userId))
-            return Results.BadRequest("User Id is required");
+            return BadRequestWithErrors("User Id is required");
 
-        var query = new GetCategories.Query(userId);
-        var result = await service.ExecuteAsync(query, cancellationToken);
+        var query = new GetCategoriesQuery(userId);
+        var result = await service.QueryAsync(query, cancellationToken);
 
-        if (!result.IsSuccess)
-            return Results.BadRequest(result.Errors.Select(x => x.Message));
+        if (result.IsFailed)
+            return BadRequestWithErrors(result.Errors);
 
         if (result.ValueOrDefault is null)
             return Results.NotFound();
@@ -30,26 +52,5 @@ public sealed class GetCategoriesEndpoint
         var response = ApiResponse<IEnumerable<CategoryDto>>.Ok(result.Value);
 
         return Results.Ok(response);
-    }
-
-    public sealed class Endpoint : ICarterModule
-    {
-        public void AddRoutes(IEndpointRouteBuilder builder)
-        {
-            builder.MapGet("/api/v1/users/{userId}/categories",
-                async (
-                    [FromRoute] string userId,
-                    [FromServices] ICategoriesService service,
-                    CancellationToken cancellationToken) =>
-                {
-                    return await HandleAsync(userId, service, cancellationToken);
-                })
-                .Produces<ApiResponse<IEnumerable<CategoryDto>>>((int)HttpStatusCode.OK)
-                .Produces<string>((int)HttpStatusCode.BadRequest)
-                .WithDisplayName("Get Categories")
-                .WithName("GetCategories")
-                .WithTags("Categories")
-                .WithOpenApi();
-        }
     }
 }
