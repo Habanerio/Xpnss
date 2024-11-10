@@ -9,32 +9,28 @@ namespace Habanerio.Core.Dbs.MongoDb;
 public abstract class MongoDbRepository<TDocument, TId> :
     IMongoDbRepository<TDocument, TId> where TDocument : IMongoDocument
 {
-    private readonly IMongoDbContext<TDocument> _context;
+    private readonly IMongoDbContext _context;
 
     // Best to have your messages in a const for performance reasons
     internal const string EXCEPTION_COLLECTION_NOT_FOUND = "The collection was not found";
     internal const string EXCEPTION_ID_CANT_BE_EMPTY = "The Id(s) cannot be empty";
 
-    protected IMongoCollection<TDocument> Collection;
+    protected IMongoCollection<TDocument> Collection => _context.Collection<TDocument>() ??
+                                                       throw new InvalidOperationException(EXCEPTION_COLLECTION_NOT_FOUND);
 
     protected MongoDbRepository(IOptions<MongoDbSettings> options)
     {
-        _context = new MongoDbContext<TDocument>(options);
-
-        PopulateCollection();
+        _context = new MongoDbContext(options);
     }
 
     protected MongoDbRepository(string connectionString, string databaseName)
     {
-        _context = new MongoDbContext<TDocument>(connectionString, databaseName);
-
-        PopulateCollection();
+        _context = new MongoDbContext(connectionString, databaseName);
     }
 
-    protected MongoDbRepository(MongoDbContext<TDocument> dbContext)
+    protected MongoDbRepository(MongoDbContext dbContext)
     {
         _context = dbContext;
-        PopulateCollection();
     }
 
     public void AddDocument(TDocument document)
@@ -127,9 +123,9 @@ public abstract class MongoDbRepository<TDocument, TId> :
         TDocument document,
         CancellationToken cancellationToken = default)
     {
-        /* if (document is IHasDateTimeOffsetUpdated dateUpdatedDocument)
+        /* if (document is IHasDateTimeUpdated dateUpdatedDocument)
         {
-            dateUpdatedDocument.DateUpdated = DateTimeOffset.UtcNow;
+            dateUpdatedDocument.DateUpdated = DateTime.UtcNow;
         } */
 
         var rslt = await Collection
@@ -142,23 +138,27 @@ public abstract class MongoDbRepository<TDocument, TId> :
 
     #region - Privates -
 
-    private void PopulateCollection()
-    {
-        Collection = _context.Collection() ?? throw new InvalidOperationException(EXCEPTION_COLLECTION_NOT_FOUND);
-    }
-
-    internal async Task<IEnumerable<TDocument>> FindAsync(
+    protected async Task<IEnumerable<TDocument>> FindAsync(
         FilterDefinition<TDocument> filter,
         CancellationToken cancellationToken = default)
     {
         if (filter is null)
             throw new ArgumentNullException(nameof(filter));
 
-        var cursor = await Collection.FindAsync(filter, null, cancellationToken);
+        try
+        {
+            var cursor = await Collection.FindAsync(filter, null, cancellationToken);
 
-        var results = await cursor.ToListAsync(cancellationToken);
+            var results = await cursor.ToListAsync(cancellationToken);
 
-        return results;
+            return results;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+
     }
 
     internal async Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)> FindAsync(
@@ -208,7 +208,7 @@ public class MongoDbRepository<TDocument> : MongoDbRepository<TDocument, ObjectI
 
     protected MongoDbRepository(string connectionString, string databaseName) : base(connectionString, databaseName) { }
 
-    protected MongoDbRepository(MongoDbContext<TDocument> dbContext) : base(dbContext) { }
+    protected MongoDbRepository(MongoDbContext dbContext) : base(dbContext) { }
 
     public override async Task<TDocument> GetAsync(
         ObjectId id,

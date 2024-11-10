@@ -2,59 +2,54 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Modules.Accounts.DTOs;
+using Habanerio.Xpnss.Application.Accounts.Commands.AdjustBalance;
+using Habanerio.Xpnss.Domain.Accounts;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis.Accounts;
+
 
 public class AdjustBalanceApiTests(WebApplicationFactory<Apis.App.AppApis.Program> factory)
     : BaseFunctionalApisTests(factory),
         IClassFixture<WebApplicationFactory<Apis.App.AppApis.Program>>
 {
     private const string ENDPOINTS_ACCOUNTS_ADJUST_BALANCE = "/api/v1/users/{userId}/accounts/{accountId}/balance";
-    private const string ENDPOINTS_ACCOUNTS_GET_ACCOUNT = "/api/v1/users/{userId}/accounts/{accountId}";
-    private const string ENDPOINTS_ACCOUNTS_GET_ACCOUNTS = "/api/v1/users/{userId}/accounts";
 
-    [Fact]
-    public async Task AdjustBalance_ReturnsOk()
+    [Theory]
+    [InlineData(AccountTypes.Keys.Cash)]
+    [InlineData(AccountTypes.Keys.Checking)]
+    [InlineData(AccountTypes.Keys.Savings)]
+    [InlineData(AccountTypes.Keys.CreditCard)]
+    [InlineData(AccountTypes.Keys.LineOfCredit)]
+    public async Task CanCall_AdjustBalance_ReturnsOk(AccountTypes.Keys accountType)
     {
-        // Get all accounts so that we can pick one to adjust its balance
-        var accountsResponse = await HttpClient.GetAsync(
-            ENDPOINTS_ACCOUNTS_GET_ACCOUNTS.Replace("{userId}",
-                USER_ID));
-
-        accountsResponse.EnsureSuccessStatusCode();
-
-        var accountsContent = await accountsResponse.Content.ReadAsStringAsync();
-        var accountsApiResponse = JsonSerializer.Deserialize<ApiResponse<List<AccountDto>>>(
-            accountsContent,
-            new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-        var accounts = accountsApiResponse?.Data?.ToList() ?? [];
+        var accounts = await AccountDocumentsRepository
+            .FindAsync(a =>
+                a.UserId == USER_ID &&
+                a.AccountType == accountType);
 
         // Take the first (maybe make random)
-        var account = accounts[0];
+        var account = accounts.First();
+
+        if (account is null)
+            return;
 
         // Calculate new balance
         var previousBalance = account.Balance;
         var expectedBalance = previousBalance + 100m;
 
-        var adjustBalanceRequest = new
-        {
-            UserId = account.UserId,
-            AccountId = account.Id,
-            NewBalance = expectedBalance,
-            Reason = $"Test {DateTime.Now}"
-        };
+        var adjustBalanceRequest = new AdjustBalanceCommand(
+            account.UserId,
+            account.Id.ToString(),
+            expectedBalance,
+            DateTime.Now,
+            $"Test {DateTime.Now}");
 
         // Act
         var adjustBalanceResponse = await HttpClient.PatchAsJsonAsync(
             ENDPOINTS_ACCOUNTS_ADJUST_BALANCE
                 .Replace("{userId}", USER_ID)
-                .Replace("{accountId}", account.Id),
+                .Replace("{accountId}", account.Id.ToString()),
             adjustBalanceRequest);
 
 
@@ -73,29 +68,13 @@ public class AdjustBalanceApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         Assert.NotNull(apiResponse);
         Assert.True(apiResponse.IsSuccess);
-        Assert.NotNull(apiResponse.Data);
 
         Assert.Equal(expectedBalance, apiResponse.Data);
 
-        // Not fetch this account again to verify the balance
-        var accountResponse = await HttpClient.GetAsync(
-            ENDPOINTS_ACCOUNTS_GET_ACCOUNT
-                .Replace("{userId}", USER_ID)
-                .Replace("{accountId}", account.Id));
+        // Now fetch this account again to verify the balance
+        var actualAccountDoc = await AccountDocumentsRepository.FirstOrDefaultAsync(a => a.Id == account.Id && a.UserId == USER_ID);
 
-        accountResponse.EnsureSuccessStatusCode();
-
-        var accountContent = await accountResponse.Content.ReadAsStringAsync();
-        var accountApiResponse = JsonSerializer.Deserialize<ApiResponse<AccountDto>>(
-            accountContent,
-            new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-        Assert.NotNull(accountApiResponse);
-        Assert.True(accountApiResponse.IsSuccess);
-        Assert.NotNull(accountApiResponse.Data);
-        Assert.Equal(expectedBalance, accountApiResponse.Data.Balance);
+        Assert.NotNull(actualAccountDoc);
+        Assert.Equal(expectedBalance, actualAccountDoc.Balance);
     }
 }

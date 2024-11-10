@@ -1,39 +1,15 @@
 using System.Net;
 using Carter;
-using FluentValidation;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Modules.Accounts.CQRS.Queries;
-using Habanerio.Xpnss.Modules.Accounts.DTOs;
-using Habanerio.Xpnss.Modules.Accounts.Interfaces;
+using Habanerio.Xpnss.Application.Accounts.DTOs;
+using Habanerio.Xpnss.Application.Accounts.Queries.GetAccounts;
+using Habanerio.Xpnss.Domain.Accounts.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Accounts;
 
-public class GetAccountsEndpoint
+public class GetAccountsEndpoint : BaseEndpoint
 {
-    public static async Task<IResult> HandleAsync(
-        string userId,
-        IAccountsService service,
-        CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrWhiteSpace(userId))
-            return Results.BadRequest("User AccountId is required");
-
-        var query = new GetAccounts.Query(userId);
-
-        var result = await service.ExecuteAsync(query, cancellationToken);
-
-        if (!result.IsSuccess)
-            return Results.BadRequest(result.Errors.Select(x => x.Message));
-
-        if (result.ValueOrDefault is null)
-            return Results.NotFound();
-
-        var response = ApiResponse<IEnumerable<AccountDto>>.Ok(result.Value);
-
-        return Results.Ok(response);
-    }
-
     public sealed class Endpoint : ICarterModule
     {
         public void AddRoutes(IEndpointRouteBuilder app)
@@ -42,7 +18,7 @@ public class GetAccountsEndpoint
                     async (
                         [FromRoute] string userId,
                         [FromServices] IAccountsService service,
-            CancellationToken cancellationToken) =>
+                        CancellationToken cancellationToken) =>
                     {
                         return await HandleAsync(userId, service, cancellationToken);
                     })
@@ -54,5 +30,30 @@ public class GetAccountsEndpoint
                 .WithTags("Accounts")
                 .WithOpenApi();
         }
+    }
+
+    public static async Task<IResult> HandleAsync(
+        string userId,
+        IAccountsService service,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(service);
+
+        if (string.IsNullOrWhiteSpace(userId))
+            return BadRequestWithErrors("User Id is required");
+
+        var query = new GetAccountsQuery(userId);
+
+        var result = await service.QueryAsync(query, cancellationToken);
+
+        if (result.IsFailed)
+            return BadRequestWithErrors(result.Errors);
+
+        if (result.ValueOrDefault is null)
+            return Results.NotFound();
+
+        var response = ApiResponse<IEnumerable<AccountDto>>.Ok(result.Value);
+
+        return Results.Ok(response);
     }
 }

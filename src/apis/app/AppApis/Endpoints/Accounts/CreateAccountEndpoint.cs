@@ -1,11 +1,10 @@
-using System.ComponentModel.DataAnnotations;
 using System.Net;
 using Carter;
 using FluentValidation;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Modules.Accounts.Common;
-using Habanerio.Xpnss.Modules.Accounts.CQRS.Commands;
-using Habanerio.Xpnss.Modules.Accounts.Interfaces;
+using Habanerio.Xpnss.Application.Accounts.Commands.CreateAccount;
+using Habanerio.Xpnss.Application.Accounts.DTOs;
+using Habanerio.Xpnss.Domain.Accounts.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Accounts;
@@ -13,84 +12,8 @@ namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Accounts;
 /// <summary>
 /// Single Endpoint for creating any of the accounts.
 /// </summary>
-public class CreateAccountEndpoint
+public class CreateAccountEndpoint : BaseEndpoint
 {
-    public record Request
-    {
-        [Required]
-        public string UserId { get; set; }
-
-        [Required]
-        public int AccountTypeId { get; set; }
-
-        [Required]
-        public string Name { get; set; } = "";
-
-        public string Description { get; set; } = "";
-
-        public decimal Balance { get; set; }
-
-        public decimal CreditLimit { get; set; }
-
-        public decimal InterestRate { get; set; }
-
-        public decimal OverDraftAmount { get; set; }
-
-        public string DisplayColor { get; set; } = "#ff0000";
-    }
-
-    public sealed class Validator : AbstractValidator<Request>
-    {
-        public Validator()
-        {
-            RuleFor(x => x).NotNull();
-            RuleFor(x => x.UserId).NotEmpty();
-            RuleFor(x => x.Name).NotEmpty();
-            RuleFor(x => x.AccountTypeId).NotEmpty();
-            RuleFor(x => x.CreditLimit).GreaterThanOrEqualTo(0);
-            RuleFor(x => x.InterestRate).GreaterThanOrEqualTo(0)
-                .LessThanOrEqualTo(100);
-        }
-    }
-
-    public static async Task<IResult> HandleAsync(
-        string userId,
-        Request request,
-        IAccountsService service,
-        CancellationToken cancellationToken)
-    {
-        ArgumentNullException.ThrowIfNull(request);
-        ArgumentNullException.ThrowIfNull(service);
-
-        var validator = new Validator();
-        var validationResult = await validator.ValidateAsync(request, cancellationToken);
-
-        if (!validationResult.IsValid)
-            return Results.BadRequest(
-                validationResult.Errors
-                    .Select(x => x.ErrorMessage));
-
-        var command = new CreateAccount.Command(
-            request.UserId,
-            (AccountType)request.AccountTypeId,
-            request.Name,
-            request.Description,
-            request.Balance,
-            request.CreditLimit,
-            request.InterestRate,
-            request.OverDraftAmount,
-            request.DisplayColor);
-
-        var result = await service.ExecuteAsync(command, cancellationToken);
-
-        if (result.IsFailed)
-            return Results.BadRequest(result.Errors.Select(x => x.Message));
-
-        var response = ApiResponse<string>.Ok(result.Value);
-
-        return Results.Ok(response);
-    }
-
     public sealed class Endpoint : ICarterModule
     {
         public void AddRoutes(IEndpointRouteBuilder app)
@@ -98,18 +21,60 @@ public class CreateAccountEndpoint
             app.MapPost("/api/v1/users/{userId}/accounts",
                     async (
                         [FromRoute] string userId,
-                        [FromBody] Request request,
+                        [FromBody] CreateAccountCommand command,
                         [FromServices] IAccountsService service,
                         CancellationToken cancellationToken) =>
-                            await HandleAsync(userId, request, service, cancellationToken))
-                .Produces<string>((int)HttpStatusCode.OK)
-                .Produces((int)HttpStatusCode.NotFound)
-                .Produces((int)HttpStatusCode.BadRequest)
-                .Produces<string>((int)HttpStatusCode.BadRequest)
+                    {
+                        return await HandleAsync(userId, command, service, cancellationToken);
+                    })
+                .Produces<AccountDto>((int)HttpStatusCode.OK)
+                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
                 .WithDisplayName("New Account")
                 .WithName("CreateAccount")
                 .WithTags("Accounts")
                 .WithOpenApi();
+        }
+    }
+
+    public static async Task<IResult> HandleAsync(
+        string userId,
+        CreateAccountCommand command,
+        IAccountsService service,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(service);
+
+        if (string.IsNullOrWhiteSpace(userId))
+            return BadRequestWithErrors("User Id is required");
+
+        var validator = new Validator();
+        var validationResult = await validator.ValidateAsync(command, cancellationToken);
+
+        if (!validationResult.IsValid)
+            return BadRequestWithErrors(validationResult.Errors);
+
+        var result = await service.CommandAsync(command, cancellationToken);
+
+        if (result.IsFailed)
+            return BadRequestWithErrors(result.Errors);
+
+        var response = ApiResponse<AccountDto>.Ok(result.Value);
+
+        return Results.Ok(response);
+    }
+
+    public sealed class Validator : AbstractValidator<CreateAccountCommand>
+    {
+        public Validator()
+        {
+            RuleFor(x => x).NotNull();
+            RuleFor(x => x.UserId).NotEmpty();
+            RuleFor(x => x.Name).NotEmpty();
+            RuleFor(x => x.AccountType).NotEmpty();
+            RuleFor(x => x.CreditLimit).GreaterThanOrEqualTo(0);
+            RuleFor(x => x.InterestRate).GreaterThanOrEqualTo(0)
+                .LessThanOrEqualTo(100);
         }
     }
 }

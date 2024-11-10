@@ -6,6 +6,11 @@ public record ApiResponse
 
     public string Message { get; set; } = "";
 
+    public ApiResponse()
+    {
+        IsSuccess = true;
+    }
+
     public static ApiResponse Ok() => new()
     {
         IsSuccess = true

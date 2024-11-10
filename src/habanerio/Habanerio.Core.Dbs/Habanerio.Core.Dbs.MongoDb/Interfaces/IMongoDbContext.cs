@@ -6,3 +6,8 @@ public interface IMongoDbContext<TDocument> where TDocument : IMongoDocument
 {
     IMongoCollection<TDocument> Collection();
 }
+
+public interface IMongoDbContext
+{
+    IMongoCollection<TDocument> Collection<TDocument>();
+}

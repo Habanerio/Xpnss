@@ -4,8 +4,8 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace Habanerio.Core.Dbs.MongoDb;
 
-public class MongoDocument : IMongoDocument
+public abstract class MongoDocument : IMongoDocument
 {
     [BsonId]
-    public ObjectId Id { get; set; }
+    public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
 }

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -8,15 +8,16 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsAspireHost>true</IsAspireHost>
-        <UserSecretsId>d22679b4-278e-4100-a1c3-495c06e6a654</UserSecretsId>
+        <!--<UserSecretsId>d22679b4-278e-4100-a1c3-495c06e6a654</UserSecretsId>-->
+        <UserSecretsId>f52db4d2-3417-4b82-8573-dc0aea50279f</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Aspire.Hosting" Version="8.2.0" />
-        <PackageReference Include="Aspire.Hosting.AppHost" Version="8.2.0" />
-        <PackageReference Include="Aspire.Hosting.MongoDB" Version="8.2.0" />
-        <PackageReference Include="Aspire.Hosting.RabbitMQ" Version="8.2.0" />
-        <PackageReference Include="Aspire.Hosting.Redis" Version="8.2.0" />
+        <PackageReference Include="Aspire.Hosting" Version="8.2.2" />
+        <PackageReference Include="Aspire.Hosting.AppHost" Version="8.2.2" />
+        <PackageReference Include="Aspire.Hosting.MongoDB" Version="8.2.2" />
+        <PackageReference Include="Aspire.Hosting.RabbitMQ" Version="8.2.1" />
+        <PackageReference Include="Aspire.Hosting.Redis" Version="8.2.1" />
         <PackageReference Include="SonarAnalyzer.CSharp" Version="9.32.0.97167">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

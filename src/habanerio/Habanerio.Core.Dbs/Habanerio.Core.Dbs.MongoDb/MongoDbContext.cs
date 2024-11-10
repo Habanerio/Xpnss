@@ -5,23 +5,69 @@ using MongoDB.Driver;
 
 namespace Habanerio.Core.Dbs.MongoDb;
 
-public class MongoDbContext<TDocument> : IMongoDbContext<TDocument> where TDocument : IMongoDocument
+/// <summary>
+/// When you want a single DbContext per Document.
+/// </summary>
+/// <typeparam name="TDocument"></typeparam>
+public class MongoDbContext<TDocument> : MongoDbContextBase, IMongoDbContext<TDocument> where TDocument : IMongoDocument
 {
-    private readonly IMongoDatabase _db;
+    public MongoDbContext(IMongoDatabase database) : base(database)
+    { }
+
+    public MongoDbContext(string connectionString, string databaseName) : base(connectionString, databaseName)
+    { }
+
+    public MongoDbContext(IOptions<MongoDbSettings> options) : base(options)
+    { }
+
+    public MongoDbContext(IMongoClient client, string databaseName) : base(client, databaseName)
+    { }
+
+    public IMongoCollection<TDocument> Collection()
+    {
+        var collection = MongoDatabase.GetCollection<TDocument>(GetCollectionName(typeof(TDocument)));
+
+        return collection;
+    }
+}
+
+
+public class MongoDbContext : MongoDbContextBase, IMongoDbContext
+{
+    public MongoDbContext(IMongoDatabase database) : base(database)
+    { }
+
+    public MongoDbContext(string connectionString, string databaseName) : base(connectionString, databaseName)
+    { }
+
+    public MongoDbContext(IOptions<MongoDbSettings> options) : base(options)
+    { }
+
+    public MongoDbContext(IMongoClient client, string databaseName) : base(client, databaseName)
+    { }
+
+    public IMongoCollection<TDocument> Collection<TDocument>()
+    {
+        var collection = MongoDatabase.GetCollection<TDocument>(GetCollectionName(typeof(TDocument)));
+
+        return collection;
+    }
+}
+
+public abstract class MongoDbContextBase
+{
+    protected readonly IMongoDatabase MongoDatabase;
 
     private const string COULD_NOT_GET_OPTIONS = "Could not retrieve the options";
     private const string COULD_NOT_GET_CONNECTION_STRING = "Could not retrieve the connection string";
     private const string COULD_NOT_GET_DBNAME = "Could not retrieve the database name";
 
-    public MongoDbContext(IMongoDbClient client)
+    protected MongoDbContextBase(IMongoDatabase database)
     {
-        _db = client?.Database ??
-              throw new ArgumentNullException(nameof(client));
-
-        var x = nameof(TDocument);
+        MongoDatabase = database ?? throw new ArgumentNullException(nameof(database));
     }
 
-    public MongoDbContext(string connectionString, string databaseName)
+    protected MongoDbContextBase(string connectionString, string databaseName)
     {
         if (string.IsNullOrWhiteSpace(connectionString))
             throw new ArgumentException(COULD_NOT_GET_CONNECTION_STRING, nameof(connectionString));
@@ -31,10 +77,10 @@ public class MongoDbContext<TDocument> : IMongoDbContext<TDocument> where TDocum
 
         var client = new MongoClient(connectionString);
 
-        _db = client.GetDatabase(databaseName);
+        MongoDatabase = client.GetDatabase(databaseName);
     }
 
-    public MongoDbContext(IOptions<MongoDbSettings> options)
+    protected MongoDbContextBase(IOptions<MongoDbSettings> options)
     {
         if (options?.Value == null)
             throw new ArgumentException(COULD_NOT_GET_OPTIONS, nameof(options));
@@ -52,22 +98,26 @@ public class MongoDbContext<TDocument> : IMongoDbContext<TDocument> where TDocum
 
         var client = new MongoClient(connection);
 
-        _db = client.GetDatabase(dbName);
+        MongoDatabase = client.GetDatabase(dbName);
     }
 
-    public IMongoCollection<TDocument> Collection()
+    public MongoDbContextBase(IMongoClient client, string databaseName)
     {
-        var collection = _db.GetCollection<TDocument>(GetCollectionName(typeof(TDocument)));
+        if (client == null)
+            throw new ArgumentNullException(nameof(client));
 
-        return collection;
+        if (string.IsNullOrWhiteSpace(databaseName))
+            throw new ArgumentException(COULD_NOT_GET_DBNAME, nameof(databaseName));
+
+        MongoDatabase = client.GetDatabase(databaseName);
     }
 
-    private static string GetCollectionName(Type documentType)
+    protected static string GetCollectionName(Type documentType)
     {
         var name = (documentType.GetCustomAttributes(typeof(BsonCollectionAttribute), true)
-            .FirstOrDefault() as BsonCollectionAttribute)?
-            .CollectionName ??
-            string.Empty;
+                       .FirstOrDefault() as BsonCollectionAttribute)?
+                   .CollectionName ??
+                   string.Empty;
 
         return name;
     }
