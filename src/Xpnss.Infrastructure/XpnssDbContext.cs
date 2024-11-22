@@ -1,85 +1,30 @@
 using Habanerio.Core.Dbs.MongoDb;
-using Habanerio.Xpnss.Infrastructure.Documents;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
 namespace Habanerio.Xpnss.Infrastructure;
 
-public class XpnssDbContext : MongoDbContext
+public abstract class XpnssDbContext : MongoDbContext
 {
-    public IMongoCollection<AccountDocument> Accounts =>
-        Collection<AccountDocument>();
-
-    public IMongoCollection<CategoryDocument> Categories =>
-        Collection<CategoryDocument>();
-
-    public IMongoCollection<MerchantDocument> Merchants =>
-        Collection<MerchantDocument>();
-
-    public IMongoCollection<TransactionDocument> Transactions =>
-        Collection<TransactionDocument>();
-
     public XpnssDbContext(IOptions<MongoDbSettings> options) : base(options)
     {
-        ConfigureAccounts();
-        ConfigureCategories();
-        ConfigureMerchants();
-        ConfigureTransactions();
+        Configure();
     }
 
-    private void ConfigureAccounts()
+    public XpnssDbContext(IMongoDatabase mongoDb) : base(mongoDb)
     {
-        var indexKeysDefinition = Builders<AccountDocument>.IndexKeys
-            .Ascending(a => a.UserId)
-            .Ascending(a => a.Id);
-
-        var createIndexModel = new CreateIndexModel<AccountDocument>(
-            indexKeysDefinition,
-            new CreateIndexOptions { Name = "UserId_Id_Index" }
-        );
-
-        Accounts.Indexes.CreateOne(createIndexModel);
+        Configure();
     }
 
-    private void ConfigureCategories()
+    protected abstract void Configure();
+}
+
+public abstract class XpnssDbContext<TDocument> : MongoDbContext<TDocument> where TDocument : MongoDocument
+{
+    public XpnssDbContext(IOptions<MongoDbSettings> options) : base(options)
     {
-        var indexKeysDefinition = Builders<CategoryDocument>.IndexKeys
-            .Ascending(a => a.UserId)
-            .Ascending(a => a.Id);
-
-        var createIndexModel = new CreateIndexModel<CategoryDocument>(
-            indexKeysDefinition,
-            new CreateIndexOptions { Name = "UserId_Id_Index" }
-        );
-
-        Categories.Indexes.CreateOne(createIndexModel);
+        Configure();
     }
 
-    private void ConfigureMerchants()
-    {
-        var indexKeysDefinition = Builders<MerchantDocument>.IndexKeys
-            .Ascending(a => a.UserId)
-            .Ascending(a => a.Id);
-
-        var createIndexModel = new CreateIndexModel<MerchantDocument>(
-            indexKeysDefinition,
-            new CreateIndexOptions { Name = "UserId_Id_Index" }
-        );
-
-        Merchants.Indexes.CreateOne(createIndexModel);
-    }
-
-    private void ConfigureTransactions()
-    {
-        var indexKeysDefinition = Builders<TransactionDocument>.IndexKeys
-            .Ascending(a => a.UserId)
-            .Ascending(a => a.Id);
-
-        var createIndexModel = new CreateIndexModel<TransactionDocument>(
-            indexKeysDefinition,
-            new CreateIndexOptions { Name = "UserId_Id_Index" }
-        );
-
-        Transactions.Indexes.CreateOne(createIndexModel);
-    }
+    protected abstract void Configure();
 }

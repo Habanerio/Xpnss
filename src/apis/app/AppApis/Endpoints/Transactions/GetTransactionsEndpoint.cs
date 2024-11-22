@@ -1,10 +1,10 @@
 using System.Net;
 using Carter;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Application.Transactions.DTOs;
-using Habanerio.Xpnss.Application.Transactions.Queries.GetTransactions;
-using Habanerio.Xpnss.Domain.Merchants.Interfaces;
-using Habanerio.Xpnss.Domain.Transactions.Interfaces;
+using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Merchants.Domain.Interfaces;
+using Habanerio.Xpnss.Transactions.Application.Queries.GetTransactions;
+using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Transactions;

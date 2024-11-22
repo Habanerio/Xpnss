@@ -6,6 +6,79 @@ using MongoDB.Driver;
 
 namespace Habanerio.Core.Dbs.MongoDb;
 
+//TODO: Merge these two together. Create new BaseDbRepository and have MongoDbRepository inherit from it.
+public class MongoDbRepository<TDocument> :
+    MongoDbRepository<TDocument, ObjectId> where TDocument :
+    IMongoDocument
+{
+    protected MongoDbRepository(IOptions<MongoDbSettings> options) : base(options) { }
+
+    protected MongoDbRepository(string connectionString, string databaseName) : base(connectionString, databaseName) { }
+
+    protected MongoDbRepository(MongoDbContext dbContext) : base(dbContext) { }
+
+    public override async Task<TDocument> GetDocumentAsync(
+        ObjectId id,
+        CancellationToken cancellationToken = default)
+    {
+        if (id.Equals(ObjectId.Empty))
+            throw new ArgumentException(EXCEPTION_ID_CANT_BE_EMPTY, nameof(id));
+
+        var filter = Builders<TDocument>.Filter.Eq(doc => doc.Id, id);
+
+        var results = await Collection.FindAsync(filter, cancellationToken: cancellationToken);
+
+        return await results.SingleOrDefaultAsync(cancellationToken);
+    }
+
+    public override async Task<IEnumerable<TDocument>> GetDocumentAsync(
+        IEnumerable<ObjectId> ids,
+        CancellationToken cancellationToken = default)
+    {
+        if (!ids.TryGetNonEnumeratedCount(out var idsCount) || idsCount == 0)
+            throw new ArgumentException(EXCEPTION_ID_CANT_BE_EMPTY, nameof(ids));
+
+        var filter = Builders<TDocument>.Filter.In("_id", ids.ToArray());
+
+        var results = await FindAsync(filter, cancellationToken);
+
+        return results ?? Enumerable.Empty<TDocument>();
+    }
+
+    public override bool RemoveDocument(ObjectId id, CancellationToken cancellationToken = default)
+    {
+        var rslt = Collection.DeleteOne(d => d.Id == id, cancellationToken: cancellationToken);
+
+        return rslt is { IsAcknowledged: true, DeletedCount: > 0 };
+    }
+
+    public override async Task<bool> RemoveDocumentAsync(ObjectId id, CancellationToken cancellationToken = default)
+    {
+        var rslt = await Collection.DeleteOneAsync(d => d.Id == id, cancellationToken);
+
+        return rslt is { IsAcknowledged: true, DeletedCount: > 0 };
+    }
+
+
+    public override bool RemoveDocumentRange(IEnumerable<ObjectId> ids, CancellationToken cancellationToken = default)
+    {
+        var filter = Builders<TDocument>.Filter.In(doc => doc.Id, ids);
+
+        var rslt = Collection.DeleteMany(filter, cancellationToken: cancellationToken);
+
+        return rslt is { IsAcknowledged: true, DeletedCount: > 0 };
+    }
+
+    public override async Task<bool> RemoveDocumentRangeAsync(IEnumerable<ObjectId> ids, CancellationToken cancellationToken = default)
+    {
+        var filter = Builders<TDocument>.Filter.In(doc => doc.Id, ids);
+
+        var rslt = await Collection.DeleteManyAsync(filter, cancellationToken: cancellationToken);
+
+        return rslt is { IsAcknowledged: true, DeletedCount: > 0 };
+    }
+}
+
 public abstract class MongoDbRepository<TDocument, TId> :
     IMongoDbRepository<TDocument, TId> where TDocument : IMongoDocument
 {
@@ -62,7 +135,7 @@ public abstract class MongoDbRepository<TDocument, TId> :
     }
 
 
-    public Task<IEnumerable<TDocument>> FindAsync(
+    public Task<IEnumerable<TDocument>> FindDocumentsAsync(
         Expression<Func<TDocument, bool>> predicate,
         CancellationToken cancellationToken = default)
     {
@@ -71,7 +144,7 @@ public abstract class MongoDbRepository<TDocument, TId> :
         return FindAsync(filter, cancellationToken);
     }
 
-    public Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)> FindAsync(
+    public Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)> FindDocumentsAsync(
         Expression<Func<TDocument, bool>> predicate,
         int pageNo,
         int pageSize,
@@ -79,11 +152,11 @@ public abstract class MongoDbRepository<TDocument, TId> :
     {
         var filter = Builders<TDocument>.Filter.Where(predicate);
 
-        return FindAsync(filter, pageNo, pageSize, cancellationToken);
+        return FindDocumentsAsync(filter, pageNo, pageSize, cancellationToken);
     }
 
 
-    public async Task<TDocument?> FirstOrDefaultAsync(
+    public async Task<TDocument?> FirstOrDefaultDocumentAsync(
         Expression<Func<TDocument, bool>> predicate,
         CancellationToken cancellationToken = default)
     {
@@ -95,22 +168,22 @@ public abstract class MongoDbRepository<TDocument, TId> :
     }
 
 
-    public abstract Task<TDocument> GetAsync(
+    public abstract Task<TDocument> GetDocumentAsync(
         TId id,
         CancellationToken cancellationToken = default);
 
-    public abstract Task<IEnumerable<TDocument>> GetAsync(
+    public abstract Task<IEnumerable<TDocument>> GetDocumentAsync(
         IEnumerable<TId> ids,
         CancellationToken cancellationToken = default);
 
 
-    public Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)> ListAsync(
+    public Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)> ListDocumentsAsync(
         CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }
 
-    public Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)> ListAsync(
+    public Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)> ListDocumentsAsync(
         int pageNo,
         int pageSize,
         CancellationToken cancellationToken = default)
@@ -118,22 +191,85 @@ public abstract class MongoDbRepository<TDocument, TId> :
         throw new NotImplementedException();
     }
 
+    public abstract bool RemoveDocument(TId id, CancellationToken cancellationToken = default);
+
+    public bool RemoveDocument(TDocument entity, CancellationToken cancellationToken = default)
+    {
+        var rslt = Collection.DeleteOne(d => d.Id == entity.Id, cancellationToken: cancellationToken);
+
+        return rslt is { IsAcknowledged: true, DeletedCount: > 0 };
+    }
+
+    public abstract Task<bool> RemoveDocumentAsync(TId id, CancellationToken cancellationToken = default);
+
+    public async Task<bool> RemoveDocumentAsync(TDocument entity, CancellationToken cancellationToken = default)
+    {
+        var id = entity.Id;
+
+        var filter = Builders<TDocument>.Filter.Eq(doc => doc.Id, id);
+
+        var rslt = await Collection.DeleteOneAsync(filter, cancellationToken: cancellationToken);
+
+        return rslt is { IsAcknowledged: true, DeletedCount: > 0 };
+    }
+
+    //public async Task<bool> RemoveDocumentAsync(Expression<Func<TDocument, bool>> predicate, CancellationToken cancellationToken = default)
+    //{
+    //    var rslt = await Collection.DeleteOneAsync(predicate, cancellationToken);
+
+    //    return rslt is { IsAcknowledged: true, DeletedCount: > 0 };
+    //}
+
+
+    public abstract bool RemoveDocumentRange(IEnumerable<TId> ids, CancellationToken cancellationToken = default);
+
+    public bool RemoveDocumentRange(IEnumerable<TDocument> entities, CancellationToken cancellationToken = default)
+    {
+        var ids = entities.Select(x => x.Id).AsEnumerable();
+
+        var filter = Builders<TDocument>.Filter.In(doc => doc.Id, ids);
+
+        var rslt = Collection.DeleteMany(filter, cancellationToken: cancellationToken);
+
+        return rslt is { IsAcknowledged: true, DeletedCount: > 0 };
+    }
+
+
+    public abstract Task<bool> RemoveDocumentRangeAsync(
+        IEnumerable<TId> ids,
+        CancellationToken cancellationToken = default);
+
+    public async Task<bool> RemoveDocumentRangeAsync(
+        IEnumerable<TDocument> entities,
+        CancellationToken cancellationToken = default)
+    {
+        var ids = entities.Select(x => x.Id).AsEnumerable();
+
+        var filter = Builders<TDocument>.Filter.In(doc => doc.Id, ids);
+
+        var rslt = await Collection.DeleteManyAsync(filter, cancellationToken: cancellationToken);
+
+        return rslt is { IsAcknowledged: true, DeletedCount: > 0 };
+    }
 
     public virtual async Task<long> UpdateDocumentAsync(
         TDocument document,
         CancellationToken cancellationToken = default)
     {
-        /* if (document is IHasDateTimeUpdated dateUpdatedDocument)
+        try
         {
-            dateUpdatedDocument.DateUpdated = DateTime.UtcNow;
-        } */
+            var rslt = await Collection
+                .ReplaceOneAsync(d => d.Id == document.Id,
+                    document,
+                    cancellationToken: cancellationToken);
 
-        var rslt = await Collection
-            .ReplaceOneAsync(d => d.Id == document.Id,
-                document,
-                cancellationToken: cancellationToken);
-
-        return rslt.ModifiedCount;
+            return rslt.ModifiedCount;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     #region - Privates -
@@ -161,7 +297,7 @@ public abstract class MongoDbRepository<TDocument, TId> :
 
     }
 
-    internal async Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)> FindAsync(
+    internal async Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)> FindDocumentsAsync(
         FilterDefinition<TDocument> filter,
         int pageNo = 1,
         int pageSize = 25,
@@ -200,41 +336,4 @@ public abstract class MongoDbRepository<TDocument, TId> :
     }
 
     #endregion
-}
-
-public class MongoDbRepository<TDocument> : MongoDbRepository<TDocument, ObjectId> where TDocument : IMongoDocument
-{
-    protected MongoDbRepository(IOptions<MongoDbSettings> options) : base(options) { }
-
-    protected MongoDbRepository(string connectionString, string databaseName) : base(connectionString, databaseName) { }
-
-    protected MongoDbRepository(MongoDbContext dbContext) : base(dbContext) { }
-
-    public override async Task<TDocument> GetAsync(
-        ObjectId id,
-        CancellationToken cancellationToken = default)
-    {
-        if (id.Equals(ObjectId.Empty))
-            throw new ArgumentException(EXCEPTION_ID_CANT_BE_EMPTY, nameof(id));
-
-        var filter = Builders<TDocument>.Filter.Eq(doc => doc.Id, id);
-
-        var results = await Collection.FindAsync(filter, cancellationToken: cancellationToken);
-
-        return await results.SingleOrDefaultAsync(cancellationToken);
-    }
-
-    public override async Task<IEnumerable<TDocument>> GetAsync(
-        IEnumerable<ObjectId> ids,
-        CancellationToken cancellationToken = default)
-    {
-        if (!ids.TryGetNonEnumeratedCount(out var idsCount) || idsCount == 0)
-            throw new ArgumentException(EXCEPTION_ID_CANT_BE_EMPTY, nameof(ids));
-
-        var filter = Builders<TDocument>.Filter.In("_id", ids.ToArray());
-
-        var results = await FindAsync(filter, cancellationToken);
-
-        return results ?? Enumerable.Empty<TDocument>();
-    }
 }

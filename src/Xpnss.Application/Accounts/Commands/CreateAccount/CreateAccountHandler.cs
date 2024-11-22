@@ -4,6 +4,7 @@ using Habanerio.Xpnss.Application.Accounts.DTOs;
 using Habanerio.Xpnss.Application.Mappers;
 using Habanerio.Xpnss.Domain.Accounts;
 using Habanerio.Xpnss.Domain.Accounts.Interfaces;
+using Habanerio.Xpnss.Domain.Common;
 using Habanerio.Xpnss.Domain.ValueObjects;
 using MediatR;
 

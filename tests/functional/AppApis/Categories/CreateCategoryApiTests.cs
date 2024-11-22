@@ -1,8 +1,8 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Application.Categories.Commands.CreateCategory;
-using Habanerio.Xpnss.Application.Categories.DTOs;
+using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Categories.Application.Commands.CreateCategory;
 using Microsoft.AspNetCore.Mvc.Testing;
 using MongoDB.Bson;
 
@@ -18,7 +18,7 @@ public class CreateCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
     public async Task CanCall_CreateCategory_WithValidRequest_ReturnsOk()
     {
         var uniqueness = Guid.NewGuid();
-        var newCategoryName = $"New Category {uniqueness.ToString()}";
+        var newCategoryName = $"NewId Category {uniqueness.ToString()}";
         var newCategoryDescription = $"{newCategoryName} Description";
 
         // Arrange
@@ -38,10 +38,7 @@ public class CreateCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<CategoryDto>>(content, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var apiResponse = JsonSerializer.Deserialize<ApiResponse<CategoryDto>>(content, JsonSerializationOptions);
 
         // Assert
         Assert.NotNull(apiResponse);
@@ -66,7 +63,7 @@ public class CreateCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
     [Fact]
     public async Task CanCall_CreateSubCategory_WithValidRequest_ReturnsOk()
     {
-        var categoryDocs = await CategoryDocumentsRepository.FindAsync(c => c.UserId == USER_ID);
+        var categoryDocs = await CategoryDocumentsRepository.FindDocumentsAsync(c => c.UserId == USER_ID);
 
         var firstCategoryDoc = categoryDocs.First();
 
@@ -91,10 +88,7 @@ public class CreateCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<CategoryDto>>(content, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var apiResponse = JsonSerializer.Deserialize<ApiResponse<CategoryDto>>(content, JsonSerializationOptions);
 
         // Assert
         Assert.NotNull(apiResponse);

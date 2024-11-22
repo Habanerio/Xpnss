@@ -9,9 +9,21 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Remove="Accounts\**" />
+        <Compile Remove="Categories\**" />
+        <Compile Remove="Merchants\**" />
+        <EmbeddedResource Remove="Accounts\**" />
+        <EmbeddedResource Remove="Categories\**" />
+        <EmbeddedResource Remove="Merchants\**" />
+        <None Remove="Accounts\**" />
+        <None Remove="Categories\**" />
+        <None Remove="Merchants\**" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="FluentValidation" Version="11.10.0" />
         <PackageReference Include="MediatR" Version="12.4.1" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <AssemblyName>Habanerio.Xpnss.Merchants.Infrastructure</AssemblyName>
+        <RootNamespace>Habanerio.Xpnss.Merchants.Infrastructure</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MediatR" Version="12.4.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\habanerio\Habanerio.Core.Dbs\Habanerio.Core.Dbs.MongoDb\Habanerio.Core.Dbs.MongoDb.csproj" />
+      <ProjectReference Include="..\Xpnss.Infrastructure\Xpnss.Infrastructure.csproj" />
+      <ProjectReference Include="..\Xpnss.Merchants.Domain\Xpnss.Merchants.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Habanerio.Core.DBs.MongoDB.EFCore">
+        <HintPath>..\habanerio\Habanerio.Core.Dbs\Habanerio.Core.Dbs.MongoDB.EFCore\bin\Debug\net8.0\Habanerio.Core.DBs.MongoDB.EFCore.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+</Project>

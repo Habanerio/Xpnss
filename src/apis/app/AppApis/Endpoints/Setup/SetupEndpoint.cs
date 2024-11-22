@@ -83,7 +83,7 @@
 //                    Name = "Checking",
 //                    Description = "Primary Checking Account",
 //                    Balance = 0,
-//                    OverDraftAmount = 500m,
+//                    OverdraftAmount = 500m,
 //                    DisplayColor = "#ff0000"
 //                },
 //                new SavingsAccountDto
@@ -139,7 +139,7 @@
 //                            checkingAccount.Balance,
 //                            0,
 //                            0,
-//                            checkingAccount.OverDraftAmount,
+//                            checkingAccount.OverdraftAmount,
 //                            checkingAccount.DisplayColor);
 
 //                        var checkingResult = await accountsService.ExecuteAsync(command);

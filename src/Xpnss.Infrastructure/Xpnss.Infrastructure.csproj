@@ -13,4 +13,9 @@
       <ProjectReference Include="..\Xpnss.Domain\Xpnss.Domain.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Events\" />
+      <Folder Include="Repositories\" />
+    </ItemGroup>
+
 </Project>

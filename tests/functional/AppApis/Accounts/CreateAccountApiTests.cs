@@ -1,10 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Habanerio.Xpnss.Accounts.Application.Commands.CreateAccount;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Application.Accounts.Commands.CreateAccount;
-using Habanerio.Xpnss.Application.Accounts.DTOs;
-using Habanerio.Xpnss.Domain.Accounts;
+using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Domain.Types;
 using Microsoft.AspNetCore.Mvc.Testing;
 using MongoDB.Bson;
 
@@ -37,10 +37,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<AccountDto>>(content, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var apiResponse = JsonSerializer.Deserialize<ApiResponse<AccountDto>>(content, JsonSerializationOptions);
 
         Assert.NotNull(apiResponse);
         Assert.True(apiResponse.IsSuccess);
@@ -62,7 +59,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         Assert.Equal(0, request.CreditLimit);
         Assert.Equal(0, request.InterestRate);
-        Assert.Equal(0, request.OverDraftAmount);
+        Assert.Equal(0, request.OverdraftAmount);
     }
 
     [Fact]
@@ -75,7 +72,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
             AccountTypes.Keys.Checking.ToString(),
             "Test Checking Account",
             "Test Checking Account Description",
-            OverDraftAmount: 4232, DisplayColor: "#0df000");
+            OverdraftAmount: 4232, DisplayColor: "#0df000");
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
@@ -86,10 +83,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<AccountDto>>(content, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var apiResponse = JsonSerializer.Deserialize<ApiResponse<AccountDto>>(content, JsonSerializationOptions);
 
         Assert.NotNull(apiResponse);
         Assert.True(apiResponse.IsSuccess);
@@ -103,7 +97,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         Assert.Equal(0, accountDto.Balance);
         Assert.Equal(request.Description, accountDto.Description);
         Assert.Equal(request.DisplayColor, accountDto.DisplayColor);
-        Assert.Equal(request.OverDraftAmount, accountDto.OverDraftAmount);
+        Assert.Equal(request.OverdraftAmount, accountDto.OverdraftAmount);
         Assert.Equal(DateTime.UtcNow, accountDto.DateCreated, TimeSpan.FromSeconds(5));
         Assert.Null(accountDto.DateUpdated);
         Assert.Null(accountDto.DateDeleted);
@@ -135,10 +129,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<AccountDto>>(content, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var apiResponse = JsonSerializer.Deserialize<ApiResponse<AccountDto>>(content, JsonSerializationOptions);
 
         Assert.NotNull(apiResponse);
         Assert.True(apiResponse.IsSuccess);
@@ -160,7 +151,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         Assert.True(!accountDto.IsDeleted);
 
         Assert.Equal(0, request.CreditLimit);
-        Assert.Equal(0, request.OverDraftAmount);
+        Assert.Equal(0, request.OverdraftAmount);
     }
 
     [Fact]
@@ -185,10 +176,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<AccountDto>>(content, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var apiResponse = JsonSerializer.Deserialize<ApiResponse<AccountDto>>(content, JsonSerializationOptions);
 
         Assert.NotNull(apiResponse);
         Assert.True(apiResponse.IsSuccess);
@@ -210,7 +198,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         Assert.True(accountDto.IsCredit);
         Assert.False(accountDto.IsDeleted);
 
-        Assert.Equal(0, request.OverDraftAmount);
+        Assert.Equal(0, request.OverdraftAmount);
     }
 
     [Fact]
@@ -235,10 +223,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<AccountDto>>(content, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var apiResponse = JsonSerializer.Deserialize<ApiResponse<AccountDto>>(content, JsonSerializationOptions);
 
         Assert.NotNull(apiResponse);
         Assert.True(apiResponse.IsSuccess);
@@ -260,7 +245,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         Assert.True(accountDto.IsCredit);
         Assert.True(!accountDto.IsDeleted);
 
-        Assert.Equal(0, request.OverDraftAmount);
+        Assert.Equal(0, request.OverdraftAmount);
     }
 
 
@@ -302,10 +287,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         var content = await response.Content.ReadAsStringAsync();
 
-        var errors = JsonSerializer.Deserialize<List<string>>(content, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var errors = JsonSerializer.Deserialize<List<string>>(content, JsonSerializationOptions);
 
         Assert.NotNull(errors);
         Assert.Single(errors);
@@ -333,10 +315,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         var content = await response.Content.ReadAsStringAsync();
 
-        var errors = JsonSerializer.Deserialize<List<string>>(content, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var errors = JsonSerializer.Deserialize<List<string>>(content, JsonSerializationOptions);
 
         Assert.NotNull(errors);
         Assert.Single(errors);
@@ -365,10 +344,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         var content = await response.Content.ReadAsStringAsync();
 
-        var errors = JsonSerializer.Deserialize<List<string>>(content, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var errors = JsonSerializer.Deserialize<List<string>>(content, JsonSerializationOptions);
 
         Assert.NotNull(errors);
         Assert.Single(errors);
@@ -399,10 +375,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         var content = await response.Content.ReadAsStringAsync();
 
-        var errors = JsonSerializer.Deserialize<List<string>>(content, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var errors = JsonSerializer.Deserialize<List<string>>(content, JsonSerializationOptions);
 
         Assert.NotNull(errors);
         Assert.Single(errors);
@@ -434,10 +407,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         var content = await response.Content.ReadAsStringAsync();
 
-        var errors = JsonSerializer.Deserialize<List<string>>(content, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var errors = JsonSerializer.Deserialize<List<string>>(content, JsonSerializationOptions);
 
         Assert.NotNull(errors);
         Assert.Single(errors);
@@ -469,10 +439,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         var content = await response.Content.ReadAsStringAsync();
 
-        var errors = JsonSerializer.Deserialize<List<string>>(content, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var errors = JsonSerializer.Deserialize<List<string>>(content, JsonSerializationOptions);
 
         Assert.NotNull(errors);
         Assert.Single(errors);

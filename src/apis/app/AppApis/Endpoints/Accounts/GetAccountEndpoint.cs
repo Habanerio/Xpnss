@@ -1,9 +1,9 @@
 using System.Net;
 using Carter;
+using Habanerio.Xpnss.Accounts.Application.Queries.GetAccount;
+using Habanerio.Xpnss.Accounts.Domain.Interfaces;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Application.Accounts.DTOs;
-using Habanerio.Xpnss.Application.Accounts.Queries.GetAccount;
-using Habanerio.Xpnss.Domain.Accounts.Interfaces;
+using Habanerio.Xpnss.Application.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Accounts;

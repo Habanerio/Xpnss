@@ -15,9 +15,9 @@ public sealed record CategoryId : EntityObjectId
         SetValue(categoryId ?? string.Empty);
     }
 
-    public static CategoryId New => new CategoryId(ObjectId.GenerateNewId().ToString());
+    public static CategoryId New => new(ObjectId.GenerateNewId().ToString());
 
-    public static CategoryId Empty => new CategoryId();
+    public static CategoryId Empty => new(ObjectId.Empty);
 
     public static implicit operator string(CategoryId userId) => userId.Value;
 

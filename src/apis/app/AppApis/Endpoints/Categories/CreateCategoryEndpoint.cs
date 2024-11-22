@@ -2,9 +2,9 @@ using System.Net;
 using Carter;
 using FluentValidation;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Application.Categories.Commands.CreateCategory;
-using Habanerio.Xpnss.Application.Categories.DTOs;
-using Habanerio.Xpnss.Domain.Categories.Interfaces;
+using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Categories.Application.Commands.CreateCategory;
+using Habanerio.Xpnss.Categories.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Categories;
@@ -26,7 +26,7 @@ public class CreateCategoryEndpoint : BaseEndpoint
                 })
                 .Produces<ApiResponse<CategoryDto>>((int)HttpStatusCode.OK)
                 .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
-                .WithDisplayName("New Category")
+                .WithDisplayName("NewId Category")
                 .WithName("CreateCategory")
                 .WithTags("Categories")
                 .WithOpenApi();

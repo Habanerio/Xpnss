@@ -1,9 +1,9 @@
 using System.Net;
 using Carter;
+using Habanerio.Xpnss.Accounts.Application.Queries.GetAccounts;
+using Habanerio.Xpnss.Accounts.Domain.Interfaces;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Application.Accounts.DTOs;
-using Habanerio.Xpnss.Application.Accounts.Queries.GetAccounts;
-using Habanerio.Xpnss.Domain.Accounts.Interfaces;
+using Habanerio.Xpnss.Application.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Accounts;
@@ -42,7 +42,7 @@ public class GetAccountsEndpoint : BaseEndpoint
         if (string.IsNullOrWhiteSpace(userId))
             return BadRequestWithErrors("User Id is required");
 
-        var query = new GetAccountsQuery(userId);
+        var query = new GetAccounts(userId);
 
         var result = await service.QueryAsync(query, cancellationToken);
 

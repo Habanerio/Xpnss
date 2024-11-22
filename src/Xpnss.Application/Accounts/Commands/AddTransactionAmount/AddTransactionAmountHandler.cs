@@ -49,25 +49,25 @@ public sealed class AddTransactionAmountHandler(IAccountsRepository repository)
         //switch(existingAccount.AccountType)
         //{
         //    case AccountTypes.CreditCard:
-        //        if (request.IsCredit)
+        //        if (request.IsCreditTransaction)
         //            existingAccount.Balance -= request.Amount;
         //        else
         //            existingAccount.Balance += request.Amount;
         //        break;
         //    case AccountTypes.Loan:
-        //        if (request.IsCredit)
+        //        if (request.IsCreditTransaction)
         //            existingAccount.Balance -= request.Amount;
         //        else
         //            existingAccount.Balance += request.Amount;
         //        break;
         //    case AccountTypes.Savings:
-        //        if (request.IsCredit)
+        //        if (request.IsCreditTransaction)
         //            existingAccount.Balance += request.Amount;
         //        else
         //            existingAccount.Balance -= request.Amount;
         //        break;
         //    case AccountTypes.Checking:
-        //        if (request.IsCredit)
+        //        if (request.IsCreditTransaction)
         //            existingAccount.Balance += request.Amount;
         //        else
         //            existingAccount.Balance -= request.Amount;

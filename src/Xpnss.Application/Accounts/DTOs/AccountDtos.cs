@@ -28,7 +28,7 @@ public record AccountDto
 
     public bool IsDeleted => DateDeleted.HasValue;
 
-    //public List<MonthlyAccountTotals> MonthlyTotals { get; set; } = new();
+    //public List<MonthlyAccountTotal> MonthlyTotal { get; set; } = new();
 
     public decimal OverDraftAmount { get; set; }
 

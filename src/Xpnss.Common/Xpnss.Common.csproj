@@ -11,6 +11,7 @@
     <ItemGroup>
       <Folder Include="DTOs\" />
       <Folder Include="Events\" />
+      <Folder Include="Entities\" />
     </ItemGroup>
 
 </Project>

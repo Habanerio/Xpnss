@@ -1,23 +1,24 @@
 using System.Net;
 using Carter;
+using FluentResults;
 using FluentValidation;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Application.Merchants.Commands.CreateMerchant;
-using Habanerio.Xpnss.Application.Transactions.Commands;
-using Habanerio.Xpnss.Application.Transactions.DTOs;
-using Habanerio.Xpnss.Domain.Merchants.Interfaces;
-using Habanerio.Xpnss.Domain.Transactions.Interfaces;
+using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Merchants.Application.Commands.CreateMerchant;
+using Habanerio.Xpnss.Merchants.Domain.Interfaces;
+using Habanerio.Xpnss.Transactions.Application.Commands;
+using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Transactions;
 
-public class CreateTransactionEndpoint : BaseEndpoint
+public sealed class CreateTransactionEndpoint : BaseEndpoint
 {
     public sealed class Endpoint : ICarterModule
     {
-        public void AddRoutes(IEndpointRouteBuilder builder)
+        public void AddRoutes(IEndpointRouteBuilder app)
         {
-            builder.MapPost("/api/v1/users/{userId}/transactions",
+            app.MapPost("/api/v1/users/{userId}/transactions",
                     async (
                         [FromRoute] string userId,
                         [FromBody] CreateTransactionCommand command,
@@ -30,7 +31,7 @@ public class CreateTransactionEndpoint : BaseEndpoint
                 )
                 .Produces<ApiResponse<TransactionDto>>((int)HttpStatusCode.OK)
                 .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
-                .WithDisplayName("New Transaction")
+                .WithDisplayName("NewId Transaction")
                 .WithName("CreateTransaction")
                 .WithTags("Transactions")
                 .WithOpenApi();
@@ -84,22 +85,31 @@ public class CreateTransactionEndpoint : BaseEndpoint
             }
         }
 
-        var transactionResult = await transactionsService.CommandAsync(command, cancellationToken);
+        Result<TransactionDto>? transactionResult;
 
-        if (transactionResult.IsFailed)
-            return BadRequestWithErrors(transactionResult.Errors);
+        try
+        {
+            transactionResult = await transactionsService.CommandAsync(command, cancellationToken);
 
-        var transactionDto = transactionResult.ValueOrDefault;
+            if (transactionResult.IsFailed)
+                return BadRequestWithErrors(transactionResult.Errors);
 
-        if (transactionDto is null)
-            return Results.BadRequest($"An error occurred while trying to return Transaction #{transactionResult.Value.Id}");
+            var transactionDto = transactionResult.ValueOrDefault;
 
-        transactionDto.MerchantName = merchantName;
-        transactionDto.MerchantLocation = merchantLocation;
+            if (transactionDto is null)
+                return Results.BadRequest($"An error occurred while trying to return Transaction #{transactionResult.Value.Id}");
 
-        var response = ApiResponse<TransactionDto>.Ok(transactionDto);
+            transactionDto.MerchantName = merchantName;
+            transactionDto.MerchantLocation = merchantLocation;
 
-        return Results.Ok(response);
+            var response = ApiResponse<TransactionDto>.Ok(transactionDto);
+
+            return Results.Ok(response);
+        }
+        catch (Exception e)
+        {
+            return Results.BadRequest(e.Message);
+        }
     }
 
     public sealed class Validator : AbstractValidator<CreateTransactionCommand>

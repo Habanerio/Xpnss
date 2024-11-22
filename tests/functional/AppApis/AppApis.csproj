@@ -39,14 +39,11 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\src\apis\app\AppApis\AppApis.csproj" />
+      <ProjectReference Include="..\..\..\src\Xpnss.Accounts.Application\Xpnss.Accounts.Application.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <Using Include="Xunit" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Categories\" />
     </ItemGroup>
 
 </Project>

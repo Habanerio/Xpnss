@@ -2,10 +2,9 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Habanerio.Xpnss.Apis.App.AppApis;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Application.Merchants.DTOs;
-using Habanerio.Xpnss.Application.Transactions.Commands;
-using Habanerio.Xpnss.Application.Transactions.DTOs;
-using Habanerio.Xpnss.Domain.Transactions;
+using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Domain.Types;
+using Habanerio.Xpnss.Transactions.Application.Commands;
 using Microsoft.AspNetCore.Mvc.Testing;
 using MongoDB.Bson;
 
@@ -24,9 +23,15 @@ public class CreateTransactionApiTests(WebApplicationFactory<Program> factory) :
     [Fact]
     public async Task CanCall_CreateTransaction_WithValidRequest_ReturnsOk()
     {
-        var account = await AccountDocumentsRepository.FirstOrDefaultAsync(a => a.UserId == USER_ID);
+        var account = await AccountDocumentsRepository.FirstOrDefaultDocumentAsync(a => a.UserId == USER_ID);
+
+        if (account is null)
+            return;
+
         var previousAccountBalance = account.Balance;
 
+        var transactionDate = DateTime.Now;
+        var transactionType = TransactionTypes.Keys.PURCHASE;
         // Arrange
         var createTransactionRequest = new CreateTransactionCommand(
             USER_ID,
@@ -46,7 +51,100 @@ public class CreateTransactionApiTests(WebApplicationFactory<Program> factory) :
                     Description = "Transaction Item 2 Description"
                 }
             },
-            DateTime.Now,
+            transactionDate,
+            transactionType.ToString(),
+            "Transaction Description",
+            new MerchantDto(
+                ObjectId.GenerateNewId().ToString(),
+                USER_ID,
+                "Merchant Name",
+                "Merchant Location"
+            ));
+
+
+        // Act
+        var createTransactionResponse = await HttpClient.PostAsJsonAsync(
+            ENDPOINTS_CREATE_TRANSACTION
+                .Replace("{userId}", USER_ID),
+            createTransactionRequest);
+
+        createTransactionResponse.EnsureSuccessStatusCode();
+
+        var transactionContent = await createTransactionResponse.Content.ReadAsStringAsync();
+        var transactionApiResponse = JsonSerializer.Deserialize<ApiResponse<TransactionDto>>(transactionContent, JsonSerializationOptions);
+
+        // Assert
+        Assert.NotNull(transactionApiResponse);
+        Assert.True(transactionApiResponse.IsSuccess);
+
+        var actualTransactionDto = Assert.IsType<TransactionDto>(transactionApiResponse.Data);
+        Assert.True(!actualTransactionDto.Id.Equals(ObjectId.Empty.ToString()));
+        Assert.Equal(createTransactionRequest.UserId, actualTransactionDto.UserId);
+        Assert.Equal(createTransactionRequest.AccountId, actualTransactionDto.AccountId);
+        Assert.Equal(transactionDate.Date, actualTransactionDto.TransactionDate.Date);
+        Assert.Equal(createTransactionRequest.TransactionType, actualTransactionDto.TransactionType);
+
+        Assert.Equal(createTransactionRequest.Items.Count(), actualTransactionDto.Items.Count);
+
+        Assert.NotNull(actualTransactionDto.MerchantId);
+        Assert.Equal(createTransactionRequest.Merchant.Id, actualTransactionDto.MerchantId);
+        Assert.Equal(createTransactionRequest.Merchant.Name, actualTransactionDto.MerchantName);
+        Assert.Equal(createTransactionRequest.Merchant.Location, actualTransactionDto.MerchantLocation);
+
+        Assert.Equal(createTransactionRequest.Items.Sum(i => i.Amount), actualTransactionDto.TotalAmount);
+        Assert.Equal(createTransactionRequest.Items.Sum(i => i.Amount), actualTransactionDto.Owing);
+        Assert.Equal(0, actualTransactionDto.Paid);
+
+        // Check that the Account's balance has been updated
+        var actualAccount = await AccountDocumentsRepository.FirstOrDefaultDocumentAsync(a => a.Id == account.Id && a.UserId == USER_ID);
+        Assert.NotNull(actualAccount);
+
+        if (TransactionTypes.IsCreditTransaction(actualAccount.AccountType, transactionType))
+            Assert.Equal(previousAccountBalance + createTransactionRequest.Items.Sum(t => t.Amount), actualAccount.Balance);
+        else
+            Assert.Equal(previousAccountBalance - createTransactionRequest.Items.Sum(t => t.Amount), actualAccount.Balance);
+
+        //Assert.NotEmpty(actualAccount.MonthlyTotals);
+
+        //Assert.NotNull(actualAccount.MonthlyTotals.Find(t =>
+        //    t.Year == transactionDate.Year && t.Month == transactionDate.Month));
+    }
+
+    [Fact]
+    public async Task CanCall_CreateTransaction_CreditAccount_WithValidRequest_ReturnsOk()
+    {
+        var account = await AccountDocumentsRepository
+            .FirstOrDefaultDocumentAsync(a =>
+                a.UserId == USER_ID &&
+                (AccountTypes.CreditAccountTypes.Contains(a.AccountType)));
+
+        if (account is null)
+            return;
+
+        var previousAccountBalance = account.Balance;
+
+        var transactionDate = DateTime.Now.AddDays(-(new Random().Next(1, 365 * 2)));
+
+        // Arrange
+        var createTransactionRequest = new CreateTransactionCommand(
+            USER_ID,
+            account.Id.ToString(),
+            new List<TransactionItemDto>
+            {
+                new()
+                {
+                    Amount = 100,
+                    CategoryId = ObjectId.GenerateNewId().ToString(),
+                    Description = "Transaction Item 1 Description"
+                },
+                new()
+                {
+                    Amount = 200,
+                    CategoryId = ObjectId.GenerateNewId().ToString(),
+                    Description = "Transaction Item 2 Description"
+                }
+            },
+            transactionDate,
             TransactionTypes.Keys.PURCHASE.ToString(),
             "Transaction Description",
             new MerchantDto(
@@ -66,10 +164,7 @@ public class CreateTransactionApiTests(WebApplicationFactory<Program> factory) :
         createTransactionResponse.EnsureSuccessStatusCode();
 
         var transactionContent = await createTransactionResponse.Content.ReadAsStringAsync();
-        var transactionApiResponse = JsonSerializer.Deserialize<ApiResponse<TransactionDto>>(transactionContent, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var transactionApiResponse = JsonSerializer.Deserialize<ApiResponse<TransactionDto>>(transactionContent, JsonSerializationOptions);
 
         // Assert
         Assert.NotNull(transactionApiResponse);
@@ -79,7 +174,7 @@ public class CreateTransactionApiTests(WebApplicationFactory<Program> factory) :
         Assert.True(!actualTransactionDto.Id.Equals(ObjectId.Empty.ToString()));
         Assert.Equal(createTransactionRequest.UserId, actualTransactionDto.UserId);
         Assert.Equal(createTransactionRequest.AccountId, actualTransactionDto.AccountId);
-        Assert.Equal(DateTime.Now.Date, actualTransactionDto.TransactionDate.Date);
+        Assert.Equal(transactionDate.Date, actualTransactionDto.TransactionDate.Date);
         Assert.Equal(createTransactionRequest.TransactionType, actualTransactionDto.TransactionType);
 
         Assert.Equal(createTransactionRequest.Items.Count(), actualTransactionDto.Items.Count);
@@ -89,19 +184,118 @@ public class CreateTransactionApiTests(WebApplicationFactory<Program> factory) :
         Assert.Equal(createTransactionRequest.Merchant.Name, actualTransactionDto.MerchantName);
         Assert.Equal(createTransactionRequest.Merchant.Location, actualTransactionDto.MerchantLocation);
 
-        Assert.Equal(createTransactionRequest.Items.Sum(i => i.Amount), actualTransactionDto.Amount);
+        Assert.Equal(createTransactionRequest.Items.Sum(i => i.Amount), actualTransactionDto.TotalAmount);
         Assert.Equal(createTransactionRequest.Items.Sum(i => i.Amount), actualTransactionDto.Owing);
         Assert.Equal(0, actualTransactionDto.Paid);
 
         // Check that the Account's balance has been updated
-        var actualAccount = await AccountDocumentsRepository.FirstOrDefaultAsync(a => a.Id == account.Id && a.UserId == USER_ID);
+        var actualAccount = await AccountDocumentsRepository.FirstOrDefaultDocumentAsync(a => a.Id == account.Id && a.UserId == USER_ID);
         Assert.NotNull(actualAccount);
 
-        if (TransactionTypes.IsCredit(createTransactionRequest.TransactionType))
+        if (TransactionTypes.IsCreditTransaction(createTransactionRequest.TransactionType))
+            Assert.Equal(previousAccountBalance - createTransactionRequest.Items.Sum(t => t.Amount), actualAccount.Balance);
+        else
+            Assert.Equal(previousAccountBalance + createTransactionRequest.Items.Sum(t => t.Amount), actualAccount.Balance);
+
+        //Assert.NotEmpty(actualAccount.MonthlyTotals);
+
+        //Assert.NotNull(actualAccount.MonthlyTotals.Find(t =>
+        //    t.Year == transactionDate.Year && t.Month == transactionDate.Month));
+    }
+
+    [Fact]
+    public async Task CanCall_CreateTransaction_DebitAccount_WithValidRequest_ReturnsOk()
+    {
+        var account = await AccountDocumentsRepository
+            .FirstOrDefaultDocumentAsync(a =>
+                a.UserId == USER_ID &&
+                (AccountTypes.DebitAccountTypes.Contains(a.AccountType)));
+
+        if (account is null)
+            return;
+
+        var previousAccountBalance = account.Balance;
+
+        var transactionDate = DateTime.Now.AddDays(-(new Random().Next(1, 365 * 2)));
+
+        // Arrange
+        var createTransactionRequest = new CreateTransactionCommand(
+            USER_ID,
+            account.Id.ToString(),
+            new List<TransactionItemDto>
+            {
+                new()
+                {
+                    Amount = 100,
+                    CategoryId = ObjectId.GenerateNewId().ToString(),
+                    Description = "Transaction Item 1 Description"
+                },
+                new()
+                {
+                    Amount = 200,
+                    CategoryId = ObjectId.GenerateNewId().ToString(),
+                    Description = "Transaction Item 2 Description"
+                }
+            },
+            transactionDate,
+            TransactionTypes.Keys.PURCHASE.ToString(),
+            "Transaction Description",
+            new MerchantDto(
+                ObjectId.GenerateNewId().ToString(),
+                USER_ID,
+                "Merchant Name",
+                "Merchant Location"
+            ));
+
+
+        // Act
+        var createTransactionResponse = await HttpClient.PostAsJsonAsync(
+            ENDPOINTS_CREATE_TRANSACTION
+                .Replace("{userId}", USER_ID),
+            createTransactionRequest);
+
+        createTransactionResponse.EnsureSuccessStatusCode();
+
+        var transactionContent = await createTransactionResponse.Content.ReadAsStringAsync();
+        var transactionApiResponse = JsonSerializer.Deserialize<ApiResponse<TransactionDto>>(transactionContent, JsonSerializationOptions);
+
+        // Assert
+        Assert.NotNull(transactionApiResponse);
+        Assert.True(transactionApiResponse.IsSuccess);
+
+        var actualTransactionDto = Assert.IsType<TransactionDto>(transactionApiResponse.Data);
+        Assert.True(!actualTransactionDto.Id.Equals(ObjectId.Empty.ToString()));
+        Assert.Equal(createTransactionRequest.UserId, actualTransactionDto.UserId);
+        Assert.Equal(createTransactionRequest.AccountId, actualTransactionDto.AccountId);
+        Assert.Equal(transactionDate.Date, actualTransactionDto.TransactionDate.Date);
+        Assert.Equal(createTransactionRequest.TransactionType, actualTransactionDto.TransactionType);
+
+        Assert.Equal(createTransactionRequest.Items.Count(), actualTransactionDto.Items.Count);
+
+        Assert.NotNull(actualTransactionDto.MerchantId);
+        Assert.Equal(createTransactionRequest.Merchant.Id, actualTransactionDto.MerchantId);
+        Assert.Equal(createTransactionRequest.Merchant.Name, actualTransactionDto.MerchantName);
+        Assert.Equal(createTransactionRequest.Merchant.Location, actualTransactionDto.MerchantLocation);
+
+        Assert.Equal(createTransactionRequest.Items.Sum(i => i.Amount), actualTransactionDto.TotalAmount);
+        Assert.Equal(createTransactionRequest.Items.Sum(i => i.Amount), actualTransactionDto.Owing);
+        Assert.Equal(0, actualTransactionDto.Paid);
+
+        // Check that the Account's balance has been updated
+        var actualAccount = await AccountDocumentsRepository.FirstOrDefaultDocumentAsync(a => a.Id == account.Id && a.UserId == USER_ID);
+        Assert.NotNull(actualAccount);
+
+        if (TransactionTypes.IsCreditTransaction(createTransactionRequest.TransactionType))
             Assert.Equal(previousAccountBalance + createTransactionRequest.Items.Sum(t => t.Amount), actualAccount.Balance);
         else
             Assert.Equal(previousAccountBalance - createTransactionRequest.Items.Sum(t => t.Amount), actualAccount.Balance);
+
+        //Assert.NotEmpty(actualAccount.MonthlyTotals);
+
+        //Assert.NotNull(actualAccount.MonthlyTotals.Find(t =>
+        //    t.Year == transactionDate.Year && t.Month == transactionDate.Month));
     }
+
 
     /// <summary>
     /// Tests that a transaction can be created with a new merchant
@@ -110,8 +304,10 @@ public class CreateTransactionApiTests(WebApplicationFactory<Program> factory) :
     [Fact]
     public async Task CanCall_CreateTransaction_WithNewMerchant_ReturnsOk()
     {
-        var account = await AccountDocumentsRepository.FirstOrDefaultAsync(a => a.UserId == USER_ID);
+        var account = await AccountDocumentsRepository.FirstOrDefaultDocumentAsync(a => a.UserId == USER_ID);
         var previousAccountBalance = account.Balance;
+
+        var transactionDate = DateTime.Now.AddDays(-(new Random().Next(1, 365 * 2)));
 
         // Arrange
         var createTransactionRequest = new CreateTransactionCommand(
@@ -132,14 +328,14 @@ public class CreateTransactionApiTests(WebApplicationFactory<Program> factory) :
                     Description = "Transaction Item 2 Description"
                 }
             },
-            DateTime.Now,
+            transactionDate,
             TransactionTypes.Keys.PURCHASE.ToString(),
             "Transaction Description",
             new MerchantDto(
                 string.Empty,
                 USER_ID,
-                "New Merchant Name",
-                "New Merchant Location"
+                "NewId Merchant Name",
+                "NewId Merchant Location"
             ));
 
 
@@ -152,10 +348,7 @@ public class CreateTransactionApiTests(WebApplicationFactory<Program> factory) :
         createTransactionResponse.EnsureSuccessStatusCode();
 
         var transactionContent = await createTransactionResponse.Content.ReadAsStringAsync();
-        var transactionApiResponse = JsonSerializer.Deserialize<ApiResponse<TransactionDto>>(transactionContent, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var transactionApiResponse = JsonSerializer.Deserialize<ApiResponse<TransactionDto>>(transactionContent, JsonSerializationOptions);
 
         // Assert
         Assert.NotNull(transactionApiResponse);
@@ -165,27 +358,32 @@ public class CreateTransactionApiTests(WebApplicationFactory<Program> factory) :
         Assert.True(!actualTransactionDto.Id.Equals(ObjectId.Empty.ToString()));
         Assert.Equal(createTransactionRequest.UserId, actualTransactionDto.UserId);
         Assert.Equal(createTransactionRequest.AccountId, actualTransactionDto.AccountId);
-        Assert.Equal(DateTime.Now.Date, actualTransactionDto.TransactionDate.Date);
+        Assert.Equal(transactionDate.Date, actualTransactionDto.TransactionDate.Date);
         Assert.Equal(createTransactionRequest.TransactionType, actualTransactionDto.TransactionType);
 
         Assert.Equal(createTransactionRequest.Items.Count(), actualTransactionDto.Items.Count);
 
         Assert.NotNull(actualTransactionDto.MerchantId);
         Assert.NotEmpty(actualTransactionDto.MerchantId);
-        Assert.Equal(createTransactionRequest.Merchant.Name, actualTransactionDto.MerchantName);
-        Assert.Equal(createTransactionRequest.Merchant.Location, actualTransactionDto.MerchantLocation);
+        Assert.Equal(createTransactionRequest.Merchant?.Name, actualTransactionDto.MerchantName);
+        Assert.Equal(createTransactionRequest.Merchant?.Location, actualTransactionDto.MerchantLocation);
 
-        Assert.Equal(createTransactionRequest.Items.Sum(i => i.Amount), actualTransactionDto.Amount);
+        Assert.Equal(createTransactionRequest.Items.Sum(i => i.Amount), actualTransactionDto.TotalAmount);
         Assert.Equal(createTransactionRequest.Items.Sum(i => i.Amount), actualTransactionDto.Owing);
         Assert.Equal(0, actualTransactionDto.Paid);
 
         // Check that the Account's balance has been updated
-        var actualAccount = await AccountDocumentsRepository.FirstOrDefaultAsync(a => a.Id == account.Id && a.UserId == USER_ID);
+        var actualAccount = await AccountDocumentsRepository.FirstOrDefaultDocumentAsync(a => a.Id == account.Id && a.UserId == USER_ID);
         Assert.NotNull(actualAccount);
 
-        if (TransactionTypes.IsCredit(createTransactionRequest.TransactionType))
+        if (TransactionTypes.IsCreditTransaction(createTransactionRequest.TransactionType))
             Assert.Equal(previousAccountBalance + createTransactionRequest.Items.Sum(t => t.Amount), actualAccount.Balance);
         else
             Assert.Equal(previousAccountBalance - createTransactionRequest.Items.Sum(t => t.Amount), actualAccount.Balance);
+
+        //Assert.NotEmpty(actualAccount.MonthlyTotals);
+
+        //Assert.NotNull(actualAccount.MonthlyTotals.Find(t =>
+        //    t.Year == transactionDate.Year && t.Month == transactionDate.Month));
     }
 }

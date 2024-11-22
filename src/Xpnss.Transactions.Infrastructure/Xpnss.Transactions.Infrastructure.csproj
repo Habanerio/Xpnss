@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <AssemblyName>Habanerio.Xpnss.Transactions.Infrastructure</AssemblyName>
+        <RootNamespace>Habanerio.Xpnss.Transactions.Infrastructure</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\habanerio\Habanerio.Core.Dbs\Habanerio.Core.Dbs.MongoDb\Habanerio.Core.Dbs.MongoDb.csproj" />
+      <ProjectReference Include="..\Xpnss.Infrastructure\Xpnss.Infrastructure.csproj" />
+      <ProjectReference Include="..\Xpnss.Transactions.Domain\Xpnss.Transactions.Domain.csproj" />
+    </ItemGroup>
+
+</Project>

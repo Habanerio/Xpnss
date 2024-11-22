@@ -1,5 +1,4 @@
-using Habanerio.Xpnss.Application.Merchants.DTOs;
-using Habanerio.Xpnss.Application.Transactions.DTOs;
+using Habanerio.Xpnss.Application.DTOs;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Models.Transactions;
 
