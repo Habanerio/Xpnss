@@ -11,7 +11,9 @@ public record TransactionCreatedIntegrationEvent : IntegrationEvent
 
     public string AccountId { get; }
 
-    public string MerchantId { get; }
+    public string CategoryId { get; }
+
+    public string PayerPayeeId { get; }
 
     public string TransactionId { get; }
 
@@ -25,7 +27,8 @@ public record TransactionCreatedIntegrationEvent : IntegrationEvent
         string transactionId,
         string userId,
         string accountId,
-        string merchantId,
+        string categoryId,
+        string payerPayeeId,
         TransactionTypes.Keys transactionType,
         decimal amount,
         DateTime dateOfTransaction)
@@ -44,7 +47,8 @@ public record TransactionCreatedIntegrationEvent : IntegrationEvent
 
         UserId = userId;
         AccountId = accountId;
-        MerchantId = merchantId;
+        CategoryId = categoryId;
+        PayerPayeeId = payerPayeeId;
         TransactionId = transactionId;
         TransactionType = transactionType;
         Amount = amount;

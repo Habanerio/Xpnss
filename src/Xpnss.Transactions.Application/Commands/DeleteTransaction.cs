@@ -1,6 +1,7 @@
 using FluentResults;
 using FluentValidation;
 using Habanerio.Xpnss.Infrastructure.IntegrationEvents.Transactions;
+using Habanerio.Xpnss.Transactions.Domain.Entities;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using MediatR;
 
@@ -21,9 +22,9 @@ public class DeleteTransactionHandler(
     //                                                     throw new ArgumentNullException(nameof(eventDispatcher));
 
     private readonly ITransactionsRepository _repository = repository ??
-                                                           throw new ArgumentNullException(nameof(repository));
+        throw new ArgumentNullException(nameof(repository));
     private readonly IMediator _mediator = mediator ??
-                                           throw new ArgumentNullException(nameof(mediator));
+        throw new ArgumentNullException(nameof(mediator));
 
     public async Task<Result> Handle(
         DeleteTransactionCommand command,
@@ -48,21 +49,27 @@ public class DeleteTransactionHandler(
 
         transaction.Delete();
 
-        var transactionCreatedIntegrationEvent = new TransactionDeletedIntegrationEvent(
-            transaction.Id.Value,
-            transaction.UserId.Value,
-            transaction.AccountId.Value,
-            transaction.MerchantId.Value,
-            transaction.TransactionType,
-            transaction.TotalAmount,
-            transaction.TransactionDate);
-
-        await _mediator.Publish(transactionCreatedIntegrationEvent, cancellationToken);
-
         var updatedTransaction = await _repository.UpdateAsync(transaction, cancellationToken);
 
         if (updatedTransaction.IsFailed)
             return Result.Fail(updatedTransaction.Errors[0].Message);
+
+        TransactionDeletedIntegrationEvent? transactionCreatedIntegrationEvent = null;
+
+        if (transaction is PurchaseTransaction purchaseTransaction)
+        {
+            transactionCreatedIntegrationEvent = new TransactionDeletedIntegrationEvent(
+                purchaseTransaction.Id.Value,
+                purchaseTransaction.UserId.Value,
+                purchaseTransaction.AccountId.Value,
+                purchaseTransaction.PayerPayeeId.Value,
+                purchaseTransaction.TransactionType,
+                purchaseTransaction.TotalAmount,
+                purchaseTransaction.TransactionDate);
+        }
+
+        if (transactionCreatedIntegrationEvent is not null)
+            await _mediator.Publish(transactionCreatedIntegrationEvent, cancellationToken);
 
         return updatedTransaction.Value.IsDeleted ?
             Result.Ok() :

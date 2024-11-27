@@ -1,18 +1,18 @@
 using Habanerio.Xpnss.Application.DTOs;
 using Habanerio.Xpnss.Domain.Types;
-using Habanerio.Xpnss.Transactions.Domain;
+using Habanerio.Xpnss.Transactions.Domain.Entities;
 
 namespace Habanerio.Xpnss.Transactions.Application.Mappers;
 
-internal static partial class Mapper
+internal static partial class ApplicationMapper
 {
-    public static IEnumerable<TransactionDto> Map(IEnumerable<Transaction> documents)
+    public static IEnumerable<TransactionDto> Map(IEnumerable<TransactionBase> entities)
     {
         var results = new List<TransactionDto>();
 
-        foreach (var document in documents)
+        foreach (var entity in entities)
         {
-            var dto = Map(document);
+            TransactionDto? dto = Map(entity);
 
             if (dto is not null)
                 results.Add(dto);
@@ -21,25 +21,68 @@ internal static partial class Mapper
         return results;
     }
 
-    public static TransactionDto? Map(Transaction? document)
+    public static TransactionDto? Map(TransactionBase? entity)
     {
-        if (document is null)
+        if (entity is null)
             return default;
 
-        return new TransactionDto
+        if (entity is DepositTransaction depositEntity)
+            return Map(depositEntity);
+
+        if (entity is PurchaseTransaction purchaseEntity)
+            return Map(purchaseEntity);
+
+        throw new InvalidOperationException("Invalid transaction type");
+    }
+
+    public static DepositTransactionDto? Map(DepositTransaction? entity)
+    {
+        if (entity is null)
+            return default;
+
+        if (!entity.TransactionType.Equals(TransactionTypes.Keys.DEPOSIT))
+            throw new InvalidOperationException("Invalid transaction type");
+
+        return new DepositTransactionDto()
         {
-            Id = document.Id,
-            UserId = document.UserId,
-            AccountId = document.AccountId,
-            TotalAmount = document.TotalAmount,
-            Description = document.Description,
-            IsCredit = TransactionTypes.IsCreditTransaction(document.TransactionType),
-            Items = Map(document.Items.AsEnumerable()).ToList().AsReadOnly(),
-            MerchantId = document.MerchantId?.Value ?? null,
-            Paid = document.TotalPaid,
-            TransactionDate = document.TransactionDate,
-            TransactionType = document.TransactionType.ToString(),
-            DatePaid = document.DatePaid,
+            Id = entity.Id,
+            UserId = entity.UserId,
+            AccountId = entity.AccountId,
+            TotalAmount = entity.TotalAmount,
+            Description = entity.Description,
+            PayerPayeeId = entity.PayerPayeeId.Value,
+            Tags = entity.Tags.ToList(),
+            TransactionDate = entity.TransactionDate,
+        };
+    }
+
+    /// <summary>
+    /// Converts a PurchaseTransaction to a PurchaseTransactionDto
+    /// </summary>
+    /// <param name="entity">The Purchase Transaction Entity</param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static TransactionDto? Map(PurchaseTransaction? entity)
+    {
+        if (entity is null)
+            return default;
+
+        if (!entity.TransactionType.Equals(TransactionTypes.Keys.PURCHASE))
+            throw new InvalidOperationException("Invalid transaction type");
+
+        return new PurchaseTransactionDto()
+        {
+            Id = entity.Id,
+            UserId = entity.UserId,
+            AccountId = entity.AccountId,
+            TotalAmount = entity.TotalAmount,
+            Description = entity.Description,
+            Items = Map(entity.Items).ToList(),
+            PayerPayeeId = entity.PayerPayeeId.Value,
+            Tags = entity.Tags.ToList(),
+            TotalPaid = entity.TotalPaid,
+            TransactionDate = entity.TransactionDate,
+            PaidDate = entity.DatePaid,
         };
     }
 

@@ -80,6 +80,6 @@ public sealed class Adjustment : Entity<EntityObjectId>
         DateTime dateChanged,
         string reason = "")
     {
-        return new Adjustment(EntityObjectId.NewId(), accountId, userId, property, value, dateChanged, reason);
+        return new Adjustment(EntityObjectId.New, accountId, userId, property, value, dateChanged, reason);
     }
 }

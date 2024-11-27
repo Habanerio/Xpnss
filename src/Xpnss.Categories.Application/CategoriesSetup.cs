@@ -1,5 +1,4 @@
 using System.Reflection;
-using Habanerio.Core.Dbs.MongoDb;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
 using Habanerio.Xpnss.Categories.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.Categories.Infrastructure.Data.Repositories;
@@ -12,14 +11,18 @@ public static class CategoriesSetup
 {
     public static IServiceCollection AddCategoriesModule(this IServiceCollection services)
     {
-        // Microsoft.Extensions.Options.ConfigurationExtensions
-        services.AddOptions<MongoDbSettings>()
-            .BindConfiguration("XpnssMongoDBSettings");
-
         services.AddScoped<ICategoriesRepository, CategoriesRepository>();
         services.AddScoped<ICategoriesService, CategoriesService>();
 
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+
+        /*
+            services.AddMediatR(cfg =>
+            {
+               cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+               cfg.RegisterServicesFromAssembly(typeof(Infrastructure.IntegrationEvents.EventHandlers.TransactionCreatedIntegrationEventHandler).Assembly);
+            });
+        */
 
         BsonClassMap.RegisterClassMap<CategoryDocument>(cm =>
         {

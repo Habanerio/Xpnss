@@ -28,7 +28,7 @@ public class CategoriesRepository(
         if (category is null)
             return Result.Fail("Category cannot be null");
 
-        var categoryDoc = Mapper.Map(category);
+        var categoryDoc = InfrastructureMapper.Map(category);
 
         if (categoryDoc is null)
             return Result.Fail("Could not map the Category to CategoryDocument");
@@ -60,7 +60,7 @@ public class CategoriesRepository(
         if (parentDoc is null)
             return Result.Ok<Category?>(null);
 
-        var parentCategory = Mapper.Map(parentDoc);
+        var parentCategory = InfrastructureMapper.Map(parentDoc);
 
         if (parentCategory is null)
             return Result.Fail("Could not map the CategoryDocument to Category");
@@ -78,14 +78,14 @@ public class CategoriesRepository(
             .OrderBy(c => c.SortOrder)
             .ThenBy(c => c.Name);
 
-        var categories = Mapper.Map(docs);
+        var categories = InfrastructureMapper.Map(docs);
 
         return Result.Ok(categories);
     }
 
     public async Task<Result<Category>> UpdateAsync(string userId, Category category, CancellationToken cancellationToken = default)
     {
-        var categoryDoc = Mapper.Map(category);
+        var categoryDoc = InfrastructureMapper.Map(category);
 
         if (categoryDoc is null)
             return Result.Fail("Could not map the Category to CategoryDocument");

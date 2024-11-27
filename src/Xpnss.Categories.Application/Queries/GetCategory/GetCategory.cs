@@ -13,7 +13,7 @@ public sealed record GetCategoryQuery(string UserId, string CategoryId, string C
 public class GetCategoryHandler(ICategoriesRepository repository) : IRequestHandler<GetCategoryQuery, Result<CategoryDto>>
 {
     private readonly ICategoriesRepository _repository = repository ??
-                                                          throw new ArgumentNullException(nameof(repository));
+          throw new ArgumentNullException(nameof(repository));
 
     public async Task<Result<CategoryDto>> Handle(GetCategoryQuery request, CancellationToken cancellationToken)
     {
@@ -36,7 +36,7 @@ public class GetCategoryHandler(ICategoriesRepository repository) : IRequestHand
 
         if (string.IsNullOrWhiteSpace(request.ChildCategoryId))
         {
-            var parentCategoryDto = Mapper.Map(parentCategoryResult.Value);
+            var parentCategoryDto = ApplicationMapper.Map(parentCategoryResult.Value);
 
             if (parentCategoryDto is null)
                 throw new InvalidOperationException(
@@ -50,7 +50,7 @@ public class GetCategoryHandler(ICategoriesRepository repository) : IRequestHand
         if (childCategoryDocument is null)
             return Result.Fail($"Could not find the Child Category with Id: `{request.ChildCategoryId}`");
 
-        var childCategoryDto = Mapper.Map(childCategoryDocument);
+        var childCategoryDto = ApplicationMapper.Map(childCategoryDocument);
 
         if (childCategoryDto is null)
             throw new InvalidOperationException(

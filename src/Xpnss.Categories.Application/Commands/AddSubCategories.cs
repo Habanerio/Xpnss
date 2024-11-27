@@ -22,7 +22,7 @@ public class AddSubCategories
     public class Handler(ICategoriesRepository repository) : IRequestHandler<Command, Result<CategoryDto>>
     {
         private readonly ICategoriesRepository _repository = repository ??
-                                                              throw new ArgumentNullException(nameof(repository));
+              throw new ArgumentNullException(nameof(repository));
 
         public async Task<Result<CategoryDto>> Handle(Command request, CancellationToken cancellationToken)
         {
@@ -59,7 +59,7 @@ public class AddSubCategories
             if (result.IsFailed)
                 return Result.Fail(result.Errors[0].Message ?? "Could not save the Category");
 
-            var parentCategoryDto = Mapper.Map(parentDoc);
+            var parentCategoryDto = ApplicationMapper.Map(parentDoc);
 
             if (parentCategoryDto is null)
                 return Result.Fail<CategoryDto>("Failed to map CategoryDocument to CategoryDto");

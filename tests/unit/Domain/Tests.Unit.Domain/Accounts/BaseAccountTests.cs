@@ -328,10 +328,10 @@ public class BaseAccountTests
         var testValue = _fixture.Create<bool>();
 
         // Act
-        _testClass.IsCreditTransaction = testValue;
+        _testClass.DoesBalanceIncrease = testValue;
 
         // Assert
-        Assert.Equal(testValue, _testClass.IsCreditTransaction);
+        Assert.Equal(testValue, _testClass.DoesBalanceIncrease);
     }
 
     [Fact]

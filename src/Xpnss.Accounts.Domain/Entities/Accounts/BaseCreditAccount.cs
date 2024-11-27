@@ -81,7 +81,7 @@ public abstract class BaseCreditAccount : BaseAccount, IHasCreditLimit, IHasInte
     /// <param name="transactionType">The original Transaction Type</param>
     /// <exception cref="InvalidOperationException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public void UndoTransactionAmount(Money amount, TransactionTypes.Keys transactionType)
+    public override void UndoTransactionAmount(Money amount, TransactionTypes.Keys transactionType)
     {
         if (IsDeleted)
             throw new InvalidOperationException("Cannot remove a transaction from a deleted Account");

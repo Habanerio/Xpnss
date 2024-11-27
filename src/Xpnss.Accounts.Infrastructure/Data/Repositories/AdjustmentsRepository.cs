@@ -27,7 +27,7 @@ public class AdjustmentsRepository(
 
         try
         {
-            var adjustmentDoc = Mapper.Map(adjustment);
+            var adjustmentDoc = InfrastructureMapper.Map(adjustment);
 
             if (adjustmentDoc is null)
                 return Result.Fail("Could not map the Adjustment to its Document");
@@ -57,7 +57,7 @@ public class AdjustmentsRepository(
         if (adjustmentDoc is null)
             return Result.Ok<Adjustment?>(null);
 
-        var adjustment = Mapper.Map(adjustmentDoc);
+        var adjustment = InfrastructureMapper.Map(adjustmentDoc);
 
         if (adjustment is null)
             return Result.Fail<Adjustment?>("Could not map the Adjustment Document to its Entity");
@@ -80,7 +80,7 @@ public class AdjustmentsRepository(
         var adjustmentDocs = await FindDocumentsAsync(a =>
             a.UserId.Equals(userId) && a.AccountId.Equals(accountObjectId), cancellationToken);
 
-        var adjustments = Mapper.Map(adjustmentDocs);
+        var adjustments = InfrastructureMapper.Map(adjustmentDocs);
 
         return Result.Ok(adjustments);
     }
@@ -94,7 +94,7 @@ public class AdjustmentsRepository(
 
         try
         {
-            var adjustmentDoc = Mapper.Map(adjustment);
+            var adjustmentDoc = InfrastructureMapper.Map(adjustment);
 
             if (adjustmentDoc is null)
                 return Result.Fail("Could not map the Adjustment to its Document");

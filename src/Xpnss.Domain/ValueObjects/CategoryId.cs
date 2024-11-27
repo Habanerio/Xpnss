@@ -15,9 +15,12 @@ public sealed record CategoryId : EntityObjectId
         SetValue(categoryId ?? string.Empty);
     }
 
-    public static CategoryId New => new(ObjectId.GenerateNewId().ToString());
+    public new static CategoryId New => new(ObjectId.GenerateNewId().ToString());
 
-    public static CategoryId Empty => new(ObjectId.Empty);
+    public new static CategoryId Empty => new(ObjectId.Empty);
+
+    public static bool IsEmpty(CategoryId categoryId) => categoryId.Equals(Empty);
+
 
     public static implicit operator string(CategoryId userId) => userId.Value;
 

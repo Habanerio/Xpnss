@@ -45,7 +45,7 @@ public sealed class UpdateAccountDetails : IRequestHandler<UpdateAccountDetailsC
         if (result.IsFailed)
             return Result.Fail(result.Errors);
 
-        var dto = Mapper.Map(account);
+        var dto = ApplicationMapper.Map(account);
 
         if (dto is null)
             return Result.Fail("Failed to map AccountDocument to AccountDto");

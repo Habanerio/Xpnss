@@ -11,6 +11,6 @@ public class UpdateTransactionDetails
         string TransactionId,
         string AccountId,
         string Description,
-        MerchantDto? Merchant,
+        PayerPayeeDto? Merchant,
         DateTime Date) : IRequest<Result>;
 }

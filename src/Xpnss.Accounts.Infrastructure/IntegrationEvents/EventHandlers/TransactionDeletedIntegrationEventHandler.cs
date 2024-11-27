@@ -39,7 +39,7 @@ public class TransactionDeletedIntegrationEventHandler(
 
         account.ApplyTransactionAmount(new Money(@event.Amount), @event.TransactionType);
 
-        //var isCreditTransaction = TransactionTypes.IsCreditTransaction(account.AccountType, TransactionTypes.ToTransactionType(@event.TransactionType));
+        //var isCreditTransaction = TransactionTypes.DoesBalanceIncrease(account.AccountType, TransactionTypes.ToTransactionType(@event.TransactionType));
 
         //// TODO: This should be handled within the Account itself.
         //if (account is BaseCreditAccount creditAccount)

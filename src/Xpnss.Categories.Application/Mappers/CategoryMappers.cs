@@ -3,8 +3,7 @@ using Habanerio.Xpnss.Categories.Domain;
 
 namespace Habanerio.Xpnss.Categories.Application.Mappers;
 
-
-internal static partial class Mapper
+internal static partial class ApplicationMapper
 {
     public static IEnumerable<CategoryDto> Map(IEnumerable<Category> documents)
     {

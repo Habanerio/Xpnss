@@ -42,7 +42,7 @@ public class GetAccountsEndpoint : BaseEndpoint
         if (string.IsNullOrWhiteSpace(userId))
             return BadRequestWithErrors("User Id is required");
 
-        var query = new GetAccounts(userId);
+        var query = new GetAccountsQuery(userId);
 
         var result = await service.QueryAsync(query, cancellationToken);
 

@@ -7,7 +7,7 @@ namespace Habanerio.Xpnss.Categories.Application;
 public class CategoriesService(IMediator mediator, ILogger<CategoriesService> logger) : ICategoriesService
 {
     private readonly ILogger<CategoriesService> _logger = logger ??
-                                                          throw new ArgumentNullException(nameof(logger));
+          throw new ArgumentNullException(nameof(logger));
 
     private readonly IMediator _mediator = mediator ??
                                            throw new ArgumentNullException(nameof(mediator));

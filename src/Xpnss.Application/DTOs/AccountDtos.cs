@@ -26,7 +26,7 @@ public record AccountDto
 
     public bool IsDeleted => DateDeleted.HasValue;
 
-    public IEnumerable<AccountMonthlyTotalDto> MonthlyTotals { get; set; }
+    public IEnumerable<MonthlyTotalDto> MonthlyTotals { get; set; } = [];
 
     public decimal OverdraftAmount { get; set; }
 
@@ -40,6 +40,23 @@ public record AccountDto
 
     // Needed for deserialization in the API.
     //public AccountDto() { }
+}
+
+public record AccountItemDto
+{
+    public string Id { get; set; }
+
+    public string UserId { get; set; }
+
+    public string AccountType { get; set; }
+
+    public string Name { get; set; }
+
+    public decimal Balance { get; set; }
+
+    public string Description { get; set; }
+
+    public string DisplayColor { get; set; }
 }
 
 /*

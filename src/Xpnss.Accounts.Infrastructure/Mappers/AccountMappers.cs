@@ -6,7 +6,7 @@ using MongoDB.Bson;
 
 namespace Habanerio.Xpnss.Accounts.Infrastructure.Mappers;
 
-internal static partial class Mapper
+internal static partial class InfrastructureMapper
 {
     public static BaseAccount? Map(AccountDocument? document, bool includeTotals = false)
     {

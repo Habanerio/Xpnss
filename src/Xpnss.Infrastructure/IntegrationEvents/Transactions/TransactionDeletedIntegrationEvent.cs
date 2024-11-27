@@ -28,7 +28,7 @@ public record TransactionDeletedIntegrationEvent : IntegrationEvent
         string transactionId,
         string userId,
         string accountId,
-        string merchantId,
+        string payerPayeeId,
         TransactionTypes.Keys transactionType,
         decimal amount,
         DateTime dateOfTransaction)
@@ -47,7 +47,7 @@ public record TransactionDeletedIntegrationEvent : IntegrationEvent
 
         UserId = userId;
         AccountId = accountId;
-        MerchantId = merchantId;
+        MerchantId = payerPayeeId;
         TransactionId = transactionId;
         TransactionType = transactionType;
         Amount = amount;

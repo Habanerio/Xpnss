@@ -3,10 +3,10 @@ using Habanerio.Core.Dbs.MongoDb;
 using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts;
 using Habanerio.Xpnss.Accounts.Domain.Interfaces;
 using Habanerio.Xpnss.Accounts.Infrastructure.Data.Documents;
+using Habanerio.Xpnss.Accounts.Infrastructure.Mappers;
 using MediatR;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using Mapper = Habanerio.Xpnss.Accounts.Infrastructure.Mappers.Mapper;
 
 namespace Habanerio.Xpnss.Accounts.Infrastructure.Data.Repositories;
 
@@ -30,16 +30,22 @@ public sealed class AccountsRepository(
 
         try
         {
-            var accountDoc = Mapper.Map(account);
+            var accountDoc = InfrastructureMapper.Map(account);
 
             if (accountDoc is null)
                 return Result.Fail("Could not map the Account to its Document");
 
             await AddDocumentAsync(accountDoc, cancellationToken);
 
+            // Do this so we can update the State of the Account
+            var updatedAccount = InfrastructureMapper.Map(accountDoc, true);
+
+            if (updatedAccount is null)
+                return Result.Fail("Could not map the Account");
+
             //HandleDomainEvents(account);
 
-            return account;
+            return updatedAccount;
         }
         catch (Exception e)
         {
@@ -70,7 +76,7 @@ public sealed class AccountsRepository(
         //return Result.Fail($"BaseAccount not found for AccountId: `{accountId}` " +
         //                   $"and UserId: `{userId}`");
 
-        var account = Mapper.Map(accountDocument, true);
+        var account = InfrastructureMapper.Map(accountDocument, true);
 
         if (account is null)
             return Result.Fail("Failed to map AccountDocument to Account");
@@ -138,9 +144,9 @@ public sealed class AccountsRepository(
         var docs = await FindDocumentsAsync(a =>
             a.UserId == userId, cancellationToken);
 
-        var merchants = Mapper.Map(docs);
+        var payerPayees = InfrastructureMapper.Map(docs);
 
-        return Result.Ok(merchants);
+        return Result.Ok(payerPayees);
 
         // Projection
         //var matchBuilder = Builders<AccountDocument>.Filter;
@@ -160,14 +166,14 @@ public sealed class AccountsRepository(
 
         //var docs = bsonDocs.Select(bsonDoc => BsonSerializer.Deserialize<AccountDocument>(bsonDoc));
 
-        //var accounts = Mapper.Map(docs);
+        //var accounts = InfrastructureMapper.Map(docs);
 
         //return Result.Ok(accounts);
     }
 
     public async Task<Result> UpdateAsync(BaseAccount updatedAccount, CancellationToken cancellationToken = default)
     {
-        var accountDoc = Mapper.Map(updatedAccount);
+        var accountDoc = InfrastructureMapper.Map(updatedAccount);
 
         if (accountDoc is null)
             return Result.Fail("Could not map the Account to its Document");

@@ -7,10 +7,10 @@
 //    IRequestHandler<TransactionItemAddedDomainEvent>
 //{
 //    //private readonly IAccountsRepository _accountsRepository = accountsRepository ??
-//    //                                                           throw new ArgumentNullException(nameof(accountsRepository));
+//    //           throw new ArgumentNullException(nameof(accountsRepository));
 
-//    //private readonly IMerchantsRepository _merchantsRepository = merchantsRepository ??
-//    //                                                             throw new ArgumentNullException(nameof(merchantsRepository));
+//    //private readonly IMerchantsRepository _payerPayeesRepository = payerPayeesRepository ??
+//    //             throw new ArgumentNullException(nameof(payerPayeesRepository));
 
 //    //public async Task Handle(TransactionItemAddedDomainEvent @event, CancellationToken cancellationToken)
 //    //{

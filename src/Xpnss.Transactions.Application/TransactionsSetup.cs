@@ -1,7 +1,8 @@
 using System.Reflection;
 using Habanerio.Core.Dbs.MongoDb;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
-using Habanerio.Xpnss.Transactions.Infrastructure;
+using Habanerio.Xpnss.Transactions.Infrastructure.Data.Documents;
+using Habanerio.Xpnss.Transactions.Infrastructure.Data.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson.Serialization;
 
@@ -26,8 +27,16 @@ public static class TransactionsSetup
         {
             cm.AutoMap();
             cm.SetIsRootClass(true);
+            cm.SetDiscriminator("_t");
+            cm.SetDiscriminatorIsRequired(true);
             cm.SetIgnoreExtraElements(true);
         });
+
+
+        BsonClassMap.RegisterClassMap<PurchaseTransactionDocument>();
+        BsonClassMap.RegisterClassMap<DepositTransactionDocument>();
+        BsonClassMap.RegisterClassMap<PaymentTransactionDocument>();
+        BsonClassMap.RegisterClassMap<TransferTransactionDocument>();
 
         return services;
     }

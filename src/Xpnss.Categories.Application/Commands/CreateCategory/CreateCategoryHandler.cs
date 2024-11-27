@@ -13,7 +13,7 @@ namespace Habanerio.Xpnss.Categories.Application.Commands.CreateCategory;
 public class CreateCategoryHandler(ICategoriesRepository repository) : IRequestHandler<CreateCategoryCommand, Result<CategoryDto>>
 {
     private readonly ICategoriesRepository _repository = repository ??
-                                                         throw new ArgumentNullException(nameof(repository));
+         throw new ArgumentNullException(nameof(repository));
 
     public async Task<Result<CategoryDto>> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
     {
@@ -40,7 +40,7 @@ public class CreateCategoryHandler(ICategoriesRepository repository) : IRequestH
             if (parentUpdateResult.IsFailed)
                 return Result.Fail(parentUpdateResult.Errors[0].Message ?? "Could not save the Parent Category");
 
-            var childDto = Mapper.Map(subCategory);
+            var childDto = ApplicationMapper.Map(subCategory);
 
             if (childDto is null)
                 return Result.Fail("Failed to map Sub CategoryDocument to Sub CategoryDto");
@@ -77,7 +77,7 @@ public class CreateCategoryHandler(ICategoriesRepository repository) : IRequestH
             newSortOrder++;
         }
 
-        var categoryDto = Mapper.Map(allCategories.Find(c => c.Id.Equals(result.Value.Id)));
+        var categoryDto = ApplicationMapper.Map(allCategories.Find(c => c.Id.Equals(result.Value.Id)));
 
         if (categoryDto is null)
             return Result.Fail("Failed to map CategoryDocument to CategoryDto");

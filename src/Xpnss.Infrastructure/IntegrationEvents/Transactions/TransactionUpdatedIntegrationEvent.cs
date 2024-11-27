@@ -31,7 +31,7 @@ public record TransactionUpdatedIntegrationEvent : IntegrationEvent
         string transactionId,
         string userId,
         string accountId,
-        string merchantId,
+        string payerPayeeId,
         TransactionTypes.Keys transactionType,
         decimal oldAMount,
         decimal newAmount,
@@ -54,7 +54,7 @@ public record TransactionUpdatedIntegrationEvent : IntegrationEvent
 
         UserId = userId;
         AccountId = accountId;
-        MerchantId = merchantId;
+        MerchantId = payerPayeeId;
         TransactionId = transactionId;
         TransactionType = transactionType;
         NewAmount = newAmount;

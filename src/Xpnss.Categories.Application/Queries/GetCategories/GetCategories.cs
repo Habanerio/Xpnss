@@ -12,7 +12,7 @@ public record GetCategoriesQuery(string UserId) : ICategoriesQuery<Result<IEnume
 public class GetCategoriesHandler(ICategoriesRepository repository) : IRequestHandler<GetCategoriesQuery, Result<IEnumerable<CategoryDto>>>
 {
     private readonly ICategoriesRepository _repository = repository ??
-                                                         throw new ArgumentNullException(nameof(repository));
+         throw new ArgumentNullException(nameof(repository));
 
     public async Task<Result<IEnumerable<CategoryDto>>> Handle(GetCategoriesQuery request, CancellationToken cancellationToken)
     {
@@ -33,7 +33,7 @@ public class GetCategoriesHandler(ICategoriesRepository repository) : IRequestHa
             if (!docsResult.Value.Any())
                 return Result.Ok(Enumerable.Empty<CategoryDto>());
 
-            var dtos = Mapper.Map(docsResult.Value);
+            var dtos = ApplicationMapper.Map(docsResult.Value);
 
             return Result.Ok(dtos);
         }

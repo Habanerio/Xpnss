@@ -19,16 +19,12 @@ namespace Habanerio.Xpnss.Accounts.Infrastructure.IntegrationEvents.EventHandler
 /// <param name="logger"></param>
 public class TransactionCreatedIntegrationEventHandler(
     IAccountsRepository accountsRepository,
-    IAccountMonthlyTotalsRepository accountMonthlyTotalsRepository,
     //IClientSessionHandle mongoSession,
     ILogger<TransactionCreatedIntegrationEventHandler> logger) :
     IIntegrationEventHandler<TransactionCreatedIntegrationEvent>
 {
     private readonly IAccountsRepository _accountsRepository = accountsRepository ??
         throw new ArgumentNullException(nameof(accountsRepository));
-
-    private readonly IAccountMonthlyTotalsRepository _accountMonthlyTotalsRepository = accountMonthlyTotalsRepository ??
-        throw new ArgumentNullException(nameof(accountMonthlyTotalsRepository));
 
     //private readonly IClientSessionHandle _mongoSession = mongoSession ??
     //    throw new ArgumentNullException(nameof(mongoSession));
@@ -48,10 +44,7 @@ public class TransactionCreatedIntegrationEventHandler(
         try
         {
             // Maybe publish internal Domain Events to handle each one?
-            var account = await UpdateAccountBalanceAsync(@event, cancellationToken);
-
-            //TODO: Finish MonthlyTotals
-            await UpdateMonthlyTotalAsync(@event, account, cancellationToken);
+            await UpdateAccountBalanceAsync(@event, cancellationToken);
 
             //      await _mongoSession.CommitTransactionAsync(cancellationToken);
 
@@ -72,7 +65,7 @@ public class TransactionCreatedIntegrationEventHandler(
         //}
     }
 
-    private async Task<BaseAccount> UpdateAccountBalanceAsync(
+    private async Task UpdateAccountBalanceAsync(
         TransactionCreatedIntegrationEvent @event,
         CancellationToken cancellationToken = default)
     {
@@ -92,81 +85,13 @@ public class TransactionCreatedIntegrationEventHandler(
 
         try
         {
-            var updateResult = await _accountsRepository.UpdateAsync(account, cancellationToken);
+            await _accountsRepository.UpdateAsync(account, cancellationToken);
 
-            return updateResult.IsSuccess ?
-                account :
-                throw new InvalidOperationException(updateResult.Errors[0]?.Message ??
-                    "An error occurred while trying to update the Account");
+
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-
-            throw;
-        }
-    }
-
-    private async Task UpdateMonthlyTotalAsync(
-        TransactionCreatedIntegrationEvent @event,
-        BaseAccount account,
-        CancellationToken cancellationToken = default)
-    {
-        var isCreditTransaction = TransactionTypes.IsCreditTransaction(account.AccountType, @event.TransactionType);
-
-        var monthlyTotalResult = await _accountMonthlyTotalsRepository
-            .GetAsync(
-                @event.UserId,
-                @event.AccountId,
-                @event.DateOfTransaction.Year,
-                @event.DateOfTransaction.Month,
-                cancellationToken);
-
-        if (monthlyTotalResult.IsFailed)
-            throw new InvalidOperationException(monthlyTotalResult.Errors[0]?.Message ??
-                $"An error occurred while trying to retrieve Account Monthly Total '{@event.AccountId}' for User '{@event.UserId}'");
-
-        var existingMonthlyTotal = monthlyTotalResult.ValueOrDefault;
-
-        if (existingMonthlyTotal is null)
-        {
-            // Should the Account itself be responsible for creating something for the 'Monthly Total'?
-            existingMonthlyTotal = AccountMonthlyTotal.New(
-                new AccountId(@event.AccountId),
-                new UserId(@event.UserId),
-                @event.DateOfTransaction.Year,
-                @event.DateOfTransaction.Month,
-                isCreditTransaction,
-                new Money(@event.Amount));
-        }
-        else
-        {
-            // May want to add business logic to the MonthlyTotal entity to do the updates
-            if (isCreditTransaction)
-            {
-                existingMonthlyTotal.CreditCount += 1;
-                existingMonthlyTotal.CreditTotalAmount += new Money(@event.Amount);
-            }
-            else
-            {
-                existingMonthlyTotal.DebitCount += 1;
-                existingMonthlyTotal.DebitTotalAmount += new Money(@event.Amount);
-            }
-        }
-
-        try
-        {
-            var rslt = await _accountMonthlyTotalsRepository.AddAsync(existingMonthlyTotal, cancellationToken);
-
-            if (rslt.IsFailed)
-                throw new InvalidOperationException(rslt.Errors[0]?.Message ??
-                    "An error occurred while trying to update the Account Monthly Total");
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-
-            throw;
+            _logger.LogCritical(e, "Error occurred while trying to update the Balance for Account '{AccountId}'", @event.AccountId);
         }
     }
 }

@@ -5,7 +5,7 @@ using MongoDB.Bson;
 
 namespace Habanerio.Xpnss.Categories.Infrastructure.Mappers;
 
-public static partial class Mapper
+public static partial class InfrastructureMapper
 {
     public static Category? Map(CategoryDocument? document)
     {

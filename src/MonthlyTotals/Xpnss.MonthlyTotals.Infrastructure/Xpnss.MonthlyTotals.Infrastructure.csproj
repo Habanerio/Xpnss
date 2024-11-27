@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <AssemblyName>Habanerio.Xpnss.MonthlyTotals.Infrastructure</AssemblyName>
+        <RootNamespace>Habanerio.Xpnss.MonthlyTotals.Infrastructure</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="SonarAnalyzer.CSharp" Version="9.32.0.97167">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Xpnss.Infrastructure\Xpnss.Infrastructure.csproj" />
+        <ProjectReference Include="..\Xpnss.MonthlyTotals.Domain\Xpnss.MonthlyTotals.Domain.csproj" />
+    </ItemGroup>
+
+</Project>

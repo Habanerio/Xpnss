@@ -1,351 +1,357 @@
-//using System.Net;
-//using Carter;
-//using FluentResults;
-//using Habanerio.Xpnss.Application.Accounts.Commands.CreateAccount;
-//using Habanerio.Xpnss.Application.Accounts.DTOs;
-//using Habanerio.Xpnss.Application.Accounts.Queries.GetAccounts;
-//using Habanerio.Xpnss.Application.Categories.Commands;
-//using Habanerio.Xpnss.Application.Categories.DTOs;
-//using Habanerio.Xpnss.Domain.Accounts.Interfaces;
-//using Habanerio.Xpnss.Domain.Categories.Interfaces;
-//using Habanerio.Xpnss.Domain.Transactions.Interfaces;
-//using Microsoft.AspNetCore.Mvc;
+using System.Net;
+using Carter;
+using FluentResults;
+using Habanerio.Xpnss.Accounts.Application.Commands.CreateAccount;
+using Habanerio.Xpnss.Accounts.Application.Queries.GetAccounts;
+using Habanerio.Xpnss.Accounts.Domain.Interfaces;
+using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Categories.Application.Commands.CreateCategory;
+using Habanerio.Xpnss.Categories.Domain.Interfaces;
+using Habanerio.Xpnss.Domain.Types;
+using Microsoft.AspNetCore.Mvc;
 
-//namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Setup;
+namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Setup;
 
-//public class SetupEndpoint
-//{
-//    public sealed class Endpoint : ICarterModule
-//    {
-//        public void AddRoutes(IEndpointRouteBuilder builder)
-//        {
-//            builder.MapPost("/api/v1/setup/{userId}",
-//                    async (
-//                        [FromRoute] string userId,
-//                        [FromServices] IAccountsService accountsService,
-//                        [FromServices] ICategoriesService categoriesService,
-//                        [FromServices] ITransactionsService transactionsService,
-//                        CancellationToken cancellationToken) =>
-//                    {
-//                        return await HandleAsync(userId, accountsService, categoriesService, transactionsService, cancellationToken);
-//                    }
-//                )
-//                .Produces((int)HttpStatusCode.OK)
-//                .Produces<string>((int)HttpStatusCode.BadRequestWithErrors)
-//                .WithDisplayName("Setup")
-//                .WithName("Setup")
-//                .WithTags("Setup")
-//                .WithOpenApi();
-//        }
+public class SetupEndpoint : BaseEndpoint
+{
+    public sealed class Endpoint : ICarterModule
+    {
+        public void AddRoutes(IEndpointRouteBuilder builder)
+        {
+            builder.MapPost("/api/v1/setup/{userId}",
+                    async (
+                        [FromRoute] string userId,
+                        [FromServices] IAccountsService accountsService,
+                        [FromServices] ICategoriesService categoriesService,
+                        CancellationToken cancellationToken) =>
+                    {
+                        return await HandleAsync(userId, accountsService, categoriesService, cancellationToken);
+                    }
+                )
+                .Produces((int)HttpStatusCode.OK)
+                .Produces<string>((int)HttpStatusCode.BadRequest)
+                .WithDisplayName("Setup")
+                .WithName("Setup")
+                .WithTags("Setup")
+                .WithOpenApi();
+        }
 
-//        private async Task<IResult> HandleAsync(
-//            string userId,
-//            IAccountsService accountsService,
-//            ICategoriesService categoriesService,
-//            ITransactionsService transactionsService,
-//            CancellationToken cancellationToken)
-//        {
-//            var accountsResult = await AddAccountsAsync(userId, accountsService);
+        private async Task<IResult> HandleAsync(
+            string userId,
+            IAccountsService accountsService,
+            ICategoriesService categoriesService,
+            CancellationToken cancellationToken)
+        {
+            var accountsResult = await AddAccountsAsync(userId, accountsService, cancellationToken);
 
-//            if (accountsResult.IsFailed)
-//                return Results.BadRequestWithErrors(accountsResult.Errors[0].Message);
+            if (accountsResult.IsFailed)
+                return BadRequestWithErrors(accountsResult.Errors[0].Message);
 
-//            var categoriesResult = await AddCategoriesAsync(userId, categoriesService);
+            var categoriesResult = await AddCategoriesAsync(userId, categoriesService, cancellationToken);
 
-//            if (categoriesResult.IsFailed)
-//                return Results.BadRequestWithErrors(categoriesResult.Errors[0].Message);
+            if (categoriesResult.IsFailed)
+                return BadRequestWithErrors(categoriesResult.Errors[0].Message);
 
-//            return Results.Ok();
-//        }
+            return Results.Ok();
+        }
 
-//        private async Task<Result> AddAccountsAsync(string userId, IAccountsService accountsService)
-//        {
-//            var existingAccountsQuery = new GetAccountsQuery(userId);
+        private async Task<Result> AddAccountsAsync(string userId, IAccountsService accountsService, CancellationToken cancellationToken = default)
+        {
+            var existingAccountsQuery = new GetAccountsQuery(userId);
 
-//            var existingAccountsResult = await accountsService.QueryAsync(existingAccountsQuery);
+            var existingAccountsResult = await accountsService.QueryAsync(existingAccountsQuery, cancellationToken);
 
-//            if (existingAccountsResult.Value.Any())
-//                return Result.Ok();
+            if (existingAccountsResult.Value.Any())
+                return Result.Ok();
 
-//            var accountDtos = new List<AccountDto>
-//            {
-//                new CashAccountDto
-//                {
-//                    UserId = userId,
-//                    Name = "Cash",
-//                    Description = "Primary Cash Account",
-//                    Balance = 0,
-//                    DisplayColor = "#ff00ff"
-//                },
-//                new CheckingAccountDto
-//                {
-//                    UserId = userId,
-//                    Name = "Checking",
-//                    Description = "Primary Checking Account",
-//                    Balance = 0,
-//                    OverdraftAmount = 500m,
-//                    DisplayColor = "#ff0000"
-//                },
-//                new SavingsAccountDto
-//                {
-//                    UserId = userId,
-//                    Name = "Savings",
-//                    Description = "Primary Savings Account",
-//                    Balance = 0,
-//                    InterestRate = 2.00m,
-//                    DisplayColor = "#00ff00"
-//                },
-//                new CreditCardAccountDto
-//                {
-//                    UserId = userId,
-//                    Name = "Credit Card",
-//                    Description = "Primary Credit Card Account",
-//                    Balance = 0,
-//                    CreditLimit = 5000m,
-//                    InterestRate = 19.99m,
-//                    DisplayColor = "#0000ff"
-//                }
-//            };
+            var accountDtos = new List<AccountDto>
+            {
+                new()
+                {
+                    UserId = userId,
+                    Name = $"Wallet",
+                    AccountType = AccountTypes.Keys.Cash.ToString(),
+                    Description = "Wallet Account",
+                    Balance = 0,
+                    DisplayColor = "#E3FCD9"
+                },
+                new()
+                {
+                    UserId = userId,
+                    Name = $"Checking",
+                    AccountType = AccountTypes.Keys.Checking.ToString(),
+                    Description = "Checking Account",
+                    Balance = 0,
+                    DisplayColor = "#ea7d33"
+                },
+                new()
+                {
+                    UserId = userId,
+                    Name = $"Savings",
+                    AccountType = AccountTypes.Keys.Savings.ToString(),
+                    Description = "Savings Account",
+                    Balance = 0,
+                    DisplayColor = "#eeb822"
+                },
+                new()
+                {
+                    UserId = userId,
+                    Name = $"Credit Card 1",
+                    AccountType = AccountTypes.Keys.CreditCard.ToString(),
+                    Description = "Credit Card 1 Account",
+                    Balance = 0,
+                    DisplayColor = "#05aced"
+                }
+            };
 
-//            foreach (var accountDto in accountDtos)
-//            {
-//                CreateAccountCommand command;
+            foreach (var accountDto in accountDtos)
+            {
+                var createAccountCommand = new CreateAccountCommand(
+                    accountDto.UserId,
+                    accountDto.AccountType,
+                    accountDto.Name,
+                    accountDto.Description,
+                    DisplayColor: accountDto.DisplayColor);
 
-//                switch (accountDto.AccountType)
-//                {
-//                    case "Cash":
-//                        var cashAccount = accountDto as CashAccountDto;
-//                        command = new CreateAccount.Command(cashAccount.UserId,
-//                            cashAccount.AccountType,
-//                            cashAccount.Name,
-//                            cashAccount.Description,
-//                            cashAccount.Balance,
-//                            0,
-//                            0,
-//                            0,
-//                            cashAccount.DisplayColor);
+                _ = await accountsService.CommandAsync(createAccountCommand, cancellationToken);
+            }
 
-//                        var cashResult = await accountsService.ExecuteAsync(command);
+            return Result.Ok();
+        }
 
-//                        if (cashResult.IsFailed)
-//                            return Result.Fail(cashResult.Errors[0].Message);
-//                        break;
-//                    case "Checking":
-//                        var checkingAccount = accountDto as CheckingAccountDto;
-//                        command = new CreateAccount.Command(checkingAccount.UserId,
-//                            checkingAccount.AccountType,
-//                            checkingAccount.Name,
-//                            checkingAccount.Description,
-//                            checkingAccount.Balance,
-//                            0,
-//                            0,
-//                            checkingAccount.OverdraftAmount,
-//                            checkingAccount.DisplayColor);
+        private async Task<Result> AddCategoriesAsync(string userId, ICategoriesService categoriesService, CancellationToken cancellationToken = default)
+        {
+            var categoryDtos = new List<CategoryDto>
+            {
+                new CategoryDto()
+                {
+                    UserId = userId,
+                    Name = "Income",
+                    Description = "Income Categories",
+                    SubCategories = new List<CategoryDto>
+                    {
+                        new CategoryDto
+                        {
+                            Name = "Salary",
+                            Description = "Salary Income",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Bonus",
+                            Description = "Bonus Income",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Interest",
+                            Description = "Interest Income",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Misc",
+                            Description = "Misc Income",
+                        },
+                    }
+                },
+                new CategoryDto
+                {
+                    UserId = userId,
+                    Name = "Credit Cards / Loans",
+                    Description = "Credit Card or Loan Payments",
+                    SubCategories = new List<CategoryDto>
+                    {
+                        new CategoryDto
+                        {
+                            Name = "Credit Card 1 Payment",
+                            Description = "Credit Card 1 Payments",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Credit Card 2 Payment",
+                            Description = "Credit Card 2 Payments",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Line of Credit Payment",
+                            Description = "Line of Credit Payments",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Loan Payment",
+                            Description = "Loan Payments",
+                        },
+                    }
+                },
+                new CategoryDto
+                {
+                    UserId = userId,
+                    Name = "Home",
+                    Description = "Home Expenses",
+                    SubCategories = new List<CategoryDto>
+                    {
+                        new CategoryDto
+                        {
+                            Name = "Rent/Mortgage",
+                            Description = "Rent or Mortgage Payments",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Home Insurance",
+                            Description = "Home Insurance Payments",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Groceries",
+                            Description = "Property Taxes",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Streaming Service",
+                            Description = "Streaming Services Payments",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Internet",
+                            Description = "Internet Payments",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Phone",
+                            Description = "Phone Payments",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Utilities",
+                            Description = "Utility Payments",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Misc",
+                            Description = "Misc Expenses",
+                        },
+                    }
+                },
+                new CategoryDto
+                {
+                    UserId = userId,
+                    Name = "Auto",
+                    Description = "Auto Expenses",
+                    SubCategories = new List<CategoryDto>
+                    {
+                        new CategoryDto
+                        {
+                            Name = "Car Payment",
+                            Description = "Car Payment",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Car Insurance",
+                            Description = "Car Insurance",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Gas",
+                            Description = "Gas Expenses",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Maintenance",
+                            Description = "Car Maintenance",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Misc",
+                            Description = "Misc Expenses",
+                        },
+                    }
+                },
+                new CategoryDto
+                {
+                    UserId = userId,
+                    Name="Personal",
+                    Description="Personal Expenses",
+                    SubCategories = new List<CategoryDto>
+                    {
+                        new CategoryDto
+                        {
+                            Name = "Dining Out",
+                            Description = "Dining Out Expenses",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Entertainment",
+                            Description = "Entertainment Expenses",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Clothing",
+                            Description = "Clothing Expenses",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Health/Wellness",
+                            Description = "Health Expenses",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Vacation",
+                            Description = "Vacation Expenses",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Donations / Charity",
+                            Description = "Donations or Charity Expenses",
+                        },
+                        new CategoryDto
+                        {
+                            Name = "Misc",
+                            Description = "Misc Expenses",
+                        },
+                    }
+                }
+            };
 
-//                        var checkingResult = await accountsService.ExecuteAsync(command);
+            var sortOrder = 1;
 
-//                        if (checkingResult.IsFailed)
-//                            return Result.Fail(checkingResult.Errors[0].Message);
-//                        break;
+            foreach (var categoryDto in categoryDtos)
+            {
+                var command = new CreateCategoryCommand(
+                    categoryDto.UserId,
+                    categoryDto.Name,
+                    null,
+                    categoryDto.Description,
+                    sortOrder);
 
-//                    case "Savings":
-//                        var savingsAccount = accountDto as SavingsAccountDto;
-//                        command = new CreateAccount.Command(savingsAccount.UserId,
-//                            savingsAccount.AccountType,
-//                            savingsAccount.Name,
-//                            savingsAccount.Description,
-//                            savingsAccount.Balance, 0,
-//                            savingsAccount.InterestRate, 0,
-//                            savingsAccount.DisplayColor);
+                var result = await categoriesService.CommandAsync(command, cancellationToken);
 
-//                        var savingsResult = await accountsService.ExecuteAsync(command);
+                if (result.IsFailed)
+                    return Result.Fail(result.Errors[0].Message);
 
-//                        if (savingsResult.IsFailed)
-//                            return Result.Fail(savingsResult.Errors[0].Message);
-//                        break;
-//                    case "CreditCard":
-//                        var creditCardAccount = accountDto as CreditCardAccountDto;
-//                        command = new CreateAccount.Command(creditCardAccount.UserId,
-//                            creditCardAccount.AccountType,
-//                            creditCardAccount.Name,
-//                            creditCardAccount.Description,
-//                            creditCardAccount.Balance,
-//                            creditCardAccount.CreditLimit,
-//                            creditCardAccount.InterestRate,
-//                            0,
-//                            creditCardAccount.DisplayColor);
+                if (categoryDto.SubCategories.Any())
+                {
+                    var subSortOrder = 1;
 
-//                        var creditCardResult = await accountsService.ExecuteAsync(command);
+                    foreach (var subCategory in categoryDto.SubCategories)
+                    {
+                        var subCategoryCommand = new CreateCategoryCommand(
+                            userId,
+                            subCategory.Name,
+                            result.Value.Id,
+                            subCategory.Description,
+                            subSortOrder);
 
-//                        if (creditCardResult.IsFailed)
-//                            return Result.Fail(creditCardResult.Errors[0].Message);
-//                        break;
-//                    case "LineOfCredit":
-//                        var lineOfCreditAccount = accountDto as LineOfCreditAccountDto;
-//                        command = new CreateAccount.Command(lineOfCreditAccount.UserId,
-//                            lineOfCreditAccount.AccountType,
-//                            lineOfCreditAccount.Name,
-//                            lineOfCreditAccount.Description,
-//                            lineOfCreditAccount.Balance,
-//                            lineOfCreditAccount.CreditLimit,
-//                            lineOfCreditAccount.InterestRate,
-//                            0,
-//                            lineOfCreditAccount.DisplayColor);
+                        var subResult = await categoriesService.CommandAsync(subCategoryCommand, cancellationToken);
 
-//                        var lineOfCreditResult = await accountsService.ExecuteAsync(command);
+                        if (subResult.IsFailed)
+                            return Result.Fail(subResult.Errors[0].Message);
 
-//                        if (lineOfCreditResult.IsFailed)
-//                            return Result.Fail(lineOfCreditResult.Errors[0].Message);
-//                        break;
-//                    default:
-//                        return Result.Fail("Invalid Account Type");
-//                }
-//            }
+                        subSortOrder++;
+                    }
+                }
 
-//            return Result.Ok();
-//        }
+                sortOrder++;
+            }
 
-//        private async Task<Result> AddCategoriesAsync(string userId, ICategoriesService categoriesService)
-//        {
-//            var categoryDtos = new List<CategoryDto>
-//            {
-//                new CategoryDto
-//                {
-//                    UserId = userId,
-//                    Name = "Home",
-//                    Description = "Home Expenses",
-//                    SubCategories = new List<CategoryDto>
-//                    {
-//                        new CategoryDto
-//                        {
-//                            Name = "Rent/Mortgage",
-//                            Description = "Rent or Mortgage Payments",
-//                        },
-//                        new CategoryDto
-//                        {
-//                            Name = "Home Insurance",
-//                            Description = "Home Insurance Payments",
-//                        },
-//                        new CategoryDto
-//                        {
-//                            Name = "Streaming Service",
-//                            Description = "Streaming Services Payments",
-//                        },
-//                        new CategoryDto
-//                        {
-//                            Name = "Internet",
-//                            Description = "Internet Payments",
-//                        },
-//                        new CategoryDto
-//                        {
-//                            Name = "Utilities",
-//                            Description = "Utility Payments",
-//                        },
-//                        new CategoryDto
-//                        {
-//                            Name = "Misc",
-//                            Description = "Misc Expenses",
-//                        },
-//                    }
-//                },
-//                new CategoryDto
-//                {
-//                    UserId = userId,
-//                    Name = "Auto",
-//                    Description = "Auto Expenses",
-//                    SubCategories = new List<CategoryDto>
-//                    {
-//                        new CategoryDto
-//                        {
-//                            Name = "Car Payment",
-//                            Description = "Car Payment",
-//                        },
-//                        new CategoryDto
-//                        {
-//                            Name = "Car Insurance",
-//                            Description = "Car Insurance",
-//                        },
-//                        new CategoryDto
-//                        {
-//                            Name = "Gas",
-//                            Description = "Gas Expenses",
-//                        },
-//                        new CategoryDto
-//                        {
-//                            Name = "Maintenance",
-//                            Description = "Car Maintenance",
-//                        },
-//                        new CategoryDto
-//                        {
-//                            Name = "Misc",
-//                            Description = "Misc Expenses",
-//                        },
-//                    }
-//                },
-//                new CategoryDto
-//                {
-//                    UserId = userId,
-//                    Name="Personal",
-//                    Description="Personal Expenses",
-//                    SubCategories = new List<CategoryDto>
-//                    {
-//                        new CategoryDto
-//                        {
-//                            Name = "Groceries",
-//                            Description = "Grocery Expenses",
-//                        },
-//                        new CategoryDto
-//                        {
-//                            Name = "Dining Out",
-//                            Description = "Dining Out Expenses",
-//                        },
-//                        new CategoryDto
-//                        {
-//                            Name = "Entertainment",
-//                            Description = "Entertainment Expenses",
-//                        },
-//                        new CategoryDto
-//                        {
-//                            Name = "Clothing",
-//                            Description = "Clothing Expenses",
-//                        },
-//                        new CategoryDto
-//                        {
-//                            Name = "Vacation",
-//                            Description = "Vacation Expenses",
-//                        },
-//                        new CategoryDto
-//                        {
-//                            Name = "Misc",
-//                            Description = "Misc Expenses",
-//                        },
-//                    }
-//                }
-//            };
-
-//            foreach (var categoryDto in categoryDtos)
-//            {
-//                var command = new CreateCategory.Command(
-//                    categoryDto.UserId,
-//                    categoryDto.Name,
-//                    categoryDto.Description);
-
-//                var result = await categoriesService.ExecuteAsync(command);
-
-//                if (result.IsFailed)
-//                    return Result.Fail(result.Errors[0].Message);
-
-//                if (categoryDto.SubCategories.Any())
-//                {
-//                    var subCategoryCommand = new AddSubCategories.Command(userId,
-//                        result.Value.Id,
-//                        categoryDto.SubCategories);
-
-//                    var subCategoryResult = await categoriesService.ExecuteAsync(subCategoryCommand);
-//                }
-//            }
-
-//            return Result.Ok();
-//        }
-//    }
-//}
+            return Result.Ok();
+        }
+    }
+}

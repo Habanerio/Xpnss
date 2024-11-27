@@ -41,8 +41,8 @@ public record EntityObjectId : EntityId
 
     public EntityObjectId(ObjectId entityId) : base(entityId.ToString())
     {
-        if (entityId.Equals(ObjectId.Empty))
-            throw new ArgumentException(nameof(entityId));
+        //if (entityId.Equals(ObjectId.Empty))
+        //    throw new ArgumentException(nameof(entityId));
     }
 
     public EntityObjectId(string entityId)
@@ -53,7 +53,13 @@ public record EntityObjectId : EntityId
         SetValue(entityId);
     }
 
-    public static EntityObjectId NewId() => new EntityObjectId(ObjectId.GenerateNewId().ToString());
+    public static EntityObjectId New => new EntityObjectId(ObjectId.GenerateNewId().ToString());
 
-    public static EntityObjectId EmptyId() => new EntityObjectId(ObjectId.Empty);
+    public static EntityObjectId Empty => new EntityObjectId(ObjectId.Empty);
+
+    public static bool IsEmpty(EntityObjectId entityId) => entityId == Empty;
+
+    public static implicit operator string(EntityObjectId entityId) => entityId.Value;
+
+    //public static implicit operator AccountId(string userId) => new(userId);
 }

@@ -7,7 +7,7 @@ namespace Habanerio.Xpnss.Transactions.Application;
 public class TransactionsService(IMediator mediator, ILogger<TransactionsService> logger) : ITransactionsService
 {
     private readonly ILogger<TransactionsService> _logger = logger ??
-                                                            throw new ArgumentNullException(nameof(logger));
+            throw new ArgumentNullException(nameof(logger));
 
     private readonly IMediator _mediator = mediator ??
                                            throw new AbandonedMutexException(nameof(mediator));

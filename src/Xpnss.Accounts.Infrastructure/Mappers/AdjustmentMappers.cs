@@ -4,7 +4,7 @@ using Habanerio.Xpnss.Domain.ValueObjects;
 
 namespace Habanerio.Xpnss.Accounts.Infrastructure.Mappers;
 
-internal static partial class Mapper
+internal static partial class InfrastructureMapper
 {
     public static Adjustment? Map(AdjustmentDocument? doc)
     {

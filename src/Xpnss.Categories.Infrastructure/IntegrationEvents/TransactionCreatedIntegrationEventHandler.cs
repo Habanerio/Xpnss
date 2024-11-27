@@ -57,7 +57,7 @@
 //        TransactionCreatedIntegrationEvent @event,
 //        CancellationToken cancellationToken = default)
 //    {
-//        var isCreditTransaction = TransactionTypes.IsCreditTransaction(account.AccountType, @event.TransactionType);
+//        var isCreditTransaction = TransactionTypes.DoesBalanceIncrease(account.AccountType, @event.TransactionType);
 
 //        var monthlyTotalResult = await _categoryMonthlyTotalsRepository
 //            .GetAsync(

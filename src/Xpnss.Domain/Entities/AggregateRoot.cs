@@ -3,7 +3,8 @@ using Habanerio.Xpnss.Domain.ValueObjects;
 
 namespace Habanerio.Xpnss.Domain.Entities;
 
-public abstract class AggregateRoot<TId> : Entity<TId> where TId : EntityId
+public abstract class AggregateRoot<TId>(TId id) : Entity<TId>(id)
+    where TId : EntityId
 {
     private readonly List<IDomainEvent> _domainEvents = [];
 
@@ -23,7 +24,4 @@ public abstract class AggregateRoot<TId> : Entity<TId> where TId : EntityId
     {
         _domainEvents?.Clear();
     }
-
-    protected AggregateRoot(TId id) : base(id)
-    { }
 }

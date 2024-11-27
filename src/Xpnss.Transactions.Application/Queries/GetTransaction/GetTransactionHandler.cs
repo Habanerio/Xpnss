@@ -10,7 +10,7 @@ namespace Habanerio.Xpnss.Transactions.Application.Queries.GetTransaction;
 public class GetTransactionHandler(ITransactionsRepository repository) : IRequestHandler<GetTransactionQuery, Result<TransactionDto?>>
 {
     private readonly ITransactionsRepository _repository = repository ??
-                                                           throw new ArgumentNullException(nameof(repository));
+           throw new ArgumentNullException(nameof(repository));
 
     public async Task<Result<TransactionDto?>> Handle(GetTransactionQuery request, CancellationToken cancellationToken)
     {
@@ -29,7 +29,7 @@ public class GetTransactionHandler(ITransactionsRepository repository) : IReques
         if (docsResult.IsFailed)
             return Result.Fail(docsResult.Errors);
 
-        var dto = Mapper.Map(docsResult.Value);
+        var dto = ApplicationMapper.Map(docsResult.Value);
 
         return Result.Ok(dto);
     }

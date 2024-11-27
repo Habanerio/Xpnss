@@ -2,7 +2,7 @@ using System.Net;
 using Carter;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
 using Habanerio.Xpnss.Application.DTOs;
-using Habanerio.Xpnss.Merchants.Domain.Interfaces;
+using Habanerio.Xpnss.PayerPayees.Domain.Interfaces;
 using Habanerio.Xpnss.Transactions.Application.Queries.GetTransactions;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -21,12 +21,12 @@ public sealed class GetTransactionsEndpoint : BaseEndpoint
                         [FromRoute] string userId,
                         [FromBody] GetTransactionsQuery request,
                         [FromServices] ITransactionsService transactionsService,
-                        [FromServices] IMerchantsService merchantsService,
+                        [FromServices] IPayerPayeesService payerPayeesService,
                         CancellationToken cancellationToken) =>
                     {
                         var userTimeZone = httpRequest.Headers["X-User-Timezone"].FirstOrDefault() ?? string.Empty;
 
-                        return await HandleAsync(userId, request, userTimeZone, transactionsService, merchantsService, cancellationToken);
+                        return await HandleAsync(userId, request, userTimeZone, transactionsService, payerPayeesService, cancellationToken);
                     })
                 .Produces<ApiResponse<IEnumerable<TransactionDto>>>((int)HttpStatusCode.OK)
                 .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
@@ -43,11 +43,11 @@ public sealed class GetTransactionsEndpoint : BaseEndpoint
         GetTransactionsQuery query,
         string userTimeZone,
         ITransactionsService transactionsService,
-        IMerchantsService merchantsService,
+        IPayerPayeesService payerPayeesService,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(transactionsService);
-        ArgumentNullException.ThrowIfNull(merchantsService);
+        ArgumentNullException.ThrowIfNull(payerPayeesService);
 
         if (string.IsNullOrWhiteSpace(userId))
             return Results.BadRequest("User Id is required");

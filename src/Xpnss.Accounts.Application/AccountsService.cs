@@ -7,10 +7,10 @@ namespace Habanerio.Xpnss.Accounts.Application;
 public sealed class AccountsService(IMediator mediator, ILogger<AccountsService> logger) : IAccountsService
 {
     private readonly ILogger<AccountsService> _logger = logger ??
-                                                        throw new ArgumentNullException(nameof(logger));
+        throw new ArgumentNullException(nameof(logger));
 
     private readonly IMediator _mediator = mediator ??
-                                 throw new ArgumentNullException(nameof(mediator));
+        throw new ArgumentNullException(nameof(mediator));
 
     public Task<TResult> CommandAsync<TResult>(IAccountsCommand<TResult> command, CancellationToken cancellationToken = default)
     {

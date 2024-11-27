@@ -1,19 +1,20 @@
 using FluentResults;
+using Habanerio.Xpnss.Transactions.Domain.Entities;
 
 namespace Habanerio.Xpnss.Transactions.Domain.Interfaces;
 
 public interface ITransactionsRepository
 {
-    Task<Result<Transaction>> AddAsync(
-        Transaction transaction,
+    Task<Result<TransactionBase>> AddAsync(
+        TransactionBase transaction,
         CancellationToken cancellationToken = default);
 
-    Task<Result<Transaction?>> GetAsync(
+    Task<Result<TransactionBase?>> GetAsync(
         string userId,
         string transactionId,
         CancellationToken cancellationToken = default);
 
-    Task<Result<IEnumerable<Transaction>>> ListAsync(
+    Task<Result<IEnumerable<TransactionBase>>> ListAsync(
         string userId,
         string accountId = "",
         DateTime? startDate = null,
@@ -21,7 +22,7 @@ public interface ITransactionsRepository
         string userTimeZone = "",
         CancellationToken cancellationToken = default);
 
-    Task<Result<Transaction>> UpdateAsync(
-        Transaction transaction,
+    Task<Result<TransactionBase>> UpdateAsync(
+        TransactionBase transaction,
         CancellationToken cancellationToken = default);
 }

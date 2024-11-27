@@ -2,25 +2,19 @@ namespace Habanerio.Xpnss.Application.DTOs;
 
 public record MonthlyTotalDto
 {
-    public int Year { get; set; }
-    public int Month { get; set; }
-    public decimal CreditTotalAmount { get; set; }
-    public int CreditCount { get; set; }
-    public decimal DebitTotalAmount { get; set; }
-    public int DebitCount { get; set; }
-}
+    public string EntityId { get; init; }
 
-public record AccountMonthlyTotalDto : MonthlyTotalDto
-{
-    public string AccountId { get; set; }
-}
+    public string EntityType { get; init; }
 
-public record CategoryMonthlyTotalDto : MonthlyTotalDto
-{
-    public string CategoryId { get; set; }
-}
+    public int Year { get; init; }
 
-public record MerchantMonthlyTotalDto : MonthlyTotalDto
-{
-    public string MerchantId { get; set; }
+    public int Month { get; init; }
+
+    public decimal CreditTotalAmount { get; init; }
+
+    public int CreditCount { get; init; }
+
+    public decimal DebitTotalAmount { get; init; }
+
+    public int DebitCount { get; init; }
 }
