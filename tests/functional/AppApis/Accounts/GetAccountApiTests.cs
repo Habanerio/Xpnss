@@ -1,8 +1,8 @@
 using System.Net;
 using System.Text.Json;
+using Habanerio.Xpnss.Accounts.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Application.Accounts.DTOs;
-using Habanerio.Xpnss.Infrastructure.Documents;
+using Habanerio.Xpnss.Application.DTOs;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis.Accounts;
@@ -17,9 +17,7 @@ public class GetAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Program> 
     public async Task GetAccount_ReturnsOk()
     {
         var availableAccounts =
-            (await AccountDocumentsRepository.FindAsync(a => a.UserId == USER_ID)).ToList();
-
-        var jsonSerializationOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            (await AccountDocumentsRepository.FindDocumentsAsync(a => a.UserId == USER_ID)).ToList();
 
         foreach (var availableAccount in availableAccounts)
         {
@@ -38,7 +36,7 @@ public class GetAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Program> 
 
             var apiResponse = JsonSerializer.Deserialize<ApiResponse<AccountDto>>(
                 content,
-                jsonSerializationOptions);
+                JsonSerializationOptions);
 
             Assert.NotNull(apiResponse);
             Assert.True(apiResponse.IsSuccess);
@@ -60,7 +58,7 @@ public class GetAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Program> 
             else if (availableAccount is CheckingAccountDocument checkingAccountDoc)
             {
                 Assert.NotNull(checkingAccountDoc);
-                Assert.Equal(checkingAccountDoc.OverDraftAmount, accountDto.OverDraftAmount);
+                Assert.Equal(checkingAccountDoc.OverdraftAmount, accountDto.OverdraftAmount);
             }
             else if (availableAccount is SavingsAccountDocument savingsAccountDoc)
             {

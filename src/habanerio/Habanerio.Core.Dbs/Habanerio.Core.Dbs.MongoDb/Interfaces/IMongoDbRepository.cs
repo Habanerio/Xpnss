@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using MongoDB.Bson;
+using System.Linq.Expressions;
 
 namespace Habanerio.Core.Dbs.MongoDb.Interfaces;
 
@@ -13,7 +12,6 @@ public interface IMongoDbRepository<TDocument, in TId> where TDocument : IMongoD
 
     Task AddDocumentsAsync(IEnumerable<TDocument> documents, CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Attempts to find one or more documents that match the given predicate.
     /// </summary>
@@ -22,18 +20,18 @@ public interface IMongoDbRepository<TDocument, in TId> where TDocument : IMongoD
     /// <param name="pageSize">The size of the page of results to return</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)> FindAsync(
+    Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)> FindDocumentsAsync(
     Expression<Func<TDocument, bool>> predicate,
     int pageNo,
     int pageSize,
     CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<TDocument>> FindAsync(
+    Task<IEnumerable<TDocument>> FindDocumentsAsync(
         Expression<Func<TDocument, bool>> predicate,
         CancellationToken cancellationToken = default);
 
 
-    Task<TDocument?> FirstOrDefaultAsync(
+    Task<TDocument?> FirstOrDefaultDocumentAsync(
         Expression<Func<TDocument, bool>> predicate,
         CancellationToken cancellationToken = default);
 
@@ -44,7 +42,7 @@ public interface IMongoDbRepository<TDocument, in TId> where TDocument : IMongoD
     /// <param name="id"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<TDocument> GetAsync(
+    Task<TDocument> GetDocumentAsync(
         TId id,
         CancellationToken cancellationToken = default);
 
@@ -54,12 +52,12 @@ public interface IMongoDbRepository<TDocument, in TId> where TDocument : IMongoD
     /// <param name="ids"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<IEnumerable<TDocument>> GetAsync(
+    Task<IEnumerable<TDocument>> GetDocumentAsync(
         IEnumerable<TId> ids,
         CancellationToken cancellationToken = default);
 
 
-    Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)> ListAsync(
+    Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)> ListDocumentsAsync(
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -69,11 +67,32 @@ public interface IMongoDbRepository<TDocument, in TId> where TDocument : IMongoD
     /// <param name="pageSize"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)> ListAsync(
+    Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)> ListDocumentsAsync(
         int pageNo,
         int pageSize,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Removes a single entity of type T from the repository.
+    /// </summary>
+    /// <param name="entity">The entity.</param>
+    /// <param name="cancellationToken">The cancellationToken.</param>
+    bool RemoveDocument(TDocument entity, CancellationToken cancellationToken = default);
+
+    Task<bool> RemoveDocumentAsync(TId id, CancellationToken cancellationToken = default);
+
+    Task<bool> RemoveDocumentAsync(TDocument entity, CancellationToken cancellationToken = default);
+
+    //Task<bool> RemoveDocumentAsync(Expression<Func<TDocument, bool>> predicate, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes a collection of entities.
+    /// </summary>
+    /// <param name="ids">The ids of the entities to be removed.</param>
+    /// <param name="cancellationToken">The cancellationToken.</param>
+    bool RemoveDocumentRange(IEnumerable<TId> ids, CancellationToken cancellationToken = default);
+
+    Task<bool> RemoveDocumentRangeAsync(IEnumerable<TId> ids, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates a document in the collection.
@@ -83,5 +102,3 @@ public interface IMongoDbRepository<TDocument, in TId> where TDocument : IMongoD
     /// <returns></returns>
     Task<long> UpdateDocumentAsync(TDocument document, CancellationToken cancellationToken = default);
 }
-
-public interface IMongoDbRepository<TDocument> : IMongoDbRepository<TDocument, ObjectId> where TDocument : IMongoDocument;

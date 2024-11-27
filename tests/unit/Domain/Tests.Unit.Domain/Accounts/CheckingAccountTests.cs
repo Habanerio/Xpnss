@@ -1,10 +1,11 @@
-using System.Globalization;
 using AutoFixture;
-using Habanerio.Xpnss.Domain.Accounts;
+using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts;
+using Habanerio.Xpnss.Domain.Types;
+using Habanerio.Xpnss.Domain.ValueObjects;
 
 namespace Habanerio.Xpnss.Tests.Unit.Domain.Accounts;
 
-public class CheckingAccountTests : AccountTests
+public class CheckingAccountTests : BaseAccountTests
 {
     private readonly CheckingAccount _testClass;
 
@@ -39,7 +40,7 @@ public class CheckingAccountTests : AccountTests
         Assert.Equal(balance, result.Balance);
         Assert.Equal(description, result.Description);
         Assert.Equal(displayColor, result.DisplayColor);
-        Assert.Equal(overDraftAmount, result.OverDraftAmount);
+        Assert.Equal(overDraftAmount, result.OverdraftAmount);
         Assert.Equal(dateCreated, result.DateCreated);
         Assert.Equal(dateClosed, result.DateClosed);
         Assert.Equal(dateDeleted, result.DateDeleted);
@@ -102,7 +103,7 @@ public class CheckingAccountTests : AccountTests
         Assert.Equal(0, result.Balance.Value);
         Assert.Equal(description, result.Description);
         Assert.Equal(displayColor, result.DisplayColor);
-        Assert.Equal(overDraftAmount, result.OverDraftAmount);
+        Assert.Equal(overDraftAmount, result.OverdraftAmount);
     }
 
     [Fact]
@@ -117,71 +118,222 @@ public class CheckingAccountTests : AccountTests
                 NewMoney(45645)));
     }
 
-    [Fact]
-    public void CanCall_AdjustBalance()
-    {
-        // Arrange
-        var oldValue = _testClass.Balance;
-        var newValue = NewMoney(4345634);
-        var dateChanged = DateTime.Now.AddDays(-1);
-        var reason = AutoFixture.Create<string>();
 
-        // Act
-        _testClass.AdjustBalance(newValue, dateChanged, reason);
+    /// <summary>
+    /// Tests that for Checking Accounts, a new DEPOSIT transaction will increase the Balance.
+    /// </summary>
+    [Fact]
+    public void CanCall_ApplyTransactionAmount_DEPOSIT()
+    {
+        var value = NewMoney(1000);
+
+        var previousValue = _testClass.Balance;
+
+        _testClass.ApplyTransactionAmount(value, TransactionTypes.Keys.DEPOSIT);
 
         // Assert
-        Assert.Equal(newValue, _testClass.Balance);
-        Assert.NotEmpty(_testClass.ChangeHistory);
+        Assert.Equal(previousValue + value, _testClass.Balance);
+    }
 
-        var changeHistory = _testClass.ChangeHistory.Last();
-        Assert.NotNull(changeHistory);
-        Assert.Equal(_testClass.Id.Value, changeHistory.AccountId);
-        Assert.Equal(_testClass.UserId.Value, changeHistory.UserId);
-        Assert.Equal(nameof(_testClass.Balance), changeHistory.Property);
-        Assert.Equal(oldValue.Value.ToString(CultureInfo.InvariantCulture), changeHistory.OldValue);
-        Assert.Equal(newValue.Value.ToString(CultureInfo.InvariantCulture), changeHistory.NewValue);
-        Assert.Equal(dateChanged.ToUniversalTime(), changeHistory.DateChanged);
-        Assert.Equal(reason, changeHistory.Reason);
+    /// <summary>
+    /// Tests that for Checking Accounts, a new PURCHASE transaction will decrease the Balance.
+    /// </summary>
+    [Fact]
+    public void CanCall_ApplyTransactionAmount_PURCHASE()
+    {
+        var value = NewMoney(1000);
+
+        var previousValue = _testClass.Balance;
+
+        _testClass.ApplyTransactionAmount(value, TransactionTypes.Keys.PURCHASE);
+
+        // Assert
+        Assert.Equal(previousValue - value, _testClass.Balance);
     }
 
 
+    /// <summary>
+    /// Tests that for Checking Accounts, a previous DEPOSIT transaction will decrease the Balance.
+    /// </summary>
     [Fact]
-    public void CanCall_AdjustOverDraftAmount()
+    public void CanCall_UndoTransactionAmount_DEPOSIT()
     {
-        // Arrange
-        var oldValue = _testClass.OverDraftAmount;
-        var newValue = NewMoney(4345634);
-        var dateChanged = DateTime.Now.AddDays(-1);
-        var reason = AutoFixture.Create<string>();
+        var value = NewMoney(1000);
 
-        // Act
-        _testClass.AdjustOverDraftAmount(newValue, dateChanged, reason);
+        var previousValue = _testClass.Balance;
+
+        _testClass.UndoTransactionAmount(value, TransactionTypes.Keys.DEPOSIT);
 
         // Assert
-        Assert.Equal(newValue, _testClass.OverDraftAmount);
-        Assert.NotEmpty(_testClass.ChangeHistory);
+        Assert.Equal(previousValue - value, _testClass.Balance);
+    }
 
-        var changeHistory = _testClass.ChangeHistory.Last();
-        Assert.NotNull(changeHistory);
-        Assert.Equal(_testClass.Id.Value, changeHistory.AccountId);
-        Assert.Equal(_testClass.UserId.Value, changeHistory.UserId);
-        Assert.Equal(nameof(_testClass.OverDraftAmount), changeHistory.Property);
-        Assert.Equal(oldValue.Value.ToString(CultureInfo.InvariantCulture), changeHistory.OldValue);
-        Assert.Equal(newValue.Value.ToString(CultureInfo.InvariantCulture), changeHistory.NewValue);
-        Assert.Equal(dateChanged.ToUniversalTime(), changeHistory.DateChanged);
-        Assert.Equal(reason, changeHistory.Reason);
+    /// <summary>
+    /// Tests that for Checking Accounts, a previous PURCHASE transaction will increase the Balance.
+    /// </summary>
+    [Fact]
+    public void CanCall_UndoTransactionAmount_PURCHASE()
+    {
+        var value = NewMoney(1000);
+
+        var previousValue = _testClass.Balance;
+
+        _testClass.UndoTransactionAmount(value, TransactionTypes.Keys.PURCHASE);
+
+        // Assert
+        Assert.Equal(previousValue + value, _testClass.Balance);
     }
 
 
+    /// <summary>
+    /// Cannot perform action when creditLimit is negative
+    /// </summary>
     [Fact]
-    public void CanGet_IsOverLimit()
+    public void CannotCall_ApplyTransactionAmount_WithNegativeAmount()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => _testClass.ApplyTransactionAmount(NewMoney(-1), TransactionTypes.Keys.DEPOSIT));
+    }
+
+    /// <summary>
+    /// Cannot perform action when creditLimit is negative
+    /// </summary>
+    [Fact]
+    public void CannotCall_UndoTransactionAmount_WithNegativeAmount()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => _testClass.UndoTransactionAmount(NewMoney(-1), TransactionTypes.Keys.DEPOSIT));
+    }
+
+    /// <summary>
+    /// Cannot perform action when Account is deleted
+    /// </summary>
+    [Fact]
+    public void CannotCall_ApplyTransactionAmount_DEPOSIT_When_IsDeleted()
+    {
+        _testClass.Delete();
+
+        Assert.Throws<InvalidOperationException>(() => _testClass.ApplyTransactionAmount(new Money(1), TransactionTypes.Keys.DEPOSIT));
+    }
+
+    /// <summary>
+    /// Cannot perform action when Account is deleted
+    /// </summary>
+    [Fact]
+    public void CannotCall_ApplyTransactionAmount_PURCHASE_When_IsDeleted()
+    {
+        _testClass.Delete();
+
+        Assert.Throws<InvalidOperationException>(() => _testClass.ApplyTransactionAmount(new Money(1), TransactionTypes.Keys.PURCHASE));
+    }
+
+
+    /// <summary>
+    /// Cannot perform action when Account is deleted
+    /// </summary>
+    [Fact]
+    public void CannotCall_UndoTransactionAmount_PURCHASE_When_IsDeleted()
+    {
+        _testClass.Delete();
+
+        Assert.Throws<InvalidOperationException>(() => _testClass.UndoTransactionAmount(new Money(1), TransactionTypes.Keys.PURCHASE));
+    }
+
+    /// <summary>
+    /// Cannot perform action when Account is deleted
+    /// </summary>
+    [Fact]
+    public void CannotCall_UndoTransactionAmount_DEPOSIT_When_IsDeleted()
+    {
+        _testClass.Delete();
+
+        Assert.Throws<InvalidOperationException>(() => _testClass.UndoTransactionAmount(new Money(1), TransactionTypes.Keys.DEPOSIT));
+    }
+
+
+    /// <summary>
+    /// Cannot perform action when Account is deleted
+    /// </summary>
+    [Fact]
+    public void CanCall_UpdateBalance()
     {
         // Arrange
-        // TODO: Set up the test
+        var previousValue = _testClass.Balance;
+
+        var value = NewMoney(1000);
+
+        // Act
+        _testClass.UpdateBalance(value);
 
         // Assert
-        Assert.IsType<bool>(_testClass.IsOverLimit);
+        Assert.Equal(previousValue + value, _testClass.Balance);
+    }
 
-        //throw new NotImplementedException("Create or modify test");
+    /// <summary>
+    /// Cannot perform action when Account is deleted
+    /// </summary>
+    [Fact]
+    public void CannotCall_UpdatedBalance_When_IsDeleted()
+    {
+        _testClass.Delete();
+
+        Assert.Throws<InvalidOperationException>(() => _testClass.UpdateBalance(new Money(1)));
+    }
+
+    [Fact]
+    public void CanCall_Close()
+    {
+        var dateClosed = DateTime.Now.AddDays(-1);
+
+        // Act
+        _testClass.Close(dateClosed);
+
+        // Assert
+        Assert.NotNull(_testClass.DateClosed);
+        Assert.Equal(dateClosed, _testClass.DateClosed);
+
+        Assert.True(_testClass.IsClosed);
+
+        Assert.NotNull(_testClass.DateUpdated);
+        Assert.Equal(DateTime.Now.ToUniversalTime(), _testClass.DateUpdated.Value, new TimeSpan(0, 0, 0, 10));
+    }
+
+    [Fact]
+    public void CanCall_ReOpen()
+    {
+        var dateClosed = DateTime.Now.AddDays(-1);
+
+        // Act
+        _testClass.Close(dateClosed);
+
+        Assert.True(_testClass.IsClosed);
+
+        // Act
+        _testClass.ReOpen();
+
+        // Assert
+        Assert.Null(_testClass.DateClosed);
+        Assert.False(_testClass.IsClosed);
+        Assert.Equal(DateTime.Now.ToUniversalTime(), _testClass.DateUpdated.Value, new TimeSpan(0, 0, 0, 10));
+    }
+
+    [Fact]
+    public void CannotCall_Close_When_IsDeleted()
+    {
+        _testClass.Delete();
+
+        Assert.Throws<InvalidOperationException>(() => _testClass.Close(DateTime.Now));
+    }
+
+    [Fact]
+    public void CanCall_Delete()
+    {
+        _testClass.Delete();
+
+        Assert.NotNull(_testClass.DateDeleted);
+        Assert.Equal(DateTime.Now.ToUniversalTime(), _testClass.DateDeleted.Value, new TimeSpan(0, 0, 0, 10));
+
+        Assert.True(_testClass.IsDeleted);
+
+        Assert.NotNull(_testClass.DateUpdated);
+        Assert.Equal(DateTime.Now.ToUniversalTime(), _testClass.DateUpdated.Value, new TimeSpan(0, 0, 0, 10));
     }
 }

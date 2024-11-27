@@ -1,9 +1,13 @@
+using System.Text.Json;
 using Habanerio.Core.Dbs.MongoDb;
-using Habanerio.Xpnss.Infrastructure.Documents;
-using Habanerio.Xpnss.Infrastructure.Repositories;
+using Habanerio.Xpnss.Accounts.Infrastructure.Data.Repositories;
+using Habanerio.Xpnss.Categories.Infrastructure.Data.Repositories;
+using Habanerio.Xpnss.PayerPayees.Infrastructure.Data.Repositories;
+using Habanerio.Xpnss.Transactions.Infrastructure.Data.Repositories;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis;
 
@@ -15,10 +19,12 @@ public class BaseFunctionalApisTests
 
     protected readonly IConfiguration Config;
 
-    protected readonly MongoDbRepository<AccountDocument> AccountDocumentsRepository;
-    protected readonly MongoDbRepository<CategoryDocument> CategoryDocumentsRepository;
-    protected readonly MongoDbRepository<MerchantDocument> MerchantDocumentsRepository;
-    protected readonly MongoDbRepository<TransactionDocument> TransactionDocumentsRepository;
+    protected readonly AccountsRepository AccountDocumentsRepository;
+    protected readonly CategoriesRepository CategoryDocumentsRepository;
+    protected readonly PayerPayeesRepository PayerPayeeDocumentsRepository;
+    protected readonly TransactionsRepository TransactionDocumentsRepository;
+
+    protected readonly JsonSerializerOptions JsonSerializationOptions = new() { PropertyNameCaseInsensitive = true };
 
     protected const string API_VERSION = "v1";
 
@@ -26,6 +32,8 @@ public class BaseFunctionalApisTests
 
     protected const int DEFAULT_PAGE_NO = 1;
     protected const int DEFAULT_PAGE_SIZE = 25;
+
+    protected DateTime RandomTransactionDate => DateTime.Now.AddDays(-(new Random().Next(1, 365)));
 
     protected BaseFunctionalApisTests(WebApplicationFactory<Apis.App.AppApis.Program> factory)
     {
@@ -41,10 +49,13 @@ public class BaseFunctionalApisTests
         Config.GetSection("XpnssMongoDBSettings").Bind(mongoDbSettings);
         var options = Options.Create(mongoDbSettings);
 
-        AccountDocumentsRepository = new AccountsRepository(options);
-        CategoryDocumentsRepository = new CategoriesRepository(options);
-        MerchantDocumentsRepository = new MerchantsRepository(options);
-        TransactionDocumentsRepository = new TransactionsRepository(options);
+        var mongoClient = new MongoClient(options.Value.ConnectionString);
+        var mongoDb = mongoClient.GetDatabase(options.Value.DatabaseName);
+
+        AccountDocumentsRepository = new AccountsRepository(mongoDb);
+        CategoryDocumentsRepository = new CategoriesRepository(mongoDb);
+        PayerPayeeDocumentsRepository = new PayerPayeesRepository(options, mongoDb);
+        TransactionDocumentsRepository = new TransactionsRepository(options, mongoDb);
 
         //TODO: Add Api Key
         //Config = AppConfigSettingsManager.GetConfigs();

@@ -1,7 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Application.Accounts.DTOs;
+using Habanerio.Xpnss.Application.DTOs;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis.Accounts;
@@ -29,15 +29,13 @@ public class GetAccountsApiTests(WebApplicationFactory<Apis.App.AppApis.Program>
 
         var apiResponse = JsonSerializer.Deserialize<ApiResponse<IEnumerable<AccountDto>>>(
             content,
-            new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            JsonSerializationOptions);
 
         Assert.NotNull(apiResponse);
         Assert.True(apiResponse.IsSuccess);
-        Assert.NotNull(apiResponse.Data);
 
-        Assert.True(apiResponse.Data.All(a => a.UserId == USER_ID));
+        var accounts = Assert.IsType<List<AccountDto>>(apiResponse.Data);
+
+        Assert.True(accounts.TrueForAll(a => a.UserId == USER_ID));
     }
 }

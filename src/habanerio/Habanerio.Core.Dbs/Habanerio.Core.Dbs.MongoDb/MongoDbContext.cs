@@ -5,12 +5,29 @@ using MongoDB.Driver;
 
 namespace Habanerio.Core.Dbs.MongoDb;
 
+public class MongoDbContext : MongoDbContextBase
+{
+    public MongoDbContext(IMongoDatabase database) : base(database)
+    { }
+
+    public MongoDbContext(string connectionString, string databaseName) : base(connectionString, databaseName)
+    { }
+
+    public MongoDbContext(IOptions<MongoDbSettings> options) : base(options)
+    { }
+
+    public MongoDbContext(IMongoClient client, string databaseName) : base(client, databaseName)
+    { }
+}
+
 /// <summary>
 /// When you want a single DbContext per Document.
 /// </summary>
 /// <typeparam name="TDocument"></typeparam>
 public class MongoDbContext<TDocument> : MongoDbContextBase, IMongoDbContext<TDocument> where TDocument : IMongoDocument
 {
+    public IMongoCollection<TDocument> Collection => Collection<TDocument>();
+
     public MongoDbContext(IMongoDatabase database) : base(database)
     { }
 
@@ -22,39 +39,9 @@ public class MongoDbContext<TDocument> : MongoDbContextBase, IMongoDbContext<TDo
 
     public MongoDbContext(IMongoClient client, string databaseName) : base(client, databaseName)
     { }
-
-    public IMongoCollection<TDocument> Collection()
-    {
-        var collection = MongoDatabase.GetCollection<TDocument>(GetCollectionName(typeof(TDocument)));
-
-        return collection;
-    }
 }
 
-
-public class MongoDbContext : MongoDbContextBase, IMongoDbContext
-{
-    public MongoDbContext(IMongoDatabase database) : base(database)
-    { }
-
-    public MongoDbContext(string connectionString, string databaseName) : base(connectionString, databaseName)
-    { }
-
-    public MongoDbContext(IOptions<MongoDbSettings> options) : base(options)
-    { }
-
-    public MongoDbContext(IMongoClient client, string databaseName) : base(client, databaseName)
-    { }
-
-    public IMongoCollection<TDocument> Collection<TDocument>()
-    {
-        var collection = MongoDatabase.GetCollection<TDocument>(GetCollectionName(typeof(TDocument)));
-
-        return collection;
-    }
-}
-
-public abstract class MongoDbContextBase
+public abstract class MongoDbContextBase : IMongoDbContext
 {
     protected readonly IMongoDatabase MongoDatabase;
 
@@ -101,7 +88,7 @@ public abstract class MongoDbContextBase
         MongoDatabase = client.GetDatabase(dbName);
     }
 
-    public MongoDbContextBase(IMongoClient client, string databaseName)
+    protected MongoDbContextBase(IMongoClient client, string databaseName)
     {
         if (client == null)
             throw new ArgumentNullException(nameof(client));
@@ -110,6 +97,13 @@ public abstract class MongoDbContextBase
             throw new ArgumentException(COULD_NOT_GET_DBNAME, nameof(databaseName));
 
         MongoDatabase = client.GetDatabase(databaseName);
+    }
+
+    public IMongoCollection<TDocument> Collection<TDocument>()
+    {
+        var collection = MongoDatabase.GetCollection<TDocument>(GetCollectionName(typeof(TDocument)));
+
+        return collection;
     }
 
     protected static string GetCollectionName(Type documentType)

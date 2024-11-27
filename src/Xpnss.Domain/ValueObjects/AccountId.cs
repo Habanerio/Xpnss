@@ -4,13 +4,17 @@ namespace Habanerio.Xpnss.Domain.ValueObjects;
 
 public sealed record AccountId : EntityObjectId
 {
-    public AccountId(string accountId) : base(accountId)
-    { }
+    public AccountId(string accountId) : base(accountId) { }
 
-    public AccountId(ObjectId accountId) : base(accountId)
-    { }
+    public AccountId(ObjectId accountId) : base(accountId) { }
 
-    public static AccountId New => new AccountId(ObjectId.GenerateNewId().ToString());
+
+    public new static AccountId New => new(ObjectId.GenerateNewId().ToString());
+
+    public new static AccountId Empty => new(ObjectId.Empty);
+
+    public static bool IsEmpty(AccountId accountId) => accountId.Equals(Empty);
+
 
     public static implicit operator string(AccountId accountId) => accountId.Value;
 

@@ -1,5 +1,5 @@
 using Habanerio.Core.Dbs.MongoDb;
-using Habanerio.Core.Dbs.MongoDb.Attributes;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Habanerio.Xpnss.Infrastructure.Documents;
@@ -7,7 +7,7 @@ namespace Habanerio.Xpnss.Infrastructure.Documents;
 /// <summary>
 /// Represents the amount of money added and removed in a month.
 /// </summary>
-public abstract class MonthlyTotal : MongoDocument
+public abstract class BaseMonthlyTotalDocument : MongoDocument
 {
     [BsonElement("year")]
     public int Year { get; set; }
@@ -38,30 +38,4 @@ public abstract class MonthlyTotal : MongoDocument
     /// </summary>
     [BsonElement("debit_count")]
     public int DebitCount { get; set; }
-}
-
-/// <summary>
-/// Represents the total amount of money added and removed in a month for a specific account.
-/// </summary>
-[BsonCollection("money_accounts_monthly_totals")]
-public sealed class MonthlyAccountTotal : MonthlyTotal
-{
-    [BsonElement("account_id")]
-    public string AccountId { get; init; }
-
-    [BsonElement("user_id")]
-    public string UserId { get; set; }
-}
-
-/// <summary>
-/// Represents the total amount of money added and removed in a month for a specific category.
-/// </summary>
-[BsonCollection("money_categories_monthly_totals")]
-public sealed class MonthlyCategoryTotal : MonthlyTotal
-{
-    [BsonElement("category_id")]
-    public string CategoryId { get; set; }
-
-    [BsonElement("user_id")]
-    public string UserId { get; set; }
 }

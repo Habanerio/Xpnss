@@ -1,9 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Habanerio.Xpnss.Accounts.Application.Commands.UpdateAccountDetails;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Application.Accounts.Commands.UpdateAccountDetails;
-using Habanerio.Xpnss.Application.Accounts.DTOs;
+using Habanerio.Xpnss.Application.DTOs;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis.Accounts;
@@ -17,7 +17,7 @@ public class UpdateAccountDetailsApiTests(WebApplicationFactory<Apis.App.AppApis
     [Fact]
     public async Task CanCall_UpdateAccountDetails_ReturnsOk()
     {
-        var accounts = await AccountDocumentsRepository.FindAsync(a => a.UserId == USER_ID);
+        var accounts = await AccountDocumentsRepository.FindDocumentsAsync(a => a.UserId == USER_ID);
         var account = accounts.First();
 
         var newName = Guid.NewGuid().ToString();
@@ -47,22 +47,23 @@ public class UpdateAccountDetailsApiTests(WebApplicationFactory<Apis.App.AppApis
 
         var apiResponse = JsonSerializer.Deserialize<ApiResponse<AccountDto>>(
             updateAccountDetailsContent,
-            new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            JsonSerializationOptions);
 
         Assert.NotNull(apiResponse);
         Assert.True(apiResponse.IsSuccess);
 
         var accountDto = Assert.IsType<AccountDto>(apiResponse.Data);
+
         Assert.NotNull(accountDto);
         Assert.Equal(USER_ID, accountDto.UserId);
         Assert.Equal(account.Id.ToString(), accountDto.Id);
+
         Assert.Equal(newName, accountDto.Name);
         Assert.Equal(newDescription, accountDto.Description);
+        Assert.Equal(newDisplayColor, accountDto.DisplayColor);
+
         Assert.Equal(account.Balance, accountDto.Balance);
-        Assert.Equal(account.DisplayColor, accountDto.DisplayColor);
+
         Assert.Equal(account.DateCreated, accountDto.DateCreated);
         Assert.Equal(account.DateDeleted, accountDto.DateDeleted);
         Assert.Equal(account.IsCredit, accountDto.IsCredit);

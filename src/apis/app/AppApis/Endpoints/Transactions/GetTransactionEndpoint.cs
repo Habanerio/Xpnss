@@ -1,10 +1,10 @@
 using System.Net;
 using Carter;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Application.Transactions.DTOs;
-using Habanerio.Xpnss.Application.Transactions.Queries.GetTransaction;
-using Habanerio.Xpnss.Domain.Merchants.Interfaces;
-using Habanerio.Xpnss.Domain.Transactions.Interfaces;
+using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.PayerPayees.Domain.Interfaces;
+using Habanerio.Xpnss.Transactions.Application.Queries.GetTransaction;
+using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Transactions;
@@ -21,7 +21,7 @@ public sealed class GetTransactionEndpoint : BaseEndpoint
                         [FromRoute] string userId,
                         [FromRoute] string transactionId,
                         [FromServices] ITransactionsService transactionsService,
-                        [FromServices] IMerchantsService merchantsService,
+                        [FromServices] IPayerPayeesService payerPayeesService,
                         CancellationToken cancellationToken) =>
                     {
                         var userTimeZone = httpRequest.Headers["X-User-Timezone"].FirstOrDefault() ?? string.Empty;
@@ -33,7 +33,7 @@ public sealed class GetTransactionEndpoint : BaseEndpoint
                             TimeZone = userTimeZone
                         };
 
-                        return await HandleAsync(userId, query, transactionsService, merchantsService, cancellationToken);
+                        return await HandleAsync(userId, query, transactionsService, payerPayeesService, cancellationToken);
                     })
                 .Produces<ApiResponse<IEnumerable<TransactionDto>>>((int)HttpStatusCode.OK)
                 .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
@@ -49,11 +49,11 @@ public sealed class GetTransactionEndpoint : BaseEndpoint
         string userId,
         GetTransactionQuery query,
         ITransactionsService transactionsService,
-        IMerchantsService merchantsService,
+        IPayerPayeesService payerPayeesService,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(transactionsService);
-        ArgumentNullException.ThrowIfNull(merchantsService);
+        ArgumentNullException.ThrowIfNull(payerPayeesService);
 
         if (string.IsNullOrWhiteSpace(userId))
             return Results.BadRequest("User Id is required");

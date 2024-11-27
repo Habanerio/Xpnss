@@ -1,10 +1,10 @@
 using System.Net;
 using Carter;
 using FluentValidation;
+using Habanerio.Xpnss.Accounts.Application.Commands.CreateAccount;
+using Habanerio.Xpnss.Accounts.Domain.Interfaces;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Application.Accounts.Commands.CreateAccount;
-using Habanerio.Xpnss.Application.Accounts.DTOs;
-using Habanerio.Xpnss.Domain.Accounts.Interfaces;
+using Habanerio.Xpnss.Application.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Accounts;
@@ -29,7 +29,7 @@ public class CreateAccountEndpoint : BaseEndpoint
                     })
                 .Produces<AccountDto>((int)HttpStatusCode.OK)
                 .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
-                .WithDisplayName("New Account")
+                .WithDisplayName("NewId Account")
                 .WithName("CreateAccount")
                 .WithTags("Accounts")
                 .WithOpenApi();

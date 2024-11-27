@@ -1,0 +1,48 @@
+using FluentResults;
+using FluentValidation;
+using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.PayerPayees.Application.Mappers;
+using Habanerio.Xpnss.PayerPayees.Domain.Interfaces;
+using MediatR;
+
+namespace Habanerio.Xpnss.PayerPayees.Application.Queries.GetPayerPayee;
+
+public class GetPayerPayeeQueryHandler(IPayerPayeesRepository repository) :
+    IRequestHandler<GetPayerPayeeQuery, Result<PayerPayeeDto>>
+{
+    private readonly IPayerPayeesRepository _repository = repository ??
+        throw new ArgumentNullException(nameof(repository));
+
+    public async Task<Result<PayerPayeeDto?>> Handle(GetPayerPayeeQuery request, CancellationToken cancellationToken)
+    {
+        var validator = new Validator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
+        if (!validationResult.IsValid)
+            return Result.Fail<PayerPayeeDto?>(validationResult.Errors[0].ErrorMessage);
+
+        var result = await _repository.GetAsync(request.UserId, request.PayerPayeeId, cancellationToken);
+
+        if (result.IsFailed)
+            return Result.Fail<PayerPayeeDto?>(result.Errors);
+
+        if (result.ValueOrDefault is null)
+            return Result.Ok<PayerPayeeDto?>(default);
+
+        var dto = ApplicationMapper.Map(result.Value);
+
+        if (dto is null)
+            return Result.Fail("Failed to map PayerPayeeDocument to PayerPayeeDto");
+
+        return Result.Ok<PayerPayeeDto?>(dto);
+    }
+
+    public class Validator : AbstractValidator<GetPayerPayeeQuery>
+    {
+        public Validator()
+        {
+            RuleFor(x => x.PayerPayeeId).NotEmpty();
+            RuleFor(x => x.UserId).NotEmpty();
+        }
+    }
+}

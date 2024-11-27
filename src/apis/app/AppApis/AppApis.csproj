@@ -28,20 +28,25 @@
         <PackageReference Include="Carter" Version="8.2.1" />
         <PackageReference Include="FluentResults" Version="3.16.0" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.10" />
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.0" />
         <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
         <PackageReference Include="SonarAnalyzer.CSharp" Version="9.32.0.97167">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="7.0.0" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\aspire\Defaults\Defaults.csproj" />
-        <ProjectReference Include="..\..\..\habanerio\Habanerio.Core.Dbs\Habanerio.Core.Dbs.MongoDB.EFCore\Habanerio.Core.Dbs.MongoDB.EFCore.csproj" />
-        <ProjectReference Include="..\..\..\Xpnss.Application\Xpnss.Application.csproj" />
+        <ProjectReference Include="..\..\..\MonthlyTotals\Xpnss.MonthlyTotals.Application\Xpnss.MonthlyTotals.Application.csproj" />
+        <ProjectReference Include="..\..\..\PayerPayees\Xpnss.PayerPayees.Application\Xpnss.PayerPayees.Application.csproj" />
+        <ProjectReference Include="..\..\..\PayerPayees\Xpnss.PayerPayees.Domain\Xpnss.PayerPayees.Domain.csproj" />
+        <ProjectReference Include="..\..\..\Xpnss.Accounts.Application\Xpnss.Accounts.Application.csproj" />
+        <ProjectReference Include="..\..\..\Xpnss.Categories.Application\Xpnss.Categories.Application.csproj" />
+        <ProjectReference Include="..\..\..\Xpnss.Infrastructure\Xpnss.Infrastructure.csproj" />
+        <ProjectReference Include="..\..\..\Xpnss.Transactions.Application\Xpnss.Transactions.Application.csproj" />
     </ItemGroup>
 
 </Project>

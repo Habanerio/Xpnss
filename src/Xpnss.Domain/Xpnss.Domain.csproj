@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
@@ -12,6 +12,10 @@
       <PackageReference Include="FluentResults" Version="3.16.0" />
       <PackageReference Include="MediatR" Version="12.4.1" />
       <PackageReference Include="MongoDB.Bson" Version="3.0.0" />
+      <PackageReference Include="SonarAnalyzer.CSharp" Version="9.32.0.97167">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
     </ItemGroup>
 
 </Project>

@@ -39,17 +39,27 @@ public record EntityObjectId : EntityId
     protected EntityObjectId() : base(ObjectId.GenerateNewId().ToString())
     { }
 
-    protected EntityObjectId(ObjectId entityId) : base(entityId.ToString())
+    public EntityObjectId(ObjectId entityId) : base(entityId.ToString())
     {
-        if (entityId.Equals(ObjectId.Empty))
-            throw new ArgumentException(nameof(entityId));
+        //if (entityId.Equals(ObjectId.Empty))
+        //    throw new ArgumentException(nameof(entityId));
     }
 
-    protected EntityObjectId(string entityId)
+    public EntityObjectId(string entityId)
     {
         if (!ObjectId.TryParse(entityId, out var objectId) || objectId.Equals(ObjectId.Empty))
             throw new ArgumentException(nameof(entityId));
 
         SetValue(entityId);
     }
+
+    public static EntityObjectId New => new EntityObjectId(ObjectId.GenerateNewId().ToString());
+
+    public static EntityObjectId Empty => new EntityObjectId(ObjectId.Empty);
+
+    public static bool IsEmpty(EntityObjectId entityId) => entityId == Empty;
+
+    public static implicit operator string(EntityObjectId entityId) => entityId.Value;
+
+    //public static implicit operator AccountId(string userId) => new(userId);
 }

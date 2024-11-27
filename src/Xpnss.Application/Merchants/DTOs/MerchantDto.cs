@@ -10,7 +10,7 @@ public record MerchantDto
 
     public string Location { get; set; }
 
-    //public required List<MonthlyMerchantTotalsDto> MonthlyTotals { get; set; }
+    //public required List<MonthlyMerchantTotalsDto> MonthlyTotal { get; set; }
 
     //[JsonConstructor]
     public MerchantDto(string id, string userId, string name, string location)
