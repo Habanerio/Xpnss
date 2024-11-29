@@ -29,6 +29,8 @@ public class AddInterestRateAdjustmentApiTests(WebApplicationFactory<Apis.App.Ap
     [InlineData(AccountTypes.Keys.Savings)]
     public async Task CanCall_AdjustInterestRate_ReturnsOk(AccountTypes.Keys accountType)
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         var accounts = await AccountDocumentsRepository
             .FindDocumentsAsync(a =>
                 a.UserId == USER_ID &&
@@ -57,7 +59,7 @@ public class AddInterestRateAdjustmentApiTests(WebApplicationFactory<Apis.App.Ap
         var expectedInterestRate = previousInterestRate + 1m;
 
         var request = new AddInterestRateAdjustmentCommand(
-            account.UserId,
+            account.UserId.ToString(),
             account.Id.ToString(),
             expectedInterestRate,
             adjustmentDate,
@@ -66,12 +68,13 @@ public class AddInterestRateAdjustmentApiTests(WebApplicationFactory<Apis.App.Ap
         // Act
         var response = await HttpClient.PatchAsJsonAsync(
             ENDPOINTS_ACCOUNTS_ADJUST_INTEREST_RATE
-                .Replace("{userId}", USER_ID)
+                .Replace("{userId}", USER_ID.ToString())
                 .Replace("{accountId}", account.Id.ToString()),
             request);
 
         //TODO: Need to think about/implement Adjustment logic.
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
         return;
 
         response.EnsureSuccessStatusCode();
@@ -108,6 +111,8 @@ public class AddInterestRateAdjustmentApiTests(WebApplicationFactory<Apis.App.Ap
     [InlineData(AccountTypes.Keys.Checking)]
     public async Task CanNotCall_AdjustInterestRate_InvalidAccountType_ReturnsBadRequestOk(AccountTypes.Keys accountType)
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         var accounts = await AccountDocumentsRepository
             .FindDocumentsAsync(a =>
                 a.UserId == USER_ID &&
@@ -118,7 +123,7 @@ public class AddInterestRateAdjustmentApiTests(WebApplicationFactory<Apis.App.Ap
         var adjustmentDate = DateTime.Now.AddDays(-(new Random().Next(1, 2 * 365)));
 
         var request = new AddInterestRateAdjustmentCommand(
-            account.UserId,
+            account.UserId.ToString(),
             account.Id.ToString(),
             10,
             adjustmentDate,
@@ -127,7 +132,7 @@ public class AddInterestRateAdjustmentApiTests(WebApplicationFactory<Apis.App.Ap
         // Act
         var response = await HttpClient.PatchAsJsonAsync(
             ENDPOINTS_ACCOUNTS_ADJUST_INTEREST_RATE
-                .Replace("{userId}", USER_ID)
+                .Replace("{userId}", USER_ID.ToString())
                 .Replace("{accountId}", account.Id.ToString()),
             request);
 
@@ -154,6 +159,8 @@ public class AddInterestRateAdjustmentApiTests(WebApplicationFactory<Apis.App.Ap
     [InlineData(AccountTypes.Keys.LineOfCredit, -0.01)]
     public async Task CanNotCall_AdjustInterestRate_ValueTooLow_ReturnsBadRequestOk(AccountTypes.Keys accountType, decimal value)
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         var accounts = await AccountDocumentsRepository
             .FindDocumentsAsync(a =>
                 a.UserId == USER_ID &&
@@ -163,7 +170,7 @@ public class AddInterestRateAdjustmentApiTests(WebApplicationFactory<Apis.App.Ap
         var account = accounts.First();
 
         var request = new AddInterestRateAdjustmentCommand(
-            account.UserId,
+            account.UserId.ToString(),
             account.Id.ToString(),
             value,
             DateTime.Now,
@@ -172,7 +179,7 @@ public class AddInterestRateAdjustmentApiTests(WebApplicationFactory<Apis.App.Ap
         // Act
         var response = await HttpClient.PatchAsJsonAsync(
             ENDPOINTS_ACCOUNTS_ADJUST_INTEREST_RATE
-                .Replace("{userId}", USER_ID)
+                .Replace("{userId}", USER_ID.ToString())
                 .Replace("{accountId}", account.Id.ToString()),
             request);
 
@@ -199,6 +206,8 @@ public class AddInterestRateAdjustmentApiTests(WebApplicationFactory<Apis.App.Ap
     [InlineData(AccountTypes.Keys.LineOfCredit, 100.1)]
     public async Task CanNotCall_AdjustInterestRate_ValueTooHigh_ReturnsBadRequestOk(AccountTypes.Keys accountType, decimal value)
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         var accounts = await AccountDocumentsRepository
             .FindDocumentsAsync(a =>
                 a.UserId == USER_ID &&
@@ -208,7 +217,7 @@ public class AddInterestRateAdjustmentApiTests(WebApplicationFactory<Apis.App.Ap
         var account = accounts.First();
 
         var request = new AddInterestRateAdjustmentCommand(
-            account.UserId,
+            account.UserId.ToString(),
             account.Id.ToString(),
             value,
             DateTime.Now,
@@ -217,7 +226,7 @@ public class AddInterestRateAdjustmentApiTests(WebApplicationFactory<Apis.App.Ap
         // Act
         var response = await HttpClient.PatchAsJsonAsync(
             ENDPOINTS_ACCOUNTS_ADJUST_INTEREST_RATE
-                .Replace("{userId}", USER_ID)
+                .Replace("{userId}", USER_ID.ToString())
                 .Replace("{accountId}", account.Id.ToString()),
             request);
 

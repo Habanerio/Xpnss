@@ -4,23 +4,16 @@ using Habanerio.Xpnss.Accounts.Domain.Entities;
 using Habanerio.Xpnss.Accounts.Domain.Interfaces;
 using Habanerio.Xpnss.Accounts.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.Accounts.Infrastructure.Mappers;
-using MediatR;
-using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Habanerio.Xpnss.Accounts.Infrastructure.Data.Repositories;
 
-public class AdjustmentsRepository(
-    IOptions<MongoDbSettings> options,
-    IMongoDatabase mongoDb,
-    IMediator? mediator = null) :
+public class AdjustmentsRepository(IMongoDatabase mongoDb) :
     MongoDbRepository<AdjustmentDocument>(new AccountsDbContext(mongoDb)),
     IAdjustmentsRepository
 {
-    public async Task<Result<Adjustment>> AddAsync(
-        Adjustment adjustment,
-        CancellationToken cancellationToken = default)
+    public async Task<Result<Adjustment>> AddAsync(Adjustment adjustment, CancellationToken cancellationToken = default)
     {
         if (adjustment is null)
             return Result.Fail("Adjustment cannot be null");
@@ -47,11 +40,16 @@ public class AdjustmentsRepository(
         string adjustmentId,
         CancellationToken cancellationToken = default)
     {
+        if (!ObjectId.TryParse(userId, out var userObjectId) ||
+            userObjectId.Equals(ObjectId.Empty))
+            return Result.Fail($"Invalid UserId: `{userId}`");
+
         if (!ObjectId.TryParse(adjustmentId, out var adjustmentObjectId))
             return Result.Fail("AdjustmentId is not a valid ObjectId");
 
         var adjustmentDoc = await FirstOrDefaultDocumentAsync(a =>
-                a.Id.Equals(adjustmentObjectId) && a.UserId.Equals(userId)
+                a.Id.Equals(adjustmentObjectId) &&
+                a.UserId.Equals(userObjectId)
             , cancellationToken);
 
         if (adjustmentDoc is null)
@@ -70,15 +68,18 @@ public class AdjustmentsRepository(
         string accountId,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(userId))
-            return Result.Fail("UserId cannot be null or empty");
+        if (!ObjectId.TryParse(userId, out var userObjectId) ||
+            userObjectId.Equals(ObjectId.Empty))
+            return Result.Fail($"Invalid UserId: `{userId}`");
 
         if (!ObjectId.TryParse(accountId, out var accountObjectId) ||
             accountObjectId.Equals(ObjectId.Empty))
             return Result.Fail($"Invalid AccountId: `{accountId}`");
 
         var adjustmentDocs = await FindDocumentsAsync(a =>
-            a.UserId.Equals(userId) && a.AccountId.Equals(accountObjectId), cancellationToken);
+            a.UserId.Equals(userObjectId) &&
+            a.AccountId.Equals(accountObjectId),
+            cancellationToken);
 
         var adjustments = InfrastructureMapper.Map(adjustmentDocs);
 
@@ -114,8 +115,9 @@ public class AdjustmentsRepository(
         string adjustmentId,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(userId))
-            return Result.Fail("UserId cannot be null or empty");
+        if (!ObjectId.TryParse(userId, out var userObjectId) ||
+            userObjectId.Equals(ObjectId.Empty))
+            return Result.Fail($"Invalid UserId: `{userId}`");
 
         if (!ObjectId.TryParse(adjustmentId, out var adjustmentObjectId) ||
             adjustmentObjectId.Equals(ObjectId.Empty))
@@ -123,7 +125,7 @@ public class AdjustmentsRepository(
 
         var adjustmentDoc = await FirstOrDefaultDocumentAsync(a =>
             a.Id.Equals(adjustmentObjectId) &&
-            a.UserId.Equals(userId),
+            a.UserId.Equals(userObjectId),
             cancellationToken);
 
         if (adjustmentDoc is null)

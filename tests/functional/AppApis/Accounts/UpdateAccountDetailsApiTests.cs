@@ -17,7 +17,11 @@ public class UpdateAccountDetailsApiTests(WebApplicationFactory<Apis.App.AppApis
     [Fact]
     public async Task CanCall_UpdateAccountDetails_ReturnsOk()
     {
-        var accounts = await AccountDocumentsRepository.FindDocumentsAsync(a => a.UserId == USER_ID);
+        var USER_ID = await GetTestUserObjectIdAsync();
+
+        var accounts = await AccountDocumentsRepository
+            .FindDocumentsAsync(a =>
+                a.UserId == USER_ID);
         var account = accounts.First();
 
         var newName = Guid.NewGuid().ToString();
@@ -26,7 +30,7 @@ public class UpdateAccountDetailsApiTests(WebApplicationFactory<Apis.App.AppApis
 
         // Arrange
         var updateAccountDetailsRequest = new UpdateAccountDetailsCommand(
-            account.UserId,
+            account.UserId.ToString(),
             account.Id.ToString(),
             newName,
             newDescription,
@@ -35,7 +39,7 @@ public class UpdateAccountDetailsApiTests(WebApplicationFactory<Apis.App.AppApis
         // Act
         var updateAccountDetailsResponse = await HttpClient.PatchAsJsonAsync(
             ENDPOINTS_ACCOUNTS_UPDATE_ACCOUNT_DETAILS
-                .Replace("{userId}", USER_ID)
+                .Replace("{userId}", USER_ID.ToString())
                 .Replace("{accountId}", account.Id.ToString()),
             updateAccountDetailsRequest);
 
@@ -55,7 +59,7 @@ public class UpdateAccountDetailsApiTests(WebApplicationFactory<Apis.App.AppApis
         var accountDto = Assert.IsType<AccountDto>(apiResponse.Data);
 
         Assert.NotNull(accountDto);
-        Assert.Equal(USER_ID, accountDto.UserId);
+        Assert.Equal(USER_ID.ToString(), accountDto.UserId);
         Assert.Equal(account.Id.ToString(), accountDto.Id);
 
         Assert.Equal(newName, accountDto.Name);

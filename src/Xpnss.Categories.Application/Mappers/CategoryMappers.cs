@@ -1,5 +1,5 @@
 using Habanerio.Xpnss.Application.DTOs;
-using Habanerio.Xpnss.Categories.Domain;
+using Habanerio.Xpnss.Categories.Domain.Entities;
 
 namespace Habanerio.Xpnss.Categories.Application.Mappers;
 
@@ -33,7 +33,7 @@ internal static partial class ApplicationMapper
             ParentId = document.ParentId,
             Description = document.Description,
             SortOrder = document.SortOrder,
-            SubCategories = Map(document.SubCategories)?.ToList().AsReadOnly() ?? new List<CategoryDto>().AsReadOnly()
+            SubCategories = Map(document.SubCategories)?.ToList() ?? []
         };
 
         return dto;

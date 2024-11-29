@@ -1,7 +1,6 @@
-using Habanerio.Xpnss.Categories.Domain;
+using Habanerio.Xpnss.Categories.Domain.Entities;
 using Habanerio.Xpnss.Categories.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.Domain.ValueObjects;
-using MongoDB.Bson;
 
 namespace Habanerio.Xpnss.Categories.Infrastructure.Mappers;
 
@@ -40,15 +39,17 @@ public static partial class InfrastructureMapper
 
         return new CategoryDocument()
         {
-            Id = ObjectId.Parse(entity.Id),
+            Id = entity.Id,
             UserId = entity.UserId,
             Name = entity.Name,
             Description = entity.Description,
             SortOrder = entity.SortOrder,
             SubCategories = Map(entity.SubCategories).ToList(),
-            ParentId = string.IsNullOrWhiteSpace(entity.ParentId) ?
-                null :
-                ObjectId.Parse(entity.ParentId),
+            //TODO: See if this implicit conversion works
+            ParentId = entity.ParentId,
+            //ParentId = string.IsNullOrWhiteSpace(entity.ParentId) ?
+            //    null :
+            //    ObjectId.Parse(entity.ParentId),
             DateCreated = entity.DateCreated,
             DateUpdated = entity.DateUpdated,
             DateDeleted = entity.DateDeleted

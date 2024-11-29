@@ -5,9 +5,12 @@ using Habanerio.Xpnss.Accounts.Application.Commands.CreateAccount;
 using Habanerio.Xpnss.Accounts.Application.Queries.GetAccounts;
 using Habanerio.Xpnss.Accounts.Domain.Interfaces;
 using Habanerio.Xpnss.Application.DTOs;
-using Habanerio.Xpnss.Categories.Application.Commands.CreateCategory;
+using Habanerio.Xpnss.Application.Requests;
+using Habanerio.Xpnss.Categories.Application.Commands;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
 using Habanerio.Xpnss.Domain.Types;
+using Habanerio.Xpnss.UserProfiles.Application.Commands;
+using Habanerio.Xpnss.UserProfiles.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Setup;
@@ -18,17 +21,18 @@ public class SetupEndpoint : BaseEndpoint
     {
         public void AddRoutes(IEndpointRouteBuilder builder)
         {
-            builder.MapPost("/api/v1/setup/{userId}",
+            builder.MapPost("/api/v1/setup",
                     async (
-                        [FromRoute] string userId,
+                        [FromBody] CreateUserProfileRequest request,
                         [FromServices] IAccountsService accountsService,
                         [FromServices] ICategoriesService categoriesService,
+                        [FromServices] IUserProfilesService userProfileService,
                         CancellationToken cancellationToken) =>
                     {
-                        return await HandleAsync(userId, accountsService, categoriesService, cancellationToken);
+                        return await HandleAsync(request, accountsService, categoriesService, userProfileService, cancellationToken);
                     }
                 )
-                .Produces((int)HttpStatusCode.OK)
+                .Produces<UserProfileDto>((int)HttpStatusCode.OK)
                 .Produces<string>((int)HttpStatusCode.BadRequest)
                 .WithDisplayName("Setup")
                 .WithName("Setup")
@@ -37,11 +41,29 @@ public class SetupEndpoint : BaseEndpoint
         }
 
         private async Task<IResult> HandleAsync(
-            string userId,
+            CreateUserProfileRequest request,
             IAccountsService accountsService,
             ICategoriesService categoriesService,
+            IUserProfilesService userProfileService,
             CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(request.Email))
+                return BadRequestWithErrors($"Email is required ({nameof(request.Email)})");
+
+            if (string.IsNullOrWhiteSpace(request.FirstName))
+                return BadRequestWithErrors($"First Name is required ({nameof(request.FirstName)})");
+
+            var userProfileResult = await AddUserProfileAsync(request, userProfileService, cancellationToken);
+
+            if (userProfileResult.IsFailed || userProfileResult.ValueOrDefault is null)
+                return BadRequestWithErrors(userProfileResult.Errors[0].Message ?? $"Could not create a UserProfile for {request.FirstName} ({request.Email})");
+
+            if (string.IsNullOrWhiteSpace(userProfileResult.Value.Id))
+                return BadRequestWithErrors($"Could not create a UserProfile for {request.FirstName} ({request.Email})");
+
+            var userProfileDto = userProfileResult.Value;
+            var userId = userProfileDto.Id;
+
             var accountsResult = await AddAccountsAsync(userId, accountsService, cancellationToken);
 
             if (accountsResult.IsFailed)
@@ -52,11 +74,19 @@ public class SetupEndpoint : BaseEndpoint
             if (categoriesResult.IsFailed)
                 return BadRequestWithErrors(categoriesResult.Errors[0].Message);
 
-            return Results.Ok();
+            return Results.Ok(userProfileDto);
         }
 
+        /// <summary>
+        /// Creates Accounts for the new User
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="accountsService"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         private async Task<Result> AddAccountsAsync(string userId, IAccountsService accountsService, CancellationToken cancellationToken = default)
         {
+            //TODO: Add to a IntegrationEvent
             var existingAccountsQuery = new GetAccountsQuery(userId);
 
             var existingAccountsResult = await accountsService.QueryAsync(existingAccountsQuery, cancellationToken);
@@ -119,8 +149,13 @@ public class SetupEndpoint : BaseEndpoint
             return Result.Ok();
         }
 
-        private async Task<Result> AddCategoriesAsync(string userId, ICategoriesService categoriesService, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Creates Categories for the new User
+        /// </summary>
+        /// <returns></returns>
+        private static async Task<Result> AddCategoriesAsync(string userId, ICategoriesService categoriesService, CancellationToken cancellationToken = default)
         {
+            //TODO: Add to a IntegrationEvent
             var categoryDtos = new List<CategoryDto>
             {
                 new CategoryDto()
@@ -352,6 +387,23 @@ public class SetupEndpoint : BaseEndpoint
             }
 
             return Result.Ok();
+        }
+
+        /// <summary>
+        /// Creates a new UserProfile
+        /// </summary>
+        /// <returns></returns>
+        private static async Task<Result<UserProfileDto>> AddUserProfileAsync(CreateUserProfileRequest request, IUserProfilesService userProfilesService, CancellationToken cancellationToken = default)
+        {
+            //TODO: Add to a IntegrationEvent
+            var createUserProfileCommand = new CreateUserProfileCommand(request.Email, request.FirstName, request.LastName, request.ExtUserId);
+
+            var result = await userProfilesService.CommandAsync(createUserProfileCommand, cancellationToken);
+
+            if (result.IsFailed)
+                return Result.Fail(result.Errors[0].Message);
+
+            return Result.Ok(result.Value);
         }
     }
 }

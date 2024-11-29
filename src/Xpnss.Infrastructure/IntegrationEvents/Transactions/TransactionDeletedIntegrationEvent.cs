@@ -5,7 +5,7 @@ namespace Habanerio.Xpnss.Infrastructure.IntegrationEvents.Transactions;
 /// <summary>
 /// Lets other parts of the system know that a transaction has been deleted.
 /// </summary>
-public record TransactionDeletedIntegrationEvent : IntegrationEvent
+public sealed record TransactionDeletedIntegrationEvent : IntegrationEvent
 {
     public string UserId { get; }
 

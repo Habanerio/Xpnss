@@ -106,7 +106,7 @@ public abstract class MongoDbRepository<TDocument, TId> :
         _context = dbContext;
     }
 
-    public void AddDocument(TDocument document)
+    public virtual void AddDocument(TDocument document)
     {
         Collection.InsertOne(document);
     }

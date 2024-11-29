@@ -35,6 +35,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\..\src\Xpnss.Accounts.Domain\Xpnss.Accounts.Domain.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Xpnss.Categories.Domain\Xpnss.Categories.Domain.csproj" />
         <ProjectReference Include="..\..\..\..\src\Xpnss.Domain\Xpnss.Domain.csproj" />
     </ItemGroup>
 

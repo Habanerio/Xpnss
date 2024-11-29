@@ -26,14 +26,7 @@ public sealed class GetTransactionEndpoint : BaseEndpoint
                     {
                         var userTimeZone = httpRequest.Headers["X-User-Timezone"].FirstOrDefault() ?? string.Empty;
 
-                        var query = new GetTransactionQuery
-                        {
-                            UserId = userId,
-                            TransactionId = transactionId,
-                            TimeZone = userTimeZone
-                        };
-
-                        return await HandleAsync(userId, query, transactionsService, payerPayeesService, cancellationToken);
+                        return await HandleAsync(userId, transactionId, userTimeZone, transactionsService, payerPayeesService, cancellationToken);
                     })
                 .Produces<ApiResponse<IEnumerable<TransactionDto>>>((int)HttpStatusCode.OK)
                 .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
@@ -47,7 +40,8 @@ public sealed class GetTransactionEndpoint : BaseEndpoint
 
     public static async Task<IResult> HandleAsync(
         string userId,
-        GetTransactionQuery query,
+        string transactionId,
+        string userTimeZone,
         ITransactionsService transactionsService,
         IPayerPayeesService payerPayeesService,
         CancellationToken cancellationToken = default)
@@ -57,6 +51,8 @@ public sealed class GetTransactionEndpoint : BaseEndpoint
 
         if (string.IsNullOrWhiteSpace(userId))
             return Results.BadRequest("User Id is required");
+
+        var query = new GetTransactionQuery(userId, transactionId, userTimeZone);
 
         var result = await transactionsService.QueryAsync(query, cancellationToken);
 

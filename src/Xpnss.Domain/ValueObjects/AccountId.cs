@@ -9,7 +9,7 @@ public sealed record AccountId : EntityObjectId
     public AccountId(ObjectId accountId) : base(accountId) { }
 
 
-    public new static AccountId New => new(ObjectId.GenerateNewId().ToString());
+    public new static AccountId New => new(ObjectId.GenerateNewId());
 
     public new static AccountId Empty => new(ObjectId.Empty);
 

@@ -14,15 +14,14 @@ public class GetCategoryEndpoint : BaseEndpoint
     {
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.MapGet("/api/v1/users/{userId}/categories/{parentId}/{childId}",
+            app.MapGet("/api/v1/users/{userId}/categories/{categoryId}",
                     async (
                         [FromRoute] string userId,
-                        [FromRoute] string parentId,
+                        [FromRoute] string categoryId,
                         [FromServices] ICategoriesService service,
-                        [FromRoute] string childId = "",
                         CancellationToken cancellationToken = default) =>
                     {
-                        return await HandleAsync(userId, parentId, service, childId, cancellationToken);
+                        return await HandleAsync(userId, categoryId, service, cancellationToken);
                     })
                 .Produces<ApiResponse<CategoryDto>>((int)HttpStatusCode.OK)
                 .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
@@ -34,21 +33,20 @@ public class GetCategoryEndpoint : BaseEndpoint
     }
 
     public static async Task<IResult> HandleAsync(
-        string userId,
-        string parentId,
-        ICategoriesService service,
-        string childId = "",
-        CancellationToken cancellationToken = default)
+            string userId,
+            string categoryId,
+            ICategoriesService service,
+            CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(service);
 
         if (string.IsNullOrWhiteSpace(userId))
-            return BadRequestWithErrors("User Id is required");
+            return BadRequestWithErrors($"{nameof(userId)} cannot be null or empty");
 
-        if (string.IsNullOrWhiteSpace(parentId))
-            return BadRequestWithErrors("Parent Category Id is required");
+        if (string.IsNullOrWhiteSpace(categoryId))
+            return BadRequestWithErrors($"{nameof(categoryId)} cannot be null or empty");
 
-        var query = new GetCategoryQuery(userId, parentId, childId);
+        var query = new GetCategoryQuery(userId, categoryId);
         var result = await service.QueryAsync(query, cancellationToken);
 
         if (result.IsFailed)

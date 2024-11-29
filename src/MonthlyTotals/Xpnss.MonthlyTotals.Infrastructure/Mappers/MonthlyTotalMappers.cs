@@ -10,19 +10,22 @@ internal static partial class InfrastructureMapper
     public static MonthlyTotal? Map(MonthlyTotalDocument? document)
     {
         if (document is null)
-            return null;
+            return default;
 
         return MonthlyTotal.Load(
             new EntityObjectId(document.Id),
             new UserId(document.UserId),
-            document.EntityId,
+            document.EntityId != null ? new EntityObjectId(document.EntityId.Value) : null,
             document.EntityType,
             document.Year,
             document.Month,
             new Money(document.CreditTotal),
             document.CreditCount,
             new Money(document.DebitTotal),
-            document.DebitCount);
+            document.DebitCount,
+            document.DateCreated,
+            document.DateUpdated,
+            document.DateDeleted);
     }
 
     public static IEnumerable<MonthlyTotal> Map(IEnumerable<MonthlyTotalDocument> documents)
@@ -35,20 +38,25 @@ internal static partial class InfrastructureMapper
     public static MonthlyTotalDocument? Map(MonthlyTotal? entity)
     {
         if (entity is null)
-            return null;
+            return default;
 
         return new MonthlyTotalDocument
         {
-            Id = ObjectId.Parse(entity.Id),
+            Id = entity.Id,
             UserId = entity.UserId,
-            EntityId = entity.EntityId,
+            EntityId = entity.EntityId?.Value is not null ?
+                ObjectId.Parse(entity.EntityId.Value) :
+                null,
             EntityType = entity.EntityType,
             Year = entity.Year,
             Month = entity.Month,
             CreditTotal = entity.CreditTotalAmount,
             CreditCount = entity.CreditCount,
             DebitTotal = entity.DebitTotalAmount,
-            DebitCount = entity.DebitCount
+            DebitCount = entity.DebitCount,
+            DateCreated = entity.DateCreated,
+            DateUpdated = entity.DateUpdated,
+            DateDeleted = entity.DateDeleted
         };
     }
 

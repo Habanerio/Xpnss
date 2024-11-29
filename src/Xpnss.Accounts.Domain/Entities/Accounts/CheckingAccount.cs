@@ -11,6 +11,25 @@ public sealed class CheckingAccount : BaseAccount, IHasOverdraftAmount
     public bool IsOverLimit => Balance.Value < -1 * OverdraftAmount.Value;
 
     private CheckingAccount(
+        UserId userId,
+        AccountName accountName,
+        Money balance,
+        string description,
+        string displayColor,
+        Money overDraftAmount) :
+        base(
+            userId,
+            AccountTypes.Keys.Checking,
+            accountName,
+            false,
+            balance,
+            description,
+            displayColor)
+    {
+        OverdraftAmount = overDraftAmount;
+    }
+
+    private CheckingAccount(
         AccountId id,
         UserId userId,
         AccountName accountName,
@@ -18,22 +37,23 @@ public sealed class CheckingAccount : BaseAccount, IHasOverdraftAmount
         string description,
         string displayColor,
         Money overDraftAmount,
-        DateTime dateCreated,
         DateTime? dateClosed,
-        DateTime? dateDeleted,
-        DateTime? dateUpdated) :
+        DateTime dateCreated,
+        DateTime? dateUpdated = null,
+        DateTime? dateDeleted = null) :
         base(
             id,
             userId,
             AccountTypes.Keys.Checking,
             accountName,
+            false,
             balance,
             description,
             displayColor,
-            dateCreated,
             dateClosed,
-            dateDeleted,
-            dateUpdated)
+            dateCreated,
+            dateUpdated,
+            dateDeleted)
     {
         OverdraftAmount = overDraftAmount;
     }
@@ -54,8 +74,8 @@ public sealed class CheckingAccount : BaseAccount, IHasOverdraftAmount
         string description,
         string displayColor,
         Money overDraftAmount,
-        DateTime dateCreated,
         DateTime? dateClosed,
+        DateTime dateCreated,
         DateTime? dateDeleted,
         DateTime? dateUpdated)
     {
@@ -70,10 +90,10 @@ public sealed class CheckingAccount : BaseAccount, IHasOverdraftAmount
             description,
             displayColor,
             overDraftAmount,
-            dateCreated,
             dateClosed,
-            dateDeleted,
-            dateUpdated);
+            dateCreated,
+            dateUpdated,
+            dateDeleted);
     }
 
     /// <summary>
@@ -88,30 +108,24 @@ public sealed class CheckingAccount : BaseAccount, IHasOverdraftAmount
         AccountName accountName,
         string description,
         string displayColor,
-
         Money overDraftAmount)
     {
         if (overDraftAmount < 0)
             throw new ArgumentOutOfRangeException(nameof(overDraftAmount));
 
         return new CheckingAccount(
-            AccountId.New,
             userId,
             accountName,
             Money.Zero,
             description,
             displayColor,
-            overDraftAmount,
-            DateTime.UtcNow,
-            null,
-            null,
-            null);
+            overDraftAmount);
     }
 
     /// <summary>
     /// This updates the current Overdraft CreditLimit of the Account.
     /// This is for when the current Overdraft CreditLimit is out of sync with reality.
-    /// Use this AFTER adding it to the Adjustments.
+    /// Use this _AFTER_ adding it to the Adjustments (Domain Event).
     /// </summary>
     /// <param name="newOverdraftAmount">The new value for the current OverdraftA mount</param>
     /// <exception cref="InvalidOperationException">When the account is marked as deleted</exception>

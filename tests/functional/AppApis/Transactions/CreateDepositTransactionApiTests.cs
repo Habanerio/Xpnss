@@ -1,22 +1,13 @@
-using System.Net.Http.Json;
-using System.Text.Json;
-using Habanerio.Xpnss.Accounts.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.Apis.App.AppApis;
-using Habanerio.Xpnss.Apis.App.AppApis.Models;
-using Habanerio.Xpnss.Application.DTOs;
 using Habanerio.Xpnss.Application.Requests;
 using Habanerio.Xpnss.Domain.Types;
 using Microsoft.AspNetCore.Mvc.Testing;
-using MongoDB.Bson;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis.Transactions;
 
 public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> factory) :
-    BaseFunctionalApisTests(factory),
-    IClassFixture<WebApplicationFactory<Apis.App.AppApis.Program>>
+    CreateTransactionBaseApiTests(factory)
 {
-    private const string ENDPOINTS_CREATE_TRANSACTION = "/api/v1/users/{userId}/transactions/deposit";
-
     private const TransactionTypes.Keys TRANSACTION_TYPE = TransactionTypes.Keys.DEPOSIT;
 
     /// <summary>
@@ -26,23 +17,32 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
     [Fact]
     public async Task CanCall_CreateTransaction_WithValidRequest_ReturnsOk()
     {
-        var existingAccounts = (await AccountDocumentsRepository.FindDocumentsAsync(a => a.UserId == USER_ID))?.ToArray() ?? [];
+        var testUserId = await GetTestUserObjectIdAsync();
+
+        var existingAccounts = (await AccountDocumentsRepository
+            .FindDocumentsAsync(a =>
+                a.UserId.Equals(testUserId)))?.ToArray() ?? [];
 
         if (!existingAccounts.Any())
             Assert.Fail("Need to add accounts before running this test");
 
         foreach (var existingAccount in existingAccounts)
         {
-            var transactionDate = RandomTransactionDate;
+            var transactionDate = GetRandomPastDate;
 
-            var existingPayerPayeesResult =
-                await PayerPayeeDocumentsRepository.ListAsync(USER_ID);
+            var existingPayerPayees =
+                (await PayerPayeeDocumentsRepository
+                    .ListAsync(testUserId.ToString()))?
+                .ValueOrDefault?
+                .ToList() ??
+                [];
 
             // Check for a random PayerPayee. If one can not be provided to you, then create a new random one.
-            var existingPayerPayee = existingPayerPayeesResult.ValueOrDefault != null &&
-                                     existingPayerPayeesResult.ValueOrDefault.Any() ?
-                                        existingPayerPayeesResult.ValueOrDefault.ToList()[new Random().Next(0, existingPayerPayeesResult.Value.Count() - 1)] :
-                                             default;
+            var existingPayerPayee = existingPayerPayees.Any() ?
+                existingPayerPayees
+                    .ToList()[new Random()
+                        .Next(0, existingPayerPayees.Count - 1)] :
+                default;
 
             var payerPayee = new PayerPayeeRequest
             {
@@ -54,19 +54,24 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
 
             var randomTransactionAmount = new Random().Next(100, 150);
 
+            var transactionDescription = existingPayerPayee is null ?
+                "Deposit Transaction Description - No PayerPayee" :
+                $"Deposit Transaction Description with PayerPayee: " +
+                $"{existingPayerPayee.Id} - {existingPayerPayee.Name}";
+
             // Arrange
             var createTransactionRequest = new CreateDepositTransactionRequest
             {
-                UserId = USER_ID,
+                UserId = testUserId.ToString(),
                 AccountId = existingAccount.Id.ToString(),
                 TotalAmount = randomTransactionAmount,
                 TransactionDate = transactionDate,
-                Description = "Deposit Transaction Description",
+                Description = transactionDescription,
                 PayerPayee = payerPayee
             };
 
             // Assert
-            await AssertTransactionAsync(existingAccount, createTransactionRequest);
+            await AssertTransactionAsync(testUserId, existingAccount, createTransactionRequest, TRANSACTION_TYPE);
         }
     }
 
@@ -77,24 +82,30 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
     [Fact]
     public async Task CanCall_CreateTransaction_CreditAccount_WithValidRequest_ReturnsOk()
     {
-        var account = await AccountDocumentsRepository
+        var testUserId = await GetTestUserObjectIdAsync();
+
+        var existingAccount = await AccountDocumentsRepository
             .FirstOrDefaultDocumentAsync(a =>
-                a.UserId == USER_ID &&
+                a.UserId == testUserId &&
                 (AccountTypes.CreditAccountTypes.Contains(a.AccountType)));
 
-        if (account is null)
+        if (existingAccount is null)
             Assert.Fail("Need to add accounts before running this test");
 
-        var transactionDate = RandomTransactionDate;
+        var transactionDate = GetRandomPastDate;
 
         var existingPayerPayeesResult =
-            await PayerPayeeDocumentsRepository.ListAsync(USER_ID);
+            await PayerPayeeDocumentsRepository.ListAsync(testUserId.ToString());
 
         var existingPayerPayee = existingPayerPayeesResult.Value.Any() ?
-                                    existingPayerPayeesResult
-                                     .ValueOrDefault?
-                                     .ToList()[new Random().Next(0, existingPayerPayeesResult.Value.Count() - 1)] :
-                                 default;
+                        existingPayerPayeesResult
+                         .ValueOrDefault?
+                         .ToList()[new Random().Next(0, existingPayerPayeesResult.Value.Count() - 1)] :
+                     default;
+
+        var transactionDescription = existingPayerPayee is null ?
+            "Deposit Transaction Description - No PayerPayee" :
+            $"Deposit Transaction Description with PayerPayee: {existingPayerPayee.Id} - {existingPayerPayee.Name}";
 
         var payerPayee = new PayerPayeeRequest
         {
@@ -109,16 +120,16 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
         // Arrange
         var createTransactionRequest = new CreateDepositTransactionRequest
         {
-            UserId = USER_ID,
-            AccountId = account.Id.ToString(),
+            UserId = testUserId.ToString(),
+            AccountId = existingAccount.Id.ToString(),
             TotalAmount = randomTransactionAmount,
             TransactionDate = transactionDate,
-            Description = "Deposit Transaction Description",
+            Description = transactionDescription,
             PayerPayee = payerPayee
         };
 
         // Assert
-        await AssertTransactionAsync(account, createTransactionRequest);
+        await AssertTransactionAsync(testUserId, existingAccount, createTransactionRequest, TRANSACTION_TYPE);
     }
 
     /// <summary>
@@ -129,23 +140,29 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
     [Fact]
     public async Task CanCall_CreateTransaction_DebitAccount_WithValidRequest_ReturnsOk()
     {
-        var account = await AccountDocumentsRepository
+        var testUserId = await GetTestUserObjectIdAsync();
+
+        var existingAccount = await AccountDocumentsRepository
             .FirstOrDefaultDocumentAsync(a =>
-                a.UserId == USER_ID &&
+                a.UserId == testUserId &&
                 (AccountTypes.DebitAccountTypes.Contains(a.AccountType)));
 
-        if (account is null)
+        if (existingAccount is null)
             Assert.Fail("Need to add accounts before running this test");
 
-        var transactionDate = RandomTransactionDate;
+        var transactionDate = GetRandomPastDate;
 
         var existingPayerPayeesResult =
-            await PayerPayeeDocumentsRepository.ListAsync(USER_ID);
+            await PayerPayeeDocumentsRepository.ListAsync(testUserId.ToString());
 
         var existingPayerPayee = existingPayerPayeesResult
                                      .ValueOrDefault?
                                      .ToList()[new Random().Next(0, existingPayerPayeesResult.Value.Count() - 1)] ??
                                  default;
+
+        var transactionDescription = existingPayerPayee is null ?
+            "Deposit Transaction Description - No PayerPayee" :
+            $"Deposit Transaction Description with PayerPayee: {existingPayerPayee.Id} - {existingPayerPayee.Name}";
 
         var payerPayee = new PayerPayeeRequest
         {
@@ -160,16 +177,16 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
         // Arrange
         var createTransactionRequest = new CreateDepositTransactionRequest
         {
-            UserId = USER_ID,
-            AccountId = account.Id.ToString(),
+            UserId = testUserId.ToString(),
+            AccountId = existingAccount.Id.ToString(),
             TotalAmount = randomTransactionAmount,
             TransactionDate = transactionDate,
-            Description = "Deposit Transaction Description",
+            Description = transactionDescription,
             PayerPayee = payerPayee
         };
 
         // Assert
-        await AssertTransactionAsync(account, createTransactionRequest);
+        await AssertTransactionAsync(testUserId, existingAccount, createTransactionRequest, TRANSACTION_TYPE);
     }
 
 
@@ -179,10 +196,12 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
     [Fact]
     public async Task CanCall_CreateTransaction_WithNewPayerPayee_ReturnsOk()
     {
-        var account = await AccountDocumentsRepository.FirstOrDefaultDocumentAsync(a =>
-            a.UserId == USER_ID);
+        var testUserId = await GetTestUserObjectIdAsync();
 
-        if (account is null)
+        var existingAccount = await AccountDocumentsRepository.FirstOrDefaultDocumentAsync(a =>
+            a.UserId == testUserId);
+
+        if (existingAccount is null)
             Assert.Fail("Need to add accounts before running this test");
 
         var transactionDate = DateTime.Now.AddDays(-(new Random().Next(1, 365 * 2)));
@@ -194,12 +213,12 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
         // Arrange
         var createTransactionRequest = new CreateDepositTransactionRequest
         {
-            UserId = USER_ID,
-            AccountId = account.Id.ToString(),
+            UserId = testUserId.ToString(),
+            AccountId = existingAccount.Id.ToString(),
 
             TotalAmount = randomTransactionAmount,
             TransactionDate = transactionDate,
-            Description = "Deposit Transaction Description",
+            Description = $"Deposit Transaction Description - Expecting PayerPayee `{payerPayeeRandom}`",
 
             // New PayerPayee
             PayerPayee = new PayerPayeeRequest()
@@ -207,12 +226,12 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
                 Id = string.Empty,
                 Name = $"New PayerPayee {payerPayeeRandom}",
                 Description = $"New PayerPayee {payerPayeeRandom} Description",
-                Location = $"New PayerPayee Location {payerPayeeRandom}"
+                Location = $"New PayerPayee {payerPayeeRandom} Location"
             }
         };
 
         // Assert
-        await AssertTransactionAsync(account, createTransactionRequest);
+        await AssertTransactionAsync(testUserId, existingAccount, createTransactionRequest, TRANSACTION_TYPE);
     }
 
     /// <summary>
@@ -221,125 +240,133 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
     [Fact]
     public async Task CanCall_CreateTransaction_WithNoPayerPayee_ReturnsOk()
     {
-        var account = await AccountDocumentsRepository
-            .FirstOrDefaultDocumentAsync(a => a.UserId == USER_ID);
+        var testUserId = await GetTestUserObjectIdAsync();
 
-        if (account is null)
+        var existingAccount = await AccountDocumentsRepository
+            .FirstOrDefaultDocumentAsync(a => a.UserId == testUserId);
+
+        if (existingAccount is null)
             Assert.Fail("Need to add accounts before running this test");
 
-        var transactionDate = RandomTransactionDate;
+        var transactionDate = GetRandomPastDate;
 
         // Arrange
         var createTransactionRequest = new CreateDepositTransactionRequest
         {
-            UserId = USER_ID,
-            AccountId = account.Id.ToString(),
+            UserId = testUserId.ToString(),
+            AccountId = existingAccount.Id.ToString(),
             TotalAmount = 999,
             TransactionDate = transactionDate,
-            Description = "Deposit Transaction Description"
+            Description = "Deposit Transaction Description - Not Expecting PayerPayee"
         };
 
         // Assert
-        await AssertTransactionAsync(account, createTransactionRequest);
+        await AssertTransactionAsync(testUserId, existingAccount, createTransactionRequest, TRANSACTION_TYPE);
     }
 
-    /// <summary>
-    /// Helper for Asserting the tests
-    /// </summary>
-    /// <param name="existingAccountDoc"></param>
-    /// <param name="createTransactionRequest"></param>
-    /// <returns></returns>
-    private async Task AssertTransactionAsync(
-        AccountDocument? existingAccountDoc,
-        CreateDepositTransactionRequest createTransactionRequest)
-    {
-        if (existingAccountDoc is null)
-            Assert.Fail("Need to add accounts before running this test");
+    ///// <summary>
+    ///// Helper for Asserting the tests
+    ///// </summary>
+    ///// <param name="existingAccountDoc"></param>
+    ///// <param name="createTransactionRequest"></param>
+    ///// <returns></returns>
+    //private async Task AssertTransactionAsync(
+    //    AccountDocument? existingAccountDoc,
+    //    CreateDepositTransactionRequest createTransactionRequest)
+    //{
+    //    var USER_ID = await GetTestUserObjectIdAsync();
 
-        var previousAccountBalance = existingAccountDoc.Balance;
+    //    if (existingAccountDoc is null)
+    //        Assert.Fail("Need to add accounts before running this test");
 
-        // Act
-        var createTransactionResponse = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_TRANSACTION
-                .Replace("{userId}", USER_ID),
-            createTransactionRequest);
+    //    var previousAccountBalance = existingAccountDoc.Balance;
 
-        createTransactionResponse.EnsureSuccessStatusCode();
+    //    // Act
+    //    var createTransactionResponse = await HttpClient.PostAsJsonAsync(
+    //        ENDPOINTS_TRANSACTIONS_CREATE_TRANSACTION
+    //            .Replace("{userId}", USER_ID.ToString()),
+    //        createTransactionRequest);
 
-        var transactionContent = await createTransactionResponse.Content.ReadAsStringAsync();
-        var transactionApiResponse = JsonSerializer.Deserialize<ApiResponse<DepositTransactionDto>>(
-            transactionContent, JsonSerializationOptions);
+    //    //createTransactionResponse.EnsureSuccessStatusCode();
 
-        // Assert
-        Assert.NotNull(transactionApiResponse);
-        Assert.True(transactionApiResponse.IsSuccess);
+    //    var transactionContent = await createTransactionResponse.Content.ReadAsStringAsync();
 
-        var actualTransactionDto = Assert.IsType<DepositTransactionDto>(transactionApiResponse.Data);
+    //    if (!createTransactionResponse.IsSuccessStatusCode)
+    //        Assert.Fail(transactionContent);
 
-        Assert.NotNull(actualTransactionDto);
-        Assert.True(!actualTransactionDto.Id.Equals(ObjectId.Empty.ToString()));
-        Assert.Equal(createTransactionRequest.UserId, actualTransactionDto.UserId);
-        Assert.Equal(createTransactionRequest.AccountId, actualTransactionDto.AccountId);
-        Assert.Equal(createTransactionRequest.TransactionDate.Date, actualTransactionDto.TransactionDate.Date);
-        Assert.Equal(TRANSACTION_TYPE.ToString(), actualTransactionDto.TransactionType);
+    //    var transactionApiResponse = JsonSerializer.Deserialize<ApiResponse<DepositTransactionDto>>(
+    //        transactionContent, JsonSerializationOptions);
 
+    //    // Assert
+    //    Assert.NotNull(transactionApiResponse);
+    //    Assert.True(transactionApiResponse.IsSuccess);
 
-        // If the request has a PayerPayee Id OR a Name, then it must return an Id (whether existing or new)
-        if (!string.IsNullOrWhiteSpace(createTransactionRequest.PayerPayee.Id) ||
-            !string.IsNullOrWhiteSpace(createTransactionRequest.PayerPayee.Name))
-        {
-            Assert.NotNull(actualTransactionDto.PayerPayeeId);
+    //    var actualTransactionDto = Assert.IsType<DepositTransactionDto>(transactionApiResponse.Data);
 
-            // If the request has a PayerPayee Id, then it must match the response
-            if (!string.IsNullOrWhiteSpace(createTransactionRequest.PayerPayee.Id))
-                Assert.Equal(createTransactionRequest.PayerPayee.Id, actualTransactionDto.PayerPayeeId);
-
-            if (!string.IsNullOrWhiteSpace(createTransactionRequest.PayerPayee.Name))
-            {
-                Assert.NotNull(actualTransactionDto.PayerPayee);
-                Assert.Equal(createTransactionRequest.PayerPayee.Name, actualTransactionDto.PayerPayee.Name);
-                Assert.Equal(createTransactionRequest.PayerPayee.Description, actualTransactionDto.PayerPayee.Description);
-                Assert.Equal(createTransactionRequest.PayerPayee.Location, actualTransactionDto.PayerPayee.Location);
-            }
-        }
-
-        // Check that the Account Doc's Balance has been updated
-        var updatedAccountDoc = await AccountDocumentsRepository
-            .FirstOrDefaultDocumentAsync(a =>
-                a.Id == existingAccountDoc.Id && a.UserId == USER_ID);
-
-        Assert.NotNull(updatedAccountDoc);
+    //    Assert.NotNull(actualTransactionDto);
+    //    Assert.True(!actualTransactionDto.Id.Equals(ObjectId.Empty.ToString()));
+    //    Assert.Equal(createTransactionRequest.UserId, actualTransactionDto.UserId);
+    //    Assert.Equal(createTransactionRequest.AccountId, actualTransactionDto.AccountId);
+    //    Assert.Equal(createTransactionRequest.TransactionDate.Date, actualTransactionDto.TransactionDate.Date);
+    //    Assert.Equal(TRANSACTION_TYPE.ToString(), actualTransactionDto.TransactionType);
 
 
-        //// DEPOSIT + CREDIT CARD = Balance (owed) Decreases (GOOD Thing)
-        //if (TransactionTypes.IsCreditTransaction(TRANSACTION_TYPE) && AccountTypes.IsCreditAccount(existingAccountDoc.AccountType))
-        //    Assert.Equal(previousAccountBalance - createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
+    //    // If the request has a PayerPayee Id OR a Name, then it must return an Id (whether existing or new)
+    //    if (!string.IsNullOrWhiteSpace(createTransactionRequest.PayerPayee.Id) ||
+    //        !string.IsNullOrWhiteSpace(createTransactionRequest.PayerPayee.Name))
+    //    {
+    //        Assert.NotNull(actualTransactionDto.PayerPayeeId);
 
-        //// PURCHASE + CHECKING = Balance Decreases (BAD Thing)
-        //if (!TransactionTypes.IsCreditTransaction(TRANSACTION_TYPE) && !AccountTypes.IsCreditAccount(existingAccountDoc.AccountType))
-        //    Assert.Equal(previousAccountBalance - createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
+    //        // If the request has a PayerPayee Id, then it must match the response
+    //        if (!string.IsNullOrWhiteSpace(createTransactionRequest.PayerPayee.Id))
+    //            Assert.Equal(createTransactionRequest.PayerPayee.Id, actualTransactionDto.PayerPayeeId);
+
+    //        if (!string.IsNullOrWhiteSpace(createTransactionRequest.PayerPayee.Name))
+    //        {
+    //            Assert.NotNull(actualTransactionDto.PayerPayee);
+    //            Assert.Equal(createTransactionRequest.PayerPayee.Name, actualTransactionDto.PayerPayee.Name);
+    //            Assert.Equal(createTransactionRequest.PayerPayee.Description, actualTransactionDto.PayerPayee.Description);
+    //            Assert.Equal(createTransactionRequest.PayerPayee.Location, actualTransactionDto.PayerPayee.Location);
+    //        }
+    //    }
+
+    //    // Check that the Account Doc's Balance has been updated
+    //    var updatedAccountDoc = await AccountDocumentsRepository
+    //        .FirstOrDefaultDocumentAsync(a =>
+    //            a.Id == existingAccountDoc.Id && a.UserId == USER_ID);
+
+    //    Assert.NotNull(updatedAccountDoc);
 
 
-        //// PURCHASE + CREDIT CARD = Balance (owed) Increases (BAD Thing)
-        //if (!TransactionTypes.IsCreditTransaction(TRANSACTION_TYPE) && AccountTypes.IsCreditAccount(existingAccountDoc.AccountType))
-        //    Assert.Equal(previousAccountBalance + createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
+    //    //// DEPOSIT + CREDIT CARD = Balance (owed) Decreases (GOOD Thing)
+    //    //if (TransactionTypes.IsCreditTransaction(TRANSACTION_TYPE) && AccountTypes.IsCreditAccount(existingAccountDoc.AccountType))
+    //    //    Assert.Equal(previousAccountBalance - createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
 
-        //// DEPOSIT + CHECKING = Balance Increases (GOOD Thing)
-        //if (TransactionTypes.IsCreditTransaction(TRANSACTION_TYPE) && !AccountTypes.IsCreditAccount(existingAccountDoc.AccountType))
-        //    Assert.Equal(previousAccountBalance + createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
-
-
-        var doesBalanceIncrease = TransactionTypes.DoesBalanceIncrease(existingAccountDoc.AccountType, TRANSACTION_TYPE);
-
-        if (doesBalanceIncrease)
-            Assert.Equal(previousAccountBalance + createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
-        else
-            Assert.Equal(previousAccountBalance - createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
+    //    //// PURCHASE + CHECKING = Balance Decreases (BAD Thing)
+    //    //if (!TransactionTypes.IsCreditTransaction(TRANSACTION_TYPE) && !AccountTypes.IsCreditAccount(existingAccountDoc.AccountType))
+    //    //    Assert.Equal(previousAccountBalance - createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
 
 
-        //Assert.NotEmpty(actualAccount.MonthlyTotals);
+    //    //// PURCHASE + CREDIT CARD = Balance (owed) Increases (BAD Thing)
+    //    //if (!TransactionTypes.IsCreditTransaction(TRANSACTION_TYPE) && AccountTypes.IsCreditAccount(existingAccountDoc.AccountType))
+    //    //    Assert.Equal(previousAccountBalance + createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
 
-        //Assert.NotNull(actualAccount.MonthlyTotals.Find(t =>
-        //    t.Year == transactionDate.Year && t.Month == transactionDate.Month));
-    }
+    //    //// DEPOSIT + CHECKING = Balance Increases (GOOD Thing)
+    //    //if (TransactionTypes.IsCreditTransaction(TRANSACTION_TYPE) && !AccountTypes.IsCreditAccount(existingAccountDoc.AccountType))
+    //    //    Assert.Equal(previousAccountBalance + createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
+
+
+    //    var doesBalanceIncrease = TransactionTypes.DoesBalanceIncrease(existingAccountDoc.AccountType, TRANSACTION_TYPE);
+
+    //    if (doesBalanceIncrease)
+    //        Assert.Equal(previousAccountBalance + createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
+    //    else
+    //        Assert.Equal(previousAccountBalance - createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
+
+
+    //    //Assert.NotEmpty(actualAccount.MonthlyTotals);
+
+    //    //Assert.NotNull(actualAccount.MonthlyTotals.Find(t =>
+    //    //    t.Year == transactionDate.Year && t.Month == transactionDate.Month));
+    //}
 }

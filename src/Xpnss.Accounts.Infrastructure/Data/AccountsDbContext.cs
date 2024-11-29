@@ -6,12 +6,6 @@ namespace Habanerio.Xpnss.Accounts.Infrastructure.Data;
 
 public class AccountsDbContext : XpnssDbContext //<AccountDocument>
 {
-    protected IMongoCollection<AccountDocument> Accounts =>
-        base.Collection<AccountDocument>();
-
-    protected IMongoCollection<AdjustmentDocument> Adjustments =>
-        base.Collection<AdjustmentDocument>();
-
     //public AccountsDbContext(IOptions<MongoDbSettings> options) : base(options)
     //{
     //    Configure();
@@ -31,7 +25,7 @@ public class AccountsDbContext : XpnssDbContext //<AccountDocument>
                 .Ascending(a => a.Id),
             new CreateIndexOptions { Unique = true });
 
-        Accounts.Indexes.CreateMany(new[] { uniqueUserAccountIdIndex });
+        Collection<AccountDocument>().Indexes.CreateMany(new[] { uniqueUserAccountIdIndex });
 
         // Adjustment Document
         var indexes = new List<CreateIndexModel<AdjustmentDocument>>
@@ -59,6 +53,6 @@ public class AccountsDbContext : XpnssDbContext //<AccountDocument>
                 new CreateIndexOptions { Name = "idx_date_changed" })
         };
 
-        Adjustments.Indexes.CreateMany(indexes);
+        Collection<AdjustmentDocument>().Indexes.CreateMany(indexes);
     }
 }

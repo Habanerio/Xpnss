@@ -1,4 +1,5 @@
 using FluentResults;
+using Habanerio.Xpnss.Categories.Domain.Entities;
 
 namespace Habanerio.Xpnss.Categories.Domain.Interfaces;
 

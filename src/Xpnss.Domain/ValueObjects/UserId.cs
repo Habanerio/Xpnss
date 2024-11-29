@@ -1,11 +1,20 @@
+using MongoDB.Bson;
+
 namespace Habanerio.Xpnss.Domain.ValueObjects;
 
-public record UserId : EntityId
+public sealed record UserId : EntityObjectId
 {
-    public UserId(string userId) : base(userId)
-    { }
+    public UserId(string id) : base(id) { }
 
-    public static implicit operator string(UserId userId) => userId.Value;
+    public UserId(ObjectId id) : base(id) { }
 
-    //public static implicit operator UserId(string userId) => new(userId);
+
+    public new static UserId New => new(ObjectId.GenerateNewId());
+
+    public new static UserId Empty => new(ObjectId.Empty);
+
+
+    public static implicit operator string(UserId id) => id.Value;
+
+    ////public static implicit operator AccountId(string userId) => new(userId);
 }

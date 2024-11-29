@@ -4,7 +4,6 @@ using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts;
 using Habanerio.Xpnss.Accounts.Domain.Interfaces;
 using Habanerio.Xpnss.Accounts.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.Accounts.Infrastructure.Mappers;
-using MediatR;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -13,14 +12,11 @@ namespace Habanerio.Xpnss.Accounts.Infrastructure.Data.Repositories;
 /// <summary>
 /// Responsible for managing the persistence of Account Documents.
 /// </summary>
-public sealed class AccountsRepository(
-    IMongoDatabase mongoDb,
-    IMediator? mediator = null) :
+public sealed class AccountsRepository(IMongoDatabase mongoDb) :
+    //XpnssDbRepository<AccountDocument>(new AccountsDbContext(mongoDb)),
     MongoDbRepository<AccountDocument>(new AccountsDbContext(mongoDb)),
     IAccountsRepository
 {
-    //private readonly IMediator? _mediator = mediator;
-
     public async Task<Result<BaseAccount>> AddAsync(
         BaseAccount account,
         CancellationToken cancellationToken = default)
@@ -38,14 +34,14 @@ public sealed class AccountsRepository(
             await AddDocumentAsync(accountDoc, cancellationToken);
 
             // Do this so we can update the State of the Account
-            var updatedAccount = InfrastructureMapper.Map(accountDoc, true);
+            var newAccount = InfrastructureMapper.Map(accountDoc, true);
 
-            if (updatedAccount is null)
+            if (newAccount is null)
                 return Result.Fail("Could not map the Account");
 
             //HandleDomainEvents(account);
 
-            return updatedAccount;
+            return newAccount;
         }
         catch (Exception e)
         {
@@ -58,23 +54,21 @@ public sealed class AccountsRepository(
         string accountId,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(userId))
-            return Result.Fail("UserId cannot be null or empty");
+        if (!ObjectId.TryParse(userId, out var userObjectId) ||
+            userObjectId.Equals(ObjectId.Empty))
+            return Result.Fail($"Invalid UserId: `{userId}`");
 
         if (!ObjectId.TryParse(accountId, out var accountObjectId) ||
             accountObjectId.Equals(ObjectId.Empty))
             return Result.Fail($"Invalid AccountId: `{accountId}`");
 
         var accountDocument = await FirstOrDefaultDocumentAsync(a =>
-                                    a.Id.Equals(accountObjectId) && a.UserId.Equals(userId)
-                                    /*&& !a.IsDeleted*/,
+                a.UserId.Equals(userObjectId) &&
+                a.Id.Equals(accountObjectId),
                                 cancellationToken);
 
         if (accountDocument is null)
             return Result.Ok<BaseAccount?>(null);
-
-        //return Result.Fail($"BaseAccount not found for AccountId: `{accountId}` " +
-        //                   $"and UserId: `{userId}`");
 
         var account = InfrastructureMapper.Map(accountDocument, true);
 
@@ -89,25 +83,18 @@ public sealed class AccountsRepository(
         string accountId,
         CancellationToken cancellationToken = default) where TType : BaseAccount
     {
-        if (string.IsNullOrWhiteSpace(userId))
-            return Result.Fail("UserId cannot be null or empty");
-
-        if (!ObjectId.TryParse(accountId, out var accountObjectId) ||
-            accountObjectId.Equals(ObjectId.Empty))
-            return Result.Fail("Invalid AccountId");
-
         var result = await GetAsync(userId, accountId, cancellationToken);
 
         if (result.IsFailed)
             return Result.Fail<TType?>(result.Errors);
 
         if (result.Value is null)
-            return Result.Ok<TType?>(null);
+            return Result.Ok<TType?>(default);
 
-        return Result.Ok((TType)result.Value);
+        return Result.Ok((TType?)result.Value);
     }
 
-    //public async Task<Result<ReadOnlyCollection<AdjustmentHistories>>> GetChangeHistoryAsync(
+    //public async Task<Result<ReadOnlyCollection<AdjustmentHistories>>> GetAdjustmentHistoryAsync(
     //    string userId,
     //    string accountId,
     //    string timeZone,
@@ -138,11 +125,12 @@ public sealed class AccountsRepository(
         string userId,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(userId))
-            return Result.Fail("UserId cannot be null or empty");
+        if (!ObjectId.TryParse(userId, out var userObjectId) ||
+            userObjectId.Equals(ObjectId.Empty))
+            return Result.Fail($"Invalid UserId: `{userId}`");
 
         var docs = await FindDocumentsAsync(a =>
-            a.UserId == userId, cancellationToken);
+            a.UserId == userObjectId, cancellationToken);
 
         var payerPayees = InfrastructureMapper.Map(docs);
 

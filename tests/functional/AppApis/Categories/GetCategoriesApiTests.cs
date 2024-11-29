@@ -15,9 +15,11 @@ public class GetCategoriesApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
     [Fact]
     public async Task CanCall_GetCategories_WithValidRequest_ReturnsOk()
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         // Act
         var response = await HttpClient.GetAsync(ENDPOINTS_GET_CATEGORIES
-                .Replace("{userId}", USER_ID));
+                .Replace("{userId}", USER_ID.ToString()));
 
         response.EnsureSuccessStatusCode();
 
@@ -41,7 +43,7 @@ public class GetCategoriesApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         {
             Assert.NotNull(actualListDto);
             Assert.NotEqual(ObjectId.Empty.ToString(), actualListDto.Id);
-            Assert.Equal(USER_ID, actualListDto.UserId);
+            Assert.Equal(USER_ID.ToString(), actualListDto.UserId);
             Assert.NotEmpty(actualListDto.Name);
 
             Assert.True(actualListDto.ParentId is null || actualListDto.ParentId.Equals(ObjectId.Empty.ToString()));

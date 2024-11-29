@@ -6,7 +6,7 @@ namespace Habanerio.Xpnss.Transactions.Application.Commands;
 
 public class UpdateTransactionDetails
 {
-    public record Command(
+    public sealed record Command(
         string UserId,
         string TransactionId,
         string AccountId,

@@ -10,8 +10,10 @@ public class MonthlyTotal : AggregateRoot<EntityObjectId>
 
     /// <summary>
     /// EntityId is the Id of the entity that this MonthlyTotal is for.
+    /// This is nullable, because transactions may not be assigned an Account, a Category, or a PayerPayee
+    /// (think when possibly importing transactions)
     /// </summary>
-    public string EntityId { get; init; }
+    public EntityObjectId? EntityId { get; init; }
 
     /// <summary>
     /// EntityType is the type of the entity that this MonthlyTotal is for.
@@ -46,7 +48,7 @@ public class MonthlyTotal : AggregateRoot<EntityObjectId>
 
     private MonthlyTotal(
         UserId userId,
-        string entityId,
+        EntityObjectId entityId,
         EntityTypes.Keys entityType,
         int year,
         int month,
@@ -54,29 +56,46 @@ public class MonthlyTotal : AggregateRoot<EntityObjectId>
         int creditCount,
         Money debitTotalAmount,
         int debitCount) :
-        this(EntityObjectId.Empty, userId, entityId, entityType, year, month, creditTotalAmount, creditCount, debitTotalAmount, debitCount)
+        this(
+            EntityObjectId.Empty,
+            userId,
+            entityId,
+            entityType,
+            year,
+            month,
+            creditTotalAmount,
+            creditCount,
+            debitTotalAmount,
+            debitCount,
+            DateTime.UtcNow)
     {
-        if (string.IsNullOrWhiteSpace(entityId))
-            throw new ArgumentException($"{nameof(entityId)} cannot be null or whitespace.", nameof(entityId));
+        IsTransient = true;
 
-        // AddDomainEvent(new MonthlyTotalCreatedEvent(this)) ?;
+        // Add `MonthlyTotalsCreated` Domain Event
     }
 
     private MonthlyTotal(
         EntityObjectId id,
         UserId userId,
-        string entityId,
+        EntityObjectId entityId,
         EntityTypes.Keys entityType,
         int year,
         int month,
         Money creditTotalAmount,
         int creditCount,
         Money debitTotalAmount,
-        int debitCount) :
+        int debitCount,
+        DateTime dateCreated,
+        DateTime? dateUpdated = null,
+        DateTime? dateDeleted = null) :
         base(id)
     {
-        if (string.IsNullOrWhiteSpace(entityId))
-            throw new ArgumentException($"{nameof(entityId)} cannot be null or whitespace.", nameof(entityId));
+        if (EntityObjectId.IsEmpty(entityId))
+            throw new ArgumentException($"{nameof(entityId)} cannot be null or whitespace.",
+                nameof(entityId));
+
+        if (month is < 1 or > 12)
+            throw new ArgumentOutOfRangeException(nameof(month), $"{nameof(month)} must be between 1 and 12.");
 
         UserId = userId;
 
@@ -90,19 +109,26 @@ public class MonthlyTotal : AggregateRoot<EntityObjectId>
         CreditCount = creditCount;
         DebitTotalAmount = debitTotalAmount;
         DebitCount = debitCount;
+
+        DateCreated = dateCreated;
+        DateUpdated = dateUpdated;
+        DateDeleted = dateDeleted;
     }
 
     public static MonthlyTotal Load(
         EntityObjectId id,
         UserId userId,
-        string entityId,
+        EntityObjectId? entityId,
         EntityTypes.Keys entityType,
         int year,
         int month,
         Money creditTotalAmount,
         int creditCount,
         Money debitTotalAmount,
-        int debitCount)
+        int debitCount,
+        DateTime dateCreated,
+        DateTime? dateUpdated,
+        DateTime? dateDeleted)
     {
         return new MonthlyTotal(
             id,
@@ -114,12 +140,15 @@ public class MonthlyTotal : AggregateRoot<EntityObjectId>
             creditTotalAmount,
             creditCount,
             debitTotalAmount,
-            debitCount);
+            debitCount,
+            dateCreated,
+            dateUpdated,
+            dateDeleted);
     }
 
     public static MonthlyTotal New(
         UserId userId,
-        string entityId,
+        EntityObjectId entityId,
         EntityTypes.Keys entityType,
         int year,
         int month,
@@ -137,26 +166,4 @@ public class MonthlyTotal : AggregateRoot<EntityObjectId>
             !isCredit ? amount : Money.Zero,
             !isCredit ? 1 : 0);
     }
-
-    //public static MonthlyTotal New(
-    //    EntityObjectId entityId,
-    //    UserId userId,
-    //    int year,
-    //    int month,
-    //    Money creditTotalAmount,
-    //    int creditCount,
-    //    Money debitTotalAmount,
-    //    int debitCount)
-    //{
-    //    return new MonthlyTotal(
-    //        EntityObjectId.New,
-    //        entityId,
-    //        userId,
-    //        year,
-    //        month,
-    //        creditTotalAmount,
-    //        creditCount,
-    //        debitTotalAmount,
-    //        debitCount);
-    //}
 }

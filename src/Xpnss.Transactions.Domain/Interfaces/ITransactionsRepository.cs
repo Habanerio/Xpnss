@@ -1,5 +1,5 @@
 using FluentResults;
-using Habanerio.Xpnss.Transactions.Domain.Entities;
+using Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 
 namespace Habanerio.Xpnss.Transactions.Domain.Interfaces;
 

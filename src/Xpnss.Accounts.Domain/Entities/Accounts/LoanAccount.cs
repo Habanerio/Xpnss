@@ -37,6 +37,27 @@ public sealed class LoanAccount : BaseCreditAccount
     public DateTime? DatePaidOff { get; set; }
 
     private LoanAccount(
+        UserId userId,
+        AccountName accountName,
+        Money balance,
+        string description,
+        string displayColor,
+        Money creditLimit,
+        PercentageRate interestRate) :
+        base(
+            userId,
+            AccountTypes.Keys.LineOfCredit,
+            accountName,
+            balance,
+            description,
+            displayColor,
+            creditLimit,
+            interestRate)
+    {
+        throw new NotImplementedException();
+    }
+
+    private LoanAccount(
         AccountId id,
         UserId userId,
         AccountName accountName,
@@ -45,10 +66,10 @@ public sealed class LoanAccount : BaseCreditAccount
         string displayColor,
         Money creditLimit,
         PercentageRate interestRate,
-        DateTime dateCreated,
         DateTime? dateClosed,
-        DateTime? dateDeleted,
-        DateTime? dateUpdated) :
+        DateTime dateCreated,
+        DateTime? dateUpdated = null,
+        DateTime? dateDeleted = null) :
         base(
             id,
             userId,
@@ -59,10 +80,10 @@ public sealed class LoanAccount : BaseCreditAccount
             displayColor,
             creditLimit,
             interestRate,
-            dateCreated,
             dateClosed,
-            dateDeleted,
-            dateUpdated)
+            dateCreated,
+            dateUpdated,
+            dateDeleted)
     {
         throw new NotImplementedException();
     }
@@ -100,14 +121,12 @@ public sealed class LoanAccount : BaseCreditAccount
             balance,
             description,
             displayColor,
-
             creditLimit,
             interestRate,
-
-            dateCreated,
             dateClosed,
-            dateDeleted,
-            dateUpdated);
+            dateCreated,
+            dateUpdated,
+            dateDeleted);
     }
 
     /// <summary>
@@ -124,17 +143,12 @@ public sealed class LoanAccount : BaseCreditAccount
         PercentageRate interestRate)
     {
         return new LoanAccount(
-            AccountId.New,
             userId,
             accountName,
             Money.Zero,
             description,
             displayColor,
             creditLimit,
-            interestRate,
-            DateTime.UtcNow,
-            null,
-            null,
-            null);
+            interestRate);
     }
 }

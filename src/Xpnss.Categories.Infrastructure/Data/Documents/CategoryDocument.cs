@@ -9,7 +9,7 @@ namespace Habanerio.Xpnss.Categories.Infrastructure.Data.Documents;
 public class CategoryDocument : MongoDocument
 {
     [BsonElement("user_id")]
-    public string UserId { get; set; }
+    public ObjectId UserId { get; set; }
 
     [BsonElement("accountName")]
     public string Name { get; set; } = "";

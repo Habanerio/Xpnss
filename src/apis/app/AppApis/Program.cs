@@ -7,6 +7,7 @@ using Habanerio.Xpnss.Infrastructure.Interfaces;
 using Habanerio.Xpnss.MonthlyTotals.Application;
 using Habanerio.Xpnss.PayerPayees.Application;
 using Habanerio.Xpnss.Transactions.Application;
+using Habanerio.Xpnss.UserProfiles.Application;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
@@ -17,9 +18,12 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var userId = "0dab2540287b4467e54ddb3e";
+        var userId = "0daaed002341a792c1d85f57";
 
         var builder = WebApplication.CreateBuilder(args);
+
+        builder.Logging.ClearProviders();
+        builder.Logging.AddConsole();
 
         builder.AddServiceDefaults();
 
@@ -36,14 +40,17 @@ public class Program
         // Set up Mongo, so that we can wrap MongoDb transactions with the `IClientSessionHandle`
         builder.Services.AddSingleton<IMongoClient>(sp =>
         {
-            return new MongoClient(sp.GetRequiredService<IOptions<MongoDbSettings>>().Value.ConnectionString);
+            var mongoDbSettings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
+            return new MongoClient(mongoDbSettings.ConnectionString);
         });
 
         builder.Services.AddSingleton<IMongoDatabase>(sp =>
         {
             var client = sp.GetRequiredService<IMongoClient>();
 
-            return client.GetDatabase(sp.GetRequiredService<IOptions<MongoDbSettings>>().Value.DatabaseName);
+            return client.GetDatabase(sp.GetRequiredService<IOptions<MongoDbSettings>>()
+                .Value
+                .DatabaseName);
         });
 
         builder.Services.AddScoped<IClientSessionHandle>(sp =>
@@ -54,14 +61,12 @@ public class Program
         });
         // End of Mongo setup
 
-
-
-        builder.Services.AddMonthlyTotalsModule();
-
         builder.Services.AddAccountsModule();
         builder.Services.AddCategoriesModule();
+        builder.Services.AddMonthlyTotalsModule();
         builder.Services.AddPayerPayeesModule();
         builder.Services.AddTransactionsModule();
+        builder.Services.AddUserProfilesModule();
 
         builder.Services.AddScoped<IEventDispatcher, IntegrationEventDispatcher>();
 
@@ -89,6 +94,8 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+
+
 
         app.MapCarter();
 

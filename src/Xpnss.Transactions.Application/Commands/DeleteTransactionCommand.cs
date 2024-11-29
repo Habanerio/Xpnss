@@ -1,17 +1,17 @@
 using FluentResults;
 using FluentValidation;
 using Habanerio.Xpnss.Infrastructure.IntegrationEvents.Transactions;
-using Habanerio.Xpnss.Transactions.Domain.Entities;
+using Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using MediatR;
 
 namespace Habanerio.Xpnss.Transactions.Application.Commands;
 
-public record DeleteTransactionCommand(
+public sealed record DeleteTransactionCommand(
     string UserId,
     string TransactionId) : ITransactionsCommand<Result>, IRequest;
 
-public class DeleteTransactionHandler(
+public sealed class DeleteTransactionHandler(
     ITransactionsRepository repository,
     IMediator mediator
     //,IEventDispatcher eventDispatcher
@@ -54,11 +54,11 @@ public class DeleteTransactionHandler(
         if (updatedTransaction.IsFailed)
             return Result.Fail(updatedTransaction.Errors[0].Message);
 
-        TransactionDeletedIntegrationEvent? transactionCreatedIntegrationEvent = null;
+        TransactionDeletedIntegrationEvent? transactionDeletedIntegrationEvent = null;
 
         if (transaction is PurchaseTransaction purchaseTransaction)
         {
-            transactionCreatedIntegrationEvent = new TransactionDeletedIntegrationEvent(
+            transactionDeletedIntegrationEvent = new TransactionDeletedIntegrationEvent(
                 purchaseTransaction.Id.Value,
                 purchaseTransaction.UserId.Value,
                 purchaseTransaction.AccountId.Value,
@@ -68,8 +68,8 @@ public class DeleteTransactionHandler(
                 purchaseTransaction.TransactionDate);
         }
 
-        if (transactionCreatedIntegrationEvent is not null)
-            await _mediator.Publish(transactionCreatedIntegrationEvent, cancellationToken);
+        if (transactionDeletedIntegrationEvent is not null)
+            await _mediator.Publish(transactionDeletedIntegrationEvent, cancellationToken);
 
         return updatedTransaction.Value.IsDeleted ?
             Result.Ok() :

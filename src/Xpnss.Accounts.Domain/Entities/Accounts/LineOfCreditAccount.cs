@@ -6,6 +6,25 @@ namespace Habanerio.Xpnss.Accounts.Domain.Entities.Accounts;
 public sealed class LineOfCreditAccount : BaseCreditAccount
 {
     private LineOfCreditAccount(
+        UserId userId,
+        AccountName accountName,
+        Money balance,
+        string description,
+        string displayColor,
+        Money creditLimit,
+        PercentageRate interestRate) :
+        base(
+            userId,
+            AccountTypes.Keys.LineOfCredit,
+            accountName,
+            balance,
+            description,
+            displayColor,
+            creditLimit,
+            interestRate)
+    { }
+
+    private LineOfCreditAccount(
         AccountId id,
         UserId userId,
         AccountName accountName,
@@ -14,10 +33,10 @@ public sealed class LineOfCreditAccount : BaseCreditAccount
         string displayColor,
         Money creditLimit,
         PercentageRate interestRate,
-        DateTime dateCreated,
         DateTime? dateClosed,
-        DateTime? dateDeleted,
-        DateTime? dateUpdated) :
+        DateTime dateCreated,
+        DateTime? dateUpdated = null,
+        DateTime? dateDeleted = null) :
         base(
             id,
             userId,
@@ -28,10 +47,10 @@ public sealed class LineOfCreditAccount : BaseCreditAccount
             displayColor,
             creditLimit,
             interestRate,
-            dateCreated,
             dateClosed,
-            dateDeleted,
-            dateUpdated)
+            dateCreated,
+            dateUpdated,
+            dateDeleted)
     { }
 
     /// <summary>
@@ -52,10 +71,10 @@ public sealed class LineOfCreditAccount : BaseCreditAccount
         string displayColor,
         Money creditLimit,
         PercentageRate interestRate,
-        DateTime dateCreated,
         DateTime? dateClosed,
-        DateTime? dateDeleted,
-        DateTime? dateUpdated)
+        DateTime dateCreated,
+        DateTime? dateUpdated,
+        DateTime? dateDeleted)
     {
         if (creditLimit < 0)
             throw new ArgumentOutOfRangeException(nameof(creditLimit));
@@ -70,11 +89,10 @@ public sealed class LineOfCreditAccount : BaseCreditAccount
 
             creditLimit,
             interestRate,
-
-            dateCreated,
             dateClosed,
-            dateDeleted,
-            dateUpdated);
+            dateCreated,
+            dateUpdated,
+            dateDeleted);
     }
 
     /// <summary>
@@ -91,17 +109,12 @@ public sealed class LineOfCreditAccount : BaseCreditAccount
         PercentageRate interestRate)
     {
         return new LineOfCreditAccount(
-            AccountId.New,
             userId,
             accountName,
             Money.Zero,
             description,
             displayColor,
             creditLimit,
-            interestRate,
-            DateTime.UtcNow,
-            null,
-            null,
-            null);
+            interestRate);
     }
 }

@@ -15,24 +15,29 @@ public class GetCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Program>
     [Fact]
     public async Task CanCall_GetCategory_WithValidRequest_ReturnsOk()
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         var categoryDocs =
-            (await CategoryDocumentsRepository.FindDocumentsAsync(c => c.UserId.Equals(USER_ID)))?
+            (await CategoryDocumentsRepository.FindDocumentsAsync(c =>
+                c.UserId.Equals(USER_ID)))?
             .ToList() ??
             [];
 
-        if (!categoryDocs.Any())
+        if (categoryDocs.Any())
         {
             foreach (var categoryDoc in categoryDocs)
             {
                 // Act
                 var response = await HttpClient.GetAsync(ENDPOINTS_GET_CATEGORY
-                        .Replace("{userId}", USER_ID)
+                        .Replace("{userId}", USER_ID.ToString())
                         .Replace("{categoryId}", categoryDoc.Id.ToString()));
 
                 response.EnsureSuccessStatusCode();
 
                 var content = await response.Content.ReadAsStringAsync();
-                var apiResponse = JsonSerializer.Deserialize<ApiResponse<CategoryDto>>(content, JsonSerializationOptions);
+                var apiResponse = JsonSerializer.Deserialize<ApiResponse<CategoryDto>>(
+                    content,
+                    JsonSerializationOptions);
 
                 // Assert
                 Assert.NotNull(apiResponse);
@@ -41,11 +46,13 @@ public class GetCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Program>
                 var actualDto = Assert.IsType<CategoryDto>(apiResponse.Data);
 
                 Assert.NotNull(actualDto);
-                Assert.NotEqual(categoryDoc.Id.ToString(), actualDto.Id);
-                Assert.Equal(USER_ID, actualDto.UserId);
+                Assert.Equal(categoryDoc.Id.ToString(), actualDto.Id);
+                Assert.Equal(USER_ID.ToString(), actualDto.UserId);
                 Assert.NotEmpty(actualDto.Name);
 
-                Assert.True(actualDto.ParentId is null || actualDto.ParentId.Equals(ObjectId.Empty.ToString()));
+                Assert.True(actualDto.ParentId is null ||
+                            actualDto.ParentId.Equals(ObjectId.Empty.ToString()));
+
                 Assert.True(actualDto.SortOrder > 0);
             }
         }

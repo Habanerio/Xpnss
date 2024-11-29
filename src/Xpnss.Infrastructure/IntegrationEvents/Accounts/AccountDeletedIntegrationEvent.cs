@@ -1,6 +1,6 @@
 namespace Habanerio.Xpnss.Infrastructure.IntegrationEvents.Accounts;
 
-public record AccountDeletedIntegrationEvent : IntegrationEvent
+public sealed record AccountDeletedIntegrationEvent : IntegrationEvent
 {
     public string UserId { get; }
 

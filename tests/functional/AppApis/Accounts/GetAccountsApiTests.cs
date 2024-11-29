@@ -15,10 +15,11 @@ public class GetAccountsApiTests(WebApplicationFactory<Apis.App.AppApis.Program>
     [Fact]
     public async Task GetAccounts_ReturnsOk()
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         // Act
         var response = await HttpClient.GetAsync(
-            ENDPOINTS_ACCOUNTS_GET_ACCOUNTS.Replace("{userId}",
-                USER_ID));
+            ENDPOINTS_ACCOUNTS_GET_ACCOUNTS.Replace("{userId}", USER_ID.ToString()));
 
         // Assert
         response.EnsureSuccessStatusCode();
@@ -36,6 +37,7 @@ public class GetAccountsApiTests(WebApplicationFactory<Apis.App.AppApis.Program>
 
         var accounts = Assert.IsType<List<AccountDto>>(apiResponse.Data);
 
-        Assert.True(accounts.TrueForAll(a => a.UserId == USER_ID));
+        Assert.True(accounts.TrueForAll(a =>
+            a.UserId == USER_ID.ToString()));
     }
 }

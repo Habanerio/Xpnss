@@ -26,6 +26,8 @@ public class AddOverdraftAdjustmentApiTests(WebApplicationFactory<Apis.App.AppAp
     [InlineData(AccountTypes.Keys.Checking)]
     public async Task CanCall_AdjustOverdraftAmount_ReturnsOk(AccountTypes.Keys accountType)
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         var accounts = await AccountDocumentsRepository
             .FindDocumentsAsync(a =>
                 a.UserId == USER_ID &&
@@ -48,7 +50,7 @@ public class AddOverdraftAdjustmentApiTests(WebApplicationFactory<Apis.App.AppAp
         var expectedOverdraftAmount = previousOverdraftAmount + 1m;
 
         var request = new AddOverdraftAdjustmentCommand(
-            account.UserId,
+            account.UserId.ToString(),
             account.Id.ToString(),
             expectedOverdraftAmount,
             adjustmentDate,
@@ -57,7 +59,7 @@ public class AddOverdraftAdjustmentApiTests(WebApplicationFactory<Apis.App.AppAp
         // Act
         var response = await HttpClient.PatchAsJsonAsync(
             ENDPOINTS_ACCOUNTS_ADJUST_OVERDRAFT
-                .Replace("{userId}", USER_ID)
+                .Replace("{userId}", USER_ID.ToString())
                 .Replace("{accountId}", account.Id.ToString()),
             request);
 
@@ -101,6 +103,8 @@ public class AddOverdraftAdjustmentApiTests(WebApplicationFactory<Apis.App.AppAp
     [InlineData(AccountTypes.Keys.LineOfCredit)]
     public async Task CanNotCall_AdjustOverdraftAmount_InvalidAccountType_ReturnsBadRequestOk(AccountTypes.Keys accountType)
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         var accounts = await AccountDocumentsRepository
             .FindDocumentsAsync(a =>
                 a.UserId == USER_ID &&
@@ -111,7 +115,7 @@ public class AddOverdraftAdjustmentApiTests(WebApplicationFactory<Apis.App.AppAp
         var adjustmentDate = DateTime.Now.AddDays(-(new Random().Next(1, 2 * 365)));
 
         var request = new AddOverdraftAdjustmentCommand(
-            account.UserId,
+            account.UserId.ToString(),
             account.Id.ToString(),
             10,
             adjustmentDate,
@@ -120,7 +124,7 @@ public class AddOverdraftAdjustmentApiTests(WebApplicationFactory<Apis.App.AppAp
         // Act
         var response = await HttpClient.PatchAsJsonAsync(
             ENDPOINTS_ACCOUNTS_ADJUST_OVERDRAFT
-                .Replace("{userId}", USER_ID)
+                .Replace("{userId}", USER_ID.ToString())
                 .Replace("{accountId}", account.Id.ToString()),
             request);
 
@@ -146,6 +150,8 @@ public class AddOverdraftAdjustmentApiTests(WebApplicationFactory<Apis.App.AppAp
     [InlineData(AccountTypes.Keys.Checking, -0.01)]
     public async Task CanNotCall_AdjustOverdraftAmount_ValueTooLow_ReturnsBadRequestOk(AccountTypes.Keys accountType, decimal value)
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         var accounts = await AccountDocumentsRepository
             .FindDocumentsAsync(a =>
                 a.UserId == USER_ID &&
@@ -157,7 +163,7 @@ public class AddOverdraftAdjustmentApiTests(WebApplicationFactory<Apis.App.AppAp
         var adjustmentDate = DateTime.Now.AddDays(-(new Random().Next(1, 2 * 365)));
 
         var request = new AddOverdraftAdjustmentCommand(
-            account.UserId,
+            account.UserId.ToString(),
             account.Id.ToString(),
             value,
             adjustmentDate,
@@ -166,7 +172,7 @@ public class AddOverdraftAdjustmentApiTests(WebApplicationFactory<Apis.App.AppAp
         // Act
         var response = await HttpClient.PatchAsJsonAsync(
             ENDPOINTS_ACCOUNTS_ADJUST_OVERDRAFT
-                .Replace("{userId}", USER_ID)
+                .Replace("{userId}", USER_ID.ToString())
                 .Replace("{accountId}", account.Id.ToString()),
             request);
 

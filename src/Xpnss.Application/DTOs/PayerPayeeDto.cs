@@ -1,6 +1,6 @@
 namespace Habanerio.Xpnss.Application.DTOs;
 
-public record PayerPayeeDto
+public sealed record PayerPayeeDto
 {
     public string Id { get; set; }
 

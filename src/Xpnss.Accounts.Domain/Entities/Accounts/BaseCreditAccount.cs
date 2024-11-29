@@ -6,7 +6,33 @@ namespace Habanerio.Xpnss.Accounts.Domain.Entities.Accounts;
 
 public abstract class BaseCreditAccount : BaseAccount, IHasCreditLimit, IHasInterestRate
 {
-    protected BaseCreditAccount(AccountId id,
+    protected BaseCreditAccount(
+        UserId userId,
+        AccountTypes.Keys accountType,
+        AccountName accountName,
+        Money balance,
+        string description,
+        string displayColor,
+        Money creditLimit,
+        PercentageRate interestRate) :
+        base(
+            userId,
+            accountType,
+            accountName,
+            true,
+            balance,
+            description,
+            displayColor)
+    {
+        if (creditLimit < 0)
+            throw new ArgumentOutOfRangeException(nameof(creditLimit));
+
+        CreditLimit = creditLimit;
+        InterestRate = interestRate;
+    }
+
+    protected BaseCreditAccount(
+        AccountId id,
         UserId userId,
         AccountTypes.Keys accountType,
         AccountName accountName,
@@ -15,21 +41,23 @@ public abstract class BaseCreditAccount : BaseAccount, IHasCreditLimit, IHasInte
         string displayColor,
         Money creditLimit,
         PercentageRate interestRate,
-        DateTime dateCreated,
         DateTime? dateClosed,
-        DateTime? dateDeleted,
-        DateTime? dateUpdated) : base(
-        id,
-        userId,
-        accountType,
-        accountName,
-        balance,
-        description,
-        displayColor,
-        dateCreated,
-        dateClosed,
-        dateDeleted,
-        dateUpdated)
+        DateTime dateCreated,
+        DateTime? dateUpdated = null,
+        DateTime? dateDeleted = null) :
+        base(
+            id,
+            userId,
+            accountType,
+            accountName,
+            true,
+            balance,
+            description,
+            displayColor,
+            dateClosed,
+            dateCreated,
+            dateUpdated,
+            dateDeleted)
     {
         if (creditLimit < 0)
             throw new ArgumentOutOfRangeException(nameof(creditLimit));
@@ -176,7 +204,7 @@ public abstract class BaseCreditAccount : BaseAccount, IHasCreditLimit, IHasInte
     /// <summary>
     /// This updates the current Credit Limit of the Account.
     /// This is for when the current Credit Limit is out of sync with reality.
-    /// Use this AFTER adding it to the Adjustments.
+    /// Use this _AFTER_ adding it to the Adjustments (Domain Event).
     /// </summary>
     /// <param name="newCreditLimit">The new value for the current Credit Limit</param>
     /// <exception cref="InvalidOperationException">When the account is marked as deleted</exception>
@@ -196,7 +224,7 @@ public abstract class BaseCreditAccount : BaseAccount, IHasCreditLimit, IHasInte
     /// <summary>
     /// This updates the current Interest Rate of the Account.
     /// This is for when the current Interest Rate is out of sync with reality.
-    /// Use this AFTER adding it to the Adjustments.
+    /// Use this _AFTER_ adding it to the Adjustments (Domain Event).
     /// </summary>
     /// <param name="newInterestRate">The new value for the current Interest Rate</param>
     /// <exception cref="InvalidOperationException">When the account is marked as deleted</exception>

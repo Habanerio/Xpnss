@@ -1,6 +1,7 @@
 using Habanerio.Xpnss.Application.DTOs;
 using Habanerio.Xpnss.Domain.Types;
 using Habanerio.Xpnss.Transactions.Domain.Entities;
+using Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 
 namespace Habanerio.Xpnss.Transactions.Application.Mappers;
 
@@ -50,7 +51,7 @@ internal static partial class ApplicationMapper
             AccountId = entity.AccountId,
             TotalAmount = entity.TotalAmount,
             Description = entity.Description,
-            PayerPayeeId = entity.PayerPayeeId.Value,
+            PayerPayeeId = entity.PayerPayeeId,
             Tags = entity.Tags.ToList(),
             TransactionDate = entity.TransactionDate,
         };

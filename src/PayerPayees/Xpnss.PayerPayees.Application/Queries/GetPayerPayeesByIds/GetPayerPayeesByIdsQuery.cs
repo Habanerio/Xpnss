@@ -4,7 +4,5 @@ using Habanerio.Xpnss.PayerPayees.Domain.Interfaces;
 
 namespace Habanerio.Xpnss.PayerPayees.Application.Queries.GetPayerPayeesByIds;
 
-public record GetPayerPayeesByIdsQuery(
-    string UserId,
-    string[] PayerPayeesIds) : IPayerPayeesQuery<Result<IEnumerable<PayerPayeeDto>>>
-{ }
+public sealed record GetPayerPayeesByIdsQuery(string UserId, string[] PayerPayeesIds) :
+    IPayerPayeesQuery<Result<IEnumerable<PayerPayeeDto>>>;

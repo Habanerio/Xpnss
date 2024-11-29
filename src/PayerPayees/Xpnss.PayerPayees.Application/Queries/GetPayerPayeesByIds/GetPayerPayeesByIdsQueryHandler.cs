@@ -8,12 +8,15 @@ using MongoDB.Bson;
 
 namespace Habanerio.Xpnss.PayerPayees.Application.Queries.GetPayerPayeesByIds;
 
-public class GetPayerPayeesByIdsQueryHandler(IPayerPayeesRepository repository) : IRequestHandler<GetPayerPayeesByIdsQuery, Result<IEnumerable<PayerPayeeDto>>>
+public class GetPayerPayeesByIdsQueryHandler(IPayerPayeesRepository repository) :
+    IRequestHandler<GetPayerPayeesByIdsQuery, Result<IEnumerable<PayerPayeeDto>>>
 {
     private readonly IPayerPayeesRepository _repository = repository ??
         throw new ArgumentNullException(nameof(repository));
 
-    public async Task<Result<IEnumerable<PayerPayeeDto>>> Handle(GetPayerPayeesByIdsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<PayerPayeeDto>>> Handle(
+        GetPayerPayeesByIdsQuery request,
+        CancellationToken cancellationToken)
     {
         var validator = new Validator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
@@ -21,7 +24,12 @@ public class GetPayerPayeesByIdsQueryHandler(IPayerPayeesRepository repository) 
         if (!validationResult.IsValid)
             return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
-        var payerPayeeResult = await _repository.GetAsync(request.UserId, request.PayerPayeesIds.Select(ObjectId.Parse), cancellationToken);
+        var payerPayeeResult = await _repository
+            .GetAsync(
+                request.UserId,
+                request.PayerPayeesIds
+                    .Select(ObjectId.Parse),
+                cancellationToken);
 
         if (payerPayeeResult.IsFailed)
             return Result.Fail(payerPayeeResult.Errors);

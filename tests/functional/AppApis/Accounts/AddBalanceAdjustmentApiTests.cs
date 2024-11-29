@@ -27,6 +27,8 @@ public class AddBalanceAdjustmentApiTests(WebApplicationFactory<Apis.App.AppApis
     [InlineData(AccountTypes.Keys.LineOfCredit)]
     public async Task CanCall_AdjustBalance_ReturnsOk(AccountTypes.Keys accountType)
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         var accounts = await AccountDocumentsRepository
             .FindDocumentsAsync(a =>
                 a.UserId == USER_ID &&
@@ -46,7 +48,7 @@ public class AddBalanceAdjustmentApiTests(WebApplicationFactory<Apis.App.AppApis
         var expectedReason = $"Test {adjustmentDate} {Guid.NewGuid()}";
 
         var request = new AddBalanceAdjustmentCommand(
-            account.UserId,
+            account.UserId.ToString(),
             account.Id.ToString(),
             adjustedBalance,
             adjustmentDate,
@@ -56,14 +58,16 @@ public class AddBalanceAdjustmentApiTests(WebApplicationFactory<Apis.App.AppApis
         // Act
         var response = await HttpClient.PatchAsJsonAsync(
             ENDPOINTS_ACCOUNTS_ADJUST_BALANCE
-                .Replace("{userId}", USER_ID)
+                .Replace("{userId}", USER_ID.ToString())
                 .Replace("{accountId}", account.Id.ToString()),
             request);
 
         //TODO: Need to think about/properly implement Adjustment logic.
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
         return;
 
+        //TODO
         response.EnsureSuccessStatusCode();
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 

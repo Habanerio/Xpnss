@@ -1,7 +1,7 @@
 using Habanerio.Xpnss.Domain.Entities;
 using Habanerio.Xpnss.Domain.ValueObjects;
 
-namespace Habanerio.Xpnss.Categories.Domain;
+namespace Habanerio.Xpnss.Categories.Domain.Entities;
 
 public class Category : AggregateRoot<CategoryId>
 {
@@ -19,13 +19,27 @@ public class Category : AggregateRoot<CategoryId>
 
     public IReadOnlyCollection<Category> SubCategories => _subCategories.AsReadOnly();
 
-    public bool IsDeleted => DateDeleted.HasValue;
+    private Category(
+        UserId userId,
+        CategoryName name,
+        string description,
+        int sortOrder,
+        CategoryId parentId,
+        IEnumerable<Category> subCategories
+    ) : this(
+            parentId,
+            userId,
+            name,
+            description,
+            sortOrder,
+            parentId,
+            subCategories,
+            DateTime.UtcNow)
+    {
+        IsTransient = true;
 
-    public DateTime DateCreated { get; }
-
-    public DateTime? DateUpdated { get; private set; }
-
-    public DateTime? DateDeleted { get; private set; }
+        // Add `CategoryCreated` Domain Event
+    }
 
     private Category(
         CategoryId id,
@@ -36,9 +50,8 @@ public class Category : AggregateRoot<CategoryId>
         CategoryId parentId,
         IEnumerable<Category> subCategories,
         DateTime dateCreated,
-        DateTime? dateUpdated,
-        DateTime? dateDeleted
-    ) : base(id)
+        DateTime? dateUpdated = null,
+        DateTime? dateDeleted = null) : base(id)
     {
         Id = id;
         UserId = userId;
@@ -89,16 +102,12 @@ public class Category : AggregateRoot<CategoryId>
         int sortOrder = 99)
     {
         return new Category(
-            CategoryId.New,
             userId,
             name,
             description,
             sortOrder,
             parentId,
-            [],
-            DateTime.UtcNow,
-            null,
-            null);
+            []);
     }
 
     public Category AddSubCategory(CategoryName name, string description, int sortOrder)

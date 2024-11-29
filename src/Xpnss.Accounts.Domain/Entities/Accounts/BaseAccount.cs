@@ -6,9 +6,6 @@ namespace Habanerio.Xpnss.Accounts.Domain.Entities.Accounts;
 
 public abstract class BaseAccount : AggregateRoot<AccountId>
 {
-    //private List<AdjustmentHistory> _adjustmentHistories = [];
-    //private List<AccountMonthlyTotal> _monthlyTotals = [];
-
     public UserId UserId { get; }
 
     public AccountTypes.Keys AccountType { get; private set; }
@@ -21,8 +18,6 @@ public abstract class BaseAccount : AggregateRoot<AccountId>
 
     public Money Balance { get; protected set; }
 
-    //public IReadOnlyCollection<AdjustmentHistory> AdjustmentHistories => _adjustmentHistories.AsReadOnly();
-
     public string Description { get; private set; }
 
 
@@ -30,38 +25,58 @@ public abstract class BaseAccount : AggregateRoot<AccountId>
 
     public bool IsClosed => DateClosed.HasValue;
 
-    public bool IsDeleted => DateDeleted.HasValue;
-
     public bool IsCredit { get; set; }
-
-    //public IReadOnlyCollection<AccountMonthlyTotal> MonthlyTotals => _monthlyTotals.AsReadOnly();
-
-    public DateTime DateCreated { get; init; }
-
-    public DateTime? DateUpdated { get; protected set; }
 
     public DateTime? DateClosed { get; protected set; }
 
-    public DateTime? DateDeleted { get; protected set; }
+    // New Accounts
+    // Adds a Domain Event for the creation of a new Account
+    protected BaseAccount(
+        UserId userId,
+        AccountTypes.Keys accountType,
+        AccountName accountName,
+        bool isCredit,
+        Money balance,
+        string description,
+        string displayColor) :
+        this(
+            AccountId.Empty,
+            userId,
+            accountType,
+            accountName,
+            isCredit,
+            balance,
+            description,
+            displayColor,
+            null,
+            DateTime.UtcNow)
+    {
+        IsCredit = isCredit;
+        IsTransient = true;
+
+        // Add `AccountCreated` Domain Event
+    }
 
     protected BaseAccount(
         AccountId accountId,
         UserId userId,
         AccountTypes.Keys accountType,
         AccountName accountName,
+        bool isCredit,
         Money balance,
         string description,
         string displayColor,
-        DateTime dateCreated,
         DateTime? dateClosed,
-        DateTime? dateDeleted,
-        DateTime? dateUpdated) : base(accountId)
+        DateTime dateCreated,
+        DateTime? dateUpdated = null,
+        DateTime? dateDeleted = null) : base(accountId)
     {
         Id = accountId ?? throw new ArgumentNullException(nameof(accountId));
         UserId = userId ?? throw new ArgumentNullException(nameof(userId));
         AccountType = accountType;
         Name = accountName;
         Balance = new Money(balance);
+        IsCredit = isCredit;
         DisplayColor = displayColor?.Trim() ?? string.Empty;
         Description = description?.Trim() ?? string.Empty;
         DateCreated = dateCreated;
@@ -188,7 +203,7 @@ public abstract class BaseAccount : AggregateRoot<AccountId>
     /// <summary>
     /// This updates the current balance of the Account.
     /// This is for when the current balance is out of sync with reality.
-    /// Use this AFTER adding it to the Adjustments.
+    /// Use this _AFTER_ adding it to the Adjustments (Domain Event).
     /// </summary>
     /// <param name="newBalance">The new value for the current balance</param>
     /// <exception cref="InvalidOperationException"></exception>

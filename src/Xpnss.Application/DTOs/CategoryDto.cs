@@ -14,5 +14,5 @@ public sealed record CategoryDto
 
     public int SortOrder { get; set; } = 99;
 
-    public IReadOnlyCollection<CategoryDto> SubCategories { get; init; } = [];
+    public List<CategoryDto> SubCategories { get; init; } = [];
 }

@@ -28,6 +28,8 @@ public class AddCreditLimitAdjustmentApiTests(WebApplicationFactory<Apis.App.App
     [InlineData(AccountTypes.Keys.LineOfCredit)]
     public async Task CanCall_AdjustCreditLimit_ReturnsOk(AccountTypes.Keys accountType)
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         var accounts = await AccountDocumentsRepository
             .FindDocumentsAsync(a =>
                 a.UserId == USER_ID &&
@@ -49,7 +51,7 @@ public class AddCreditLimitAdjustmentApiTests(WebApplicationFactory<Apis.App.App
         var expectedCreditLimit = previousCreditLimit + 100m;
 
         var request = new AddCreditLimitAdjustmentCommand(
-            account.UserId,
+            account.UserId.ToString(),
             account.Id.ToString(),
             expectedCreditLimit,
             adjustmentDate,
@@ -58,7 +60,7 @@ public class AddCreditLimitAdjustmentApiTests(WebApplicationFactory<Apis.App.App
         // Act
         var response = await HttpClient.PatchAsJsonAsync(
             ENDPOINTS_ACCOUNTS_ADJUST_CREDIT_LIMIT
-                .Replace("{userId}", USER_ID)
+                .Replace("{userId}", USER_ID.ToString())
                 .Replace("{accountId}", account.Id.ToString()),
             request);
 
@@ -96,6 +98,8 @@ public class AddCreditLimitAdjustmentApiTests(WebApplicationFactory<Apis.App.App
     [InlineData(AccountTypes.Keys.Savings)]
     public async Task CanNotCall_AdjustCreditLimit_InvalidAccountType_ReturnsBadRequestOk(AccountTypes.Keys accountType)
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         var accounts = await AccountDocumentsRepository
             .FindDocumentsAsync(a =>
                 a.UserId == USER_ID &&
@@ -105,7 +109,7 @@ public class AddCreditLimitAdjustmentApiTests(WebApplicationFactory<Apis.App.App
         var account = accounts.First();
 
         var request = new AddCreditLimitAdjustmentCommand(
-            account.UserId,
+            account.UserId.ToString(),
             account.Id.ToString(),
             100000000000000,
             DateTime.Now,
@@ -114,7 +118,7 @@ public class AddCreditLimitAdjustmentApiTests(WebApplicationFactory<Apis.App.App
         // Act
         var response = await HttpClient.PatchAsJsonAsync(
             ENDPOINTS_ACCOUNTS_ADJUST_CREDIT_LIMIT
-                .Replace("{userId}", USER_ID)
+                .Replace("{userId}", USER_ID.ToString())
                 .Replace("{accountId}", account.Id.ToString()),
             request);
 

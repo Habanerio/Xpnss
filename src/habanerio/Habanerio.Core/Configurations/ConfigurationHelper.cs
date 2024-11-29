@@ -27,26 +27,31 @@ public static class AppSettingsHelper
         }
     }
 
-    public static T? GetSettings<T>(string settingsKey)
+    public static TSection? GetSettings<TSection>(string settingsKey) where TSection : AppSettingsSection
     {
         if (string.IsNullOrWhiteSpace(settingsKey))
             throw new ArgumentNullException(nameof(settingsKey));
 
-        var instance = AppSettings.GetSection(settingsKey).Get<T>();
+        var section = AppSettings.GetSection(settingsKey).Get<TSection>();
 
-        return instance;
+        if (section is null)
+            throw new ArgumentNullException($"The settings for {settingsKey} could not be found.");
+
+        section.Environment = EnvironmentName;
+
+        return section;
     }
 
     /// <summary>
     /// Gets the settings based on the type's name (typeof(DbSettings).Name).
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TSection"></typeparam>
     /// <returns></returns>
-    public static T? GetSettings<T>()
+    public static TSection? GetSettings<TSection>() where TSection : AppSettingsSection
     {
-        var tName = typeof(T).Name;
+        var settingsKey = typeof(TSection).Name;
 
-        return GetSettings<T>(tName);
+        return GetSettings<TSection>(settingsKey);
     }
 
     public static string AspNetCoreEnvironmentVariableKey => "ASPNETCORE_ENVIRONMENT";
@@ -55,13 +60,21 @@ public static class AppSettingsHelper
     {
         get
         {
-            var environmentName = Environment.GetEnvironmentVariable(AspNetCoreEnvironmentVariableKey, EnvironmentVariableTarget.Machine);
+            var environmentName = Environment.GetEnvironmentVariable(
+                AspNetCoreEnvironmentVariableKey,
+                EnvironmentVariableTarget.Machine);
+
             if (string.IsNullOrWhiteSpace(environmentName))
             {
-                environmentName = Environment.GetEnvironmentVariable(AspNetCoreEnvironmentVariableKey, EnvironmentVariableTarget.User);
+                environmentName = Environment.GetEnvironmentVariable(
+                    AspNetCoreEnvironmentVariableKey,
+                    EnvironmentVariableTarget.User);
+
                 if (string.IsNullOrWhiteSpace(environmentName))
                 {
-                    environmentName = Environment.GetEnvironmentVariable(AspNetCoreEnvironmentVariableKey, EnvironmentVariableTarget.Process);
+                    environmentName = Environment.GetEnvironmentVariable(
+                        AspNetCoreEnvironmentVariableKey,
+                        EnvironmentVariableTarget.Process);
                 }
             }
 

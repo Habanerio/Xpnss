@@ -1,11 +1,9 @@
 using FluentResults;
 using Habanerio.Core.Dbs.MongoDb;
-using Habanerio.Xpnss.Transactions.Domain.Entities;
+using Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using Habanerio.Xpnss.Transactions.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.Transactions.Infrastructure.Mappers;
-using MediatR;
-using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -14,19 +12,11 @@ namespace Habanerio.Xpnss.Transactions.Infrastructure.Data.Repositories;
 /// <summary>
 /// Responsible for managing the persistence of Transaction Documents.
 /// </summary>
-/// <param name="options">Db settings to connect to the Mongo Db</param>
-/// <param name="mediator"></param>
-public class TransactionsRepository(
-    IOptions<MongoDbSettings> options,
-    IMongoDatabase mongoDb,
-    IMediator? mediator = null)
-    : MongoDbRepository<TransactionDocument>(new TransactionsDbContext(mongoDb)), ITransactionsRepository
+public class TransactionsRepository(IMongoDatabase mongoDb)
+    : MongoDbRepository<TransactionDocument>(new TransactionsDbContext(mongoDb)),
+        ITransactionsRepository
 {
-    private readonly IMediator? _mediator = mediator;
-
-    public async Task<Result<TransactionBase>> AddAsync(
-        TransactionBase transaction,
-        CancellationToken cancellationToken = default)
+    public async Task<Result<TransactionBase>> AddAsync(TransactionBase transaction, CancellationToken cancellationToken = default)
     {
         if (transaction is null)
             return Result.Fail("Transaction cannot be null");
@@ -36,19 +26,19 @@ public class TransactionsRepository(
             var transactionDoc = InfrastructureMapper.Map(transaction);
 
             if (transactionDoc is null)
-                return Result.Fail("Could not map the Transaction");
+                return Result.Fail("Could not map the Transaction to TransactionDoc");
 
             await AddDocumentAsync(transactionDoc, cancellationToken);
 
             // Do this so we can update the State of the Transaction
-            var updatedTransaction = InfrastructureMapper.Map(transactionDoc);
+            var newTransaction = InfrastructureMapper.Map(transactionDoc);
 
-            if (updatedTransaction is null)
-                return Result.Fail("Could not map the Transaction");
+            if (newTransaction is null)
+                return Result.Fail("Could not map the TransactionDoc to Transaction");
 
             //HandleDomainEvents(transaction);
 
-            return updatedTransaction;
+            return newTransaction;
         }
         catch (Exception e)
         {
@@ -61,16 +51,18 @@ public class TransactionsRepository(
         string transactionId,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(userId))
-            return Result.Fail("UserId cannot be null or empty");
+        if (!ObjectId.TryParse(userId, out var userObjectId) ||
+            userObjectId.Equals(ObjectId.Empty))
+            return Result.Fail($"Invalid UserId: `{userId}`");
 
         if (!ObjectId.TryParse(transactionId, out var transactionObjectId) ||
             transactionObjectId.Equals(ObjectId.Empty))
             return Result.Fail($"Invalid TransactionId: `{transactionId}`");
 
         var doc = await FirstOrDefaultDocumentAsync(t =>
-                                    t.Id.Equals(transactionObjectId) && t.UserId.Equals(userId),
-                                cancellationToken);
+                t.UserId.Equals(userObjectId) &&
+                t.Id.Equals(transactionObjectId),
+            cancellationToken);
 
         if (doc is null)
             return Result.Ok<TransactionBase?>(null);
@@ -91,8 +83,9 @@ public class TransactionsRepository(
         string userTimeZone = "",
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(userId))
-            return Result.Fail("UserId cannot be null or empty");
+        if (!ObjectId.TryParse(userId, out var userObjectId) ||
+            userObjectId.Equals(ObjectId.Empty))
+            return Result.Fail($"Invalid UserId: `{userId}`");
 
         var newEndDate = string.IsNullOrWhiteSpace(userTimeZone) ?
             DateTime.UtcNow :
@@ -107,10 +100,10 @@ public class TransactionsRepository(
             null;
 
         var transactionDocs = await FindDocumentsAsync(t =>
-            t.UserId.Equals(userId) &&
-            (accountObjectId == null || t.AccountId.Equals(accountObjectId)) &&
-            t.TransactionDate.Date >= newStartDate.Date &&
-            t.TransactionDate.Date <= newEndDate.Date,
+                t.UserId.Equals(userObjectId) &&
+                (accountObjectId == null || t.AccountId.Equals(accountObjectId)) &&
+                t.TransactionDate.Date >= newStartDate.Date &&
+                t.TransactionDate.Date <= newEndDate.Date,
             cancellationToken);
 
         var transactions = InfrastructureMapper.Map(transactionDocs);
@@ -123,13 +116,13 @@ public class TransactionsRepository(
         CancellationToken cancellationToken = default)
     {
         var existingTransaction = await GetAsync(
-            transaction.UserId,
-            transaction.Id,
+                transaction.UserId,
+                transaction.Id,
             cancellationToken);
 
         if (existingTransaction.IsFailed || existingTransaction.ValueOrDefault is null)
             return Result.Fail(existingTransaction.Errors[0].Message ??
-                               $"Could not find Transaction #{transaction.Id} for User {transaction.UserId}");
+                $"Could not find Transaction #{transaction.Id} for User {transaction.UserId}");
 
         var transactionDoc = InfrastructureMapper.Map(transaction);
 

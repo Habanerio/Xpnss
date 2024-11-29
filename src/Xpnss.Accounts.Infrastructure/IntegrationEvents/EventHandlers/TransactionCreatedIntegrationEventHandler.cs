@@ -36,17 +36,9 @@ public class TransactionCreatedIntegrationEventHandler(
         TransactionCreatedIntegrationEvent @event,
         CancellationToken cancellationToken)
     {
-        // I want to wrap this in a transaction, but apparently, 'Standalone servers do not support transactions.'
-        //using (_mongoSession)
-        //{
-        //    _mongoSession.StartTransaction();
-
         try
         {
-            // Maybe publish internal Domain Events to handle each one?
             await UpdateAccountBalanceAsync(@event, cancellationToken);
-
-            //      await _mongoSession.CommitTransactionAsync(cancellationToken);
 
             _logger.LogInformation(@event.Id.ToString(),
                 "A '{@transactionType}' Transaction {@transactionId} was added to Account {@accountId}",
@@ -56,13 +48,10 @@ public class TransactionCreatedIntegrationEventHandler(
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "An error occurred while trying to update Account '{@accountId}' for User '{@userId}'", @event.AccountId, @event.UserId);
-
-            //        await _mongoSession.AbortTransactionAsync(cancellationToken);
+            _logger.LogError(e, "An error occurred while trying to update Account '{AccountId}' for User '{UserId}'", @event.AccountId, @event.UserId);
 
             throw;
         }
-        //}
     }
 
     private async Task UpdateAccountBalanceAsync(

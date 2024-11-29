@@ -5,21 +5,21 @@ using Habanerio.Xpnss.Application.Requests;
 using Habanerio.Xpnss.Domain.ValueObjects;
 using Habanerio.Xpnss.Infrastructure.IntegrationEvents.Transactions;
 using Habanerio.Xpnss.Transactions.Application.Mappers;
-using Habanerio.Xpnss.Transactions.Domain.Entities;
+using Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using MediatR;
 
 namespace Habanerio.Xpnss.Transactions.Application.Commands;
 
-public record CreateDepositTransactionCommand(
+public sealed record CreateDepositTransactionCommand(
     string UserId,
     CreateDepositTransactionRequest Request) :
     ITransactionsCommand<Result<DepositTransactionDto>>;
 
-public class CreateDepositTransactionCommandHandler(
+public sealed class CreateDepositTransactionCommandHandler(
     ITransactionsRepository repository,
-    IMediator mediator
-    ) : IRequestHandler<CreateDepositTransactionCommand, Result<DepositTransactionDto>>
+    IMediator mediator) : IRequestHandler<CreateDepositTransactionCommand,
+    Result<DepositTransactionDto>>
 {
     private readonly ITransactionsRepository _repository = repository ??
         throw new ArgumentNullException(nameof(repository));

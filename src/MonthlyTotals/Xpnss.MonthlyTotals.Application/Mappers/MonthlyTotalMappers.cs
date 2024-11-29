@@ -8,11 +8,11 @@ internal static partial class ApplicationMapper
     public static MonthlyTotalDto? Map(MonthlyTotal? entity)
     {
         if (entity is null)
-            return null;
+            return default;
 
         return new MonthlyTotalDto()
         {
-            EntityId = entity.EntityId,
+            EntityId = entity.EntityId ?? string.Empty,
             EntityType = entity.EntityType.ToString(),
             Month = entity.Month,
             Year = entity.Year,

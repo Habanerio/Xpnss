@@ -1,4 +1,5 @@
 using FluentResults;
+using Habanerio.Xpnss.PayerPayees.Domain.Entities;
 using MongoDB.Bson;
 
 namespace Habanerio.Xpnss.PayerPayees.Domain.Interfaces;

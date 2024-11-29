@@ -10,7 +10,7 @@ namespace Habanerio.Xpnss.Transactions.Infrastructure.Data.Documents;
 public class TransactionDocument : MongoDocument
 {
     [BsonElement("user_id")]
-    public string UserId { get; set; }
+    public ObjectId UserId { get; set; }
 
     [BsonElement("account_id")]
     public ObjectId AccountId { get; set; }
@@ -23,6 +23,8 @@ public class TransactionDocument : MongoDocument
     [BsonElement("description")]
     public string Description { get; set; }
 
+    [BsonElement("is_deleted")]
+    public bool IsDeleted { get; set; }
 
     [BsonElement("items")]
     public List<TransactionDocumentItem> Items { get; set; }
