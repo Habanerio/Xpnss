@@ -21,10 +21,12 @@ public static partial class ApplicationMapper
 
     public static IEnumerable<UserProfileDto> Map(IEnumerable<UserProfile> entities)
     {
-        if (!entities.TryGetNonEnumeratedCount(out var count) || count == 0)
-            return Enumerable.Empty<UserProfileDto>();
+        var entitiesArray = entities?.ToArray() ?? [];
 
-        return entities.Select(Map)
+        if (!entitiesArray.Any())
+            throw new ArgumentException("The entities cannot be empty", nameof(entities));
+
+        return entitiesArray.Select(Map)
             .Where(x => x is not null)
             .Cast<UserProfileDto>();
     }

@@ -132,9 +132,9 @@ public sealed class AccountsRepository(IMongoDatabase mongoDb) :
         var docs = await FindDocumentsAsync(a =>
             a.UserId == userObjectId, cancellationToken);
 
-        var payerPayees = InfrastructureMapper.Map(docs);
+        var accounts = InfrastructureMapper.Map(docs);
 
-        return Result.Ok(payerPayees);
+        return Result.Ok(accounts);
 
         // Projection
         //var matchBuilder = Builders<AccountDocument>.Filter;

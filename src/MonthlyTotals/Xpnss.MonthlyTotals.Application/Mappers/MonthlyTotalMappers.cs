@@ -25,10 +25,12 @@ internal static partial class ApplicationMapper
 
     public static IEnumerable<MonthlyTotalDto> Map(IEnumerable<MonthlyTotal> entities)
     {
-        if (!entities.TryGetNonEnumeratedCount(out var count) || count == 0)
-            return Enumerable.Empty<MonthlyTotalDto>();
+        var entitiesArray = entities?.ToArray() ?? [];
 
-        return entities.Select(Map)
+        if (!entitiesArray.Any())
+            throw new ArgumentException("The entities cannot be empty", nameof(entities));
+
+        return entitiesArray.Select(Map)
             .Where(x => x is not null)
             .Cast<MonthlyTotalDto>();
     }

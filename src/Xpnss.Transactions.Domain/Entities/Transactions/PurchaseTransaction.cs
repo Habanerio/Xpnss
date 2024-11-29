@@ -136,15 +136,17 @@ public class PurchaseTransaction : TransactionBase
         DateTime transactionDate,
         IEnumerable<string>? tags)
     {
-        if (!items.TryGetNonEnumeratedCount(out var itemsCount) || itemsCount == 0)
-            throw new ArgumentException("At least one item must be provided.", nameof(items));
+        var itemsArray = items?.ToList() ?? [];
+
+        if (!itemsArray.Any())
+            throw new ArgumentException("The entities cannot be empty", nameof(items));
 
         return new PurchaseTransaction(
             userId,
             accountId,
             description,
             payerPayeeId,
-            items.ToList(),
+            itemsArray,
             transactionDate,
             tags);
     }

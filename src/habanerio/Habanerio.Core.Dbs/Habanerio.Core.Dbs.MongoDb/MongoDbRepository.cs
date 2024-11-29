@@ -35,10 +35,12 @@ public class MongoDbRepository<TDocument> :
         IEnumerable<ObjectId> ids,
         CancellationToken cancellationToken = default)
     {
-        if (!ids.TryGetNonEnumeratedCount(out var idsCount) || idsCount == 0)
+        var idsArray = ids?.ToArray() ?? [];
+
+        if (!idsArray.Any())
             throw new ArgumentException(EXCEPTION_ID_CANT_BE_EMPTY, nameof(ids));
 
-        var filter = Builders<TDocument>.Filter.In("_id", ids.ToArray());
+        var filter = Builders<TDocument>.Filter.In("_id", idsArray);
 
         var results = await FindAsync(filter, cancellationToken);
 
@@ -118,20 +120,24 @@ public abstract class MongoDbRepository<TDocument, TId> :
 
     public void AddDocuments(IEnumerable<TDocument> documents)
     {
-        if (!documents.TryGetNonEnumeratedCount(out var documentsCount) || documentsCount == 0)
+        var documentsArray = documents?.ToArray() ?? [];
+
+        if (!documentsArray.Any())
             throw new ArgumentException("The documents cannot be empty", nameof(documents));
 
-        Collection.InsertManyAsync(documents, new InsertManyOptions());
+        Collection.InsertManyAsync(documentsArray, new InsertManyOptions());
     }
 
     public async Task AddDocumentsAsync(
         IEnumerable<TDocument> documents,
         CancellationToken cancellationToken = default)
     {
-        if (!documents.TryGetNonEnumeratedCount(out var documentsCount) || documentsCount == 0)
+        var documentsArray = documents?.ToArray() ?? [];
+
+        if (!documentsArray.Any())
             throw new ArgumentException("The documents cannot be empty", nameof(documents));
 
-        await Collection.InsertManyAsync(documents, new InsertManyOptions(), cancellationToken: cancellationToken);
+        await Collection.InsertManyAsync(documentsArray, new InsertManyOptions(), cancellationToken: cancellationToken);
     }
 
 
