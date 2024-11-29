@@ -72,7 +72,7 @@ public class CreateUserProfileCommandHandler(
     {
         public Validator()
         {
-            RuleFor(x => x.ExtUserId).NotEmpty();
+            //RuleFor(x => x.ExtUserId).NotEmpty();
             RuleFor(x => x.FirstName).NotEmpty();
             RuleFor(x => x.Email).NotEmpty().EmailAddress();
         }

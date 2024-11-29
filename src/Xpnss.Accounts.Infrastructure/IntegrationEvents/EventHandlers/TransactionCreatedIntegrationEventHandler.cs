@@ -1,11 +1,6 @@
-using Habanerio.Xpnss.Accounts.Domain.Entities;
-using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts;
 using Habanerio.Xpnss.Accounts.Domain.Interfaces;
-using Habanerio.Xpnss.Domain.Types;
 using Habanerio.Xpnss.Domain.ValueObjects;
-using Habanerio.Xpnss.Infrastructure.IntegrationEvents;
 using Habanerio.Xpnss.Infrastructure.IntegrationEvents.Transactions;
-
 using Microsoft.Extensions.Logging;
 
 namespace Habanerio.Xpnss.Accounts.Infrastructure.IntegrationEvents.EventHandlers;
@@ -15,26 +10,20 @@ namespace Habanerio.Xpnss.Accounts.Infrastructure.IntegrationEvents.EventHandler
 /// and updating the Account's Balance and the MonthlyTotal.
 /// </summary>
 /// <param name="accountsRepository"></param>
-/// <param name="accountMonthlyTotalsRepository"></param>
 /// <param name="logger"></param>
 public class TransactionCreatedIntegrationEventHandler(
     IAccountsRepository accountsRepository,
-    //IClientSessionHandle mongoSession,
     ILogger<TransactionCreatedIntegrationEventHandler> logger) :
     IIntegrationEventHandler<TransactionCreatedIntegrationEvent>
 {
     private readonly IAccountsRepository _accountsRepository = accountsRepository ??
         throw new ArgumentNullException(nameof(accountsRepository));
 
-    //private readonly IClientSessionHandle _mongoSession = mongoSession ??
-    //    throw new ArgumentNullException(nameof(mongoSession));
-
     private readonly ILogger<TransactionCreatedIntegrationEventHandler> _logger = logger ??
         throw new ArgumentNullException(nameof(logger));
 
     public async Task Handle(
-        TransactionCreatedIntegrationEvent @event,
-        CancellationToken cancellationToken)
+        TransactionCreatedIntegrationEvent @event, CancellationToken cancellationToken)
     {
         try
         {

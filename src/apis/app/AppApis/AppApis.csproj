@@ -50,4 +50,8 @@
         <ProjectReference Include="..\..\..\Xpnss.Transactions.Application\Xpnss.Transactions.Application.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Endpoints\UserProfiles\" />
+    </ItemGroup>
+
 </Project>
