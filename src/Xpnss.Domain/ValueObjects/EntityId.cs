@@ -4,9 +4,9 @@ namespace Habanerio.Xpnss.Domain.ValueObjects;
 
 public abstract record EntityId
 {
-    private string _value;
+    private string? _value;
 
-    public string Value => _value;
+    public string Value => _value ?? string.Empty;
 
     protected EntityId()
     {
@@ -24,7 +24,7 @@ public abstract record EntityId
         _value = entityId;
     }
 
-    internal void SetValue(string value)
+    internal void SetValue(string? value)
     {
         _value = value;
     }
@@ -36,7 +36,7 @@ public abstract record EntityId
 
 public record EntityObjectId : EntityId
 {
-    protected EntityObjectId() : base(ObjectId.GenerateNewId().ToString())
+    public EntityObjectId() : base(ObjectId.GenerateNewId().ToString())
     { }
 
     public EntityObjectId(ObjectId entityId) : base(entityId.ToString())
@@ -60,6 +60,22 @@ public record EntityObjectId : EntityId
     public static bool IsEmpty(EntityObjectId entityId) => entityId == Empty;
 
     public static implicit operator string(EntityObjectId entityId) => entityId.Value;
+
+    /// <summary>
+    /// For non-nullable ObjectId, return the value if it can be parsed, otherwise return ObjectId.Empty
+    /// </summary>
+    /// <param name="entityId"></param>
+    public static implicit operator ObjectId(EntityObjectId entityId) =>
+           ObjectId.TryParse(entityId.Value, out var objectId) ? objectId : Empty;
+
+    ///// <summary>
+    ///// For nullable ObjectId, return the value if it can be parsed, otherwise return null
+    ///// </summary>
+    ///// <param name="entityId"></param>
+    //public static implicit operator ObjectId?(EntityObjectId entityId) =>
+    //    ObjectId.TryParse(entityId.Value, out var objectId) ?
+    //        objectId :
+    //        null;
 
     //public static implicit operator AccountId(string userId) => new(userId);
 }

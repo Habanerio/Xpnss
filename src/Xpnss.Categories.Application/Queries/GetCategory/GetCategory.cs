@@ -1,21 +1,22 @@
 using FluentResults;
 using FluentValidation;
 using Habanerio.Xpnss.Application.DTOs;
-using Habanerio.Xpnss.Categories.Application.Mappers;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
 using MediatR;
 
 namespace Habanerio.Xpnss.Categories.Application.Queries.GetCategory;
 
-public sealed record GetCategoryQuery(string UserId, string CategoryId, string ChildCategoryId = "") : ICategoriesQuery<Result<CategoryDto>>;
+public sealed record GetCategoryQuery(string UserId, string CategoryId) :
+    ICategoriesQuery<Result<CategoryDto?>>;
 
 
-public class GetCategoryHandler(ICategoriesRepository repository) : IRequestHandler<GetCategoryQuery, Result<CategoryDto>>
+public class GetCategoryHandler(ICategoriesRepository repository) :
+    IRequestHandler<GetCategoryQuery, Result<CategoryDto?>>
 {
     private readonly ICategoriesRepository _repository = repository ??
           throw new ArgumentNullException(nameof(repository));
 
-    public async Task<Result<CategoryDto>> Handle(GetCategoryQuery request, CancellationToken cancellationToken)
+    public async Task<Result<CategoryDto?>> Handle(GetCategoryQuery request, CancellationToken cancellationToken)
     {
         var validator = new Validator();
 
@@ -24,39 +25,22 @@ public class GetCategoryHandler(ICategoriesRepository repository) : IRequestHand
         if (!validationResult.IsValid)
             return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
-        var parentCategoryResult = await _repository.GetAsync(request.UserId, request.CategoryId, cancellationToken);
+        var categoryResult = await _repository.GetAsync(request.UserId, request.CategoryId, cancellationToken);
 
-        if (parentCategoryResult.IsFailed)
-            return Result.Fail(parentCategoryResult.Errors);
+        if (categoryResult.IsFailed)
+            return Result.Fail(categoryResult.Errors);
 
-        var parentCategoryDocument = parentCategoryResult.ValueOrDefault;
+        var categoryDocument = categoryResult.ValueOrDefault;
 
-        if (parentCategoryDocument is null)
-            return Result.Fail("Could not find the Category");
+        if (categoryDocument is null)
+            return Result.Ok<CategoryDto?>(null);
 
-        if (string.IsNullOrWhiteSpace(request.ChildCategoryId))
-        {
-            var parentCategoryDto = ApplicationMapper.Map(parentCategoryResult.Value);
+        var categoryDto = Mappers.ApplicationMapper.Map(categoryDocument);
 
-            if (parentCategoryDto is null)
-                throw new InvalidOperationException(
-                    $"Could not map the CategoryDocument '{parentCategoryResult.Value.Id} to its DTO");
+        if (categoryDto is null)
+            return Result.Fail("Failed to map CategoryDocument to CategoryDto");
 
-            return parentCategoryDto;
-        }
-
-        var childCategoryDocument = parentCategoryDocument.SubCategories.ToList().Find(s => s.Id.Value.Equals(request.ChildCategoryId));
-
-        if (childCategoryDocument is null)
-            return Result.Fail($"Could not find the Child Category with Id: `{request.ChildCategoryId}`");
-
-        var childCategoryDto = ApplicationMapper.Map(childCategoryDocument);
-
-        if (childCategoryDto is null)
-            throw new InvalidOperationException(
-                $"Could not map the CategoryDocument '{childCategoryDocument.Id} to its DTO");
-
-        return childCategoryDto;
+        return Result.Ok<CategoryDto?>(categoryDto);
     }
 }
 

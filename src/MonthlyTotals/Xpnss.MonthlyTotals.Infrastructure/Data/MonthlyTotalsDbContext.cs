@@ -6,8 +6,6 @@ namespace Habanerio.Xpnss.MonthlyTotals.Infrastructure.Data;
 
 public class MonthlyTotalsDbContext : XpnssDbContext
 {
-    protected IMongoCollection<MonthlyTotalDocument> Collection => Collection<MonthlyTotalDocument>();
-
     public MonthlyTotalsDbContext(IMongoDatabase mongoDb) : base(mongoDb)
     {
         Configure();
@@ -54,6 +52,6 @@ public class MonthlyTotalsDbContext : XpnssDbContext
                 new CreateIndexOptions { Name = "idx_userid_entitytype_year_month" })
         };
 
-        Collection.Indexes.CreateMany(categoryMonthlyTotalIndexes);
+        Collection<MonthlyTotalDocument>().Indexes.CreateMany(categoryMonthlyTotalIndexes);
     }
 }

@@ -47,6 +47,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\src\apis\app\AppApis\AppApis.csproj" />
+      <ProjectReference Include="..\..\..\src\UserProfiles\Xpnss.UserProfiles.Infrastructure\Xpnss.UserProfiles.Infrastructure.csproj" />
       <ProjectReference Include="..\..\..\src\Xpnss.Accounts.Application\Xpnss.Accounts.Application.csproj" />
     </ItemGroup>
 

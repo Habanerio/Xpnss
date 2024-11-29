@@ -9,7 +9,7 @@ internal static partial class ApplicationMapper
     public static AccountDto? Map(BaseAccount? entity, IEnumerable<MonthlyTotalDto>? monthlyTotals = null)
     {
         if (entity is null)
-            return null;
+            return default;
 
         var accountDto = PopulateCommonDtoProperties(entity, monthlyTotals);
 
@@ -63,15 +63,20 @@ internal static partial class ApplicationMapper
             return accountDto;
         }
 
-        return null;
+        return default;
     }
 
     public static IEnumerable<AccountDto> Map(IEnumerable<BaseAccount> entities)
     {
-        if (!entities.TryGetNonEnumeratedCount(out var count) || count == 0)
+        var entitiesArray = entities?.ToArray() ?? [];
+
+        if (!entitiesArray.Any())
             return Enumerable.Empty<AccountDto>();
 
-        return entities.Select(a => Map(a, null)).Where(x => x is not null).Cast<AccountDto>();
+        return entitiesArray.Select(a =>
+            Map(a, null))
+            .Where(x => x is not null)
+            .Cast<AccountDto>();
     }
 
     private static AccountDto PopulateCommonDtoProperties(BaseAccount entity, IEnumerable<MonthlyTotalDto>? monthlyTotals = null)

@@ -5,7 +5,7 @@ namespace Habanerio.Xpnss.Infrastructure.IntegrationEvents.Transactions;
 /// <summary>
 /// Lets other parts of the system know that a transaction has been created.
 /// </summary>
-public record TransactionCreatedIntegrationEvent : IntegrationEvent
+public sealed record TransactionCreatedIntegrationEvent : IntegrationEvent
 {
     public string UserId { get; }
 

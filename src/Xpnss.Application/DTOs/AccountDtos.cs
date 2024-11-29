@@ -1,6 +1,6 @@
 namespace Habanerio.Xpnss.Application.DTOs;
 
-public record AccountDto
+public sealed record AccountDto
 {
     public string Id { get; set; }
 
@@ -42,7 +42,7 @@ public record AccountDto
     //public AccountDto() { }
 }
 
-public record AccountItemDto
+public sealed record AccountItemDto
 {
     public string Id { get; set; }
 
@@ -60,7 +60,7 @@ public record AccountItemDto
 }
 
 /*
-public record CashAccountDto : AccountDto
+public sealed record CashAccountDto : AccountDto
 {
     [JsonConstructor]
     public CashAccountDto() : base(AccountTypes.Keys.Cash, false) { }
@@ -93,7 +93,7 @@ public record CashAccountDto : AccountDto
     }
 }
 
-public record CheckingAccountDto :
+public sealed record CheckingAccountDto :
     AccountDto//, IHasOverdraftAmount
 {
     public decimal OverdraftAmount { get; set; }
@@ -137,7 +137,7 @@ public record CheckingAccountDto :
     }
 }
 
-public record SavingsAccountDto : AccountDto//, IHasInterestRate
+public sealed record SavingsAccountDto : AccountDto//, IHasInterestRate
 {
     public decimal InterestRate { get; set; }
 

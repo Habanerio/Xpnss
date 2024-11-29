@@ -12,6 +12,8 @@ public abstract record CreateTransactionRequest
 
     public bool IsCredit { get; init; } = false;
 
+    public PayerPayeeRequest PayerPayee { get; init; } = new();
+
     public List<string> Tags { get; init; } = new();
 
     public virtual decimal TotalAmount { get; init; }
@@ -40,14 +42,14 @@ public abstract record CreateCreditTransactionRequest :
 /// <summary>
 /// Represents when the user deposits money into their account from an external source (eg: Income, Gift, etc)
 /// </summary>
-public record CreateDepositTransactionRequest() :
+public sealed record CreateDepositTransactionRequest() :
     CreateCreditTransactionRequest(TransactionTypes.Keys.DEPOSIT)
 {
-    public PayerPayeeRequest PayerPayee { get; init; } = new();
+
 }
 
 
-public record CreatePaymentTransactionRequest() :
+public sealed record CreatePaymentTransactionRequest() :
     CreateDebitTransactionRequest(TransactionTypes.Keys.PAYMENT)
 {
 
@@ -56,7 +58,7 @@ public record CreatePaymentTransactionRequest() :
 /// <summary>
 /// For refunds where there is no purchase transaction to refund against
 /// </summary>
-public record CreateRefundTransactionRequest() :
+public sealed record CreateRefundTransactionRequest() :
     CreateCreditTransactionRequest(TransactionTypes.Keys.REFUND)
 {
     public string CategoryId { get; init; } = "";
@@ -65,7 +67,7 @@ public record CreateRefundTransactionRequest() :
 /// <summary>
 /// For refunds where there is a purchase transaction to refund against
 /// </summary>
-public record CreateRefundPurchaseTransactionRequest() :
+public sealed record CreateRefundPurchaseTransactionRequest() :
     CreateCreditTransactionRequest(TransactionTypes.Keys.REFUND)
 {
     public string PurchaseTransactionId { get; init; } = "";
@@ -85,14 +87,12 @@ public abstract record CreateDebitTransactionRequest :
     { }
 }
 
-public record CreatePurchaseTransactionRequest() :
+public sealed record CreatePurchaseTransactionRequest() :
     CreateDebitTransactionRequest(TransactionTypes.Keys.PURCHASE)
 {
     public bool IsPaid => PaidDate.HasValue;
 
     public List<PurchaseTransactionItemRequest> Items { get; init; } = [];
-
-    public PayerPayeeRequest PayerPayee { get; init; } = new();
 
     public DateTime? PaidDate { get; init; }
 
@@ -111,7 +111,7 @@ public record CreatePurchaseTransactionRequest() :
 /// <summary>
 /// Usually for when then money is taken out as Cash
 /// </summary>
-public record CreateWithdrawalTransactionRequest() : CreateDebitTransactionRequest(TransactionTypes.Keys.WITHDRAWAL)
+public sealed record CreateWithdrawalTransactionRequest() : CreateDebitTransactionRequest(TransactionTypes.Keys.WITHDRAWAL)
 {
     /// <summary>
     /// The Id of the underlying account that the withdrawal was made FROM.
@@ -129,7 +129,7 @@ public record CreateWithdrawalTransactionRequest() : CreateDebitTransactionReque
 /// <summary>
 /// For when the balance transfer has a cost to it, such as transferring the balance from one account to another
 /// </summary>
-public record CreateBalanceTransferRequest() :
+public sealed record CreateBalanceTransferRequest() :
     CreateTransactionRequest(true, TransactionTypes.Keys.BALANCE_TRANSFER)
 {
     public string FromAccountId { get; init; } = "";
@@ -146,7 +146,7 @@ public record CreateBalanceTransferRequest() :
 /// <summary>
 /// For when the Account makes a payment to another account such as Checking to Savings
 /// </summary>
-public record CreateTransferTransactionRequest() :
+public sealed record CreateTransferTransactionRequest() :
     CreateCreditTransactionRequest(TransactionTypes.Keys.TRANSFER)
 {
     public string FromAccountId { get; set; } = "";

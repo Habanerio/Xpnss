@@ -15,6 +15,10 @@ public record TransactionDto
 
     public bool IsCredit { get; protected set; }
 
+    public string? PayerPayeeId { get; set; } = "";
+
+    public PayerPayeeDto? PayerPayee { get; set; }
+
     public List<string> Tags { get; set; } = [];
 
     public virtual decimal TotalAmount { get; set; }
@@ -26,7 +30,12 @@ public record TransactionDto
     private TransactionDto() { }
 
     [JsonConstructor]
-    public TransactionDto(string id, string userId, string accountId, string description, DateTime transactionDate)
+    public TransactionDto(
+        string id,
+        string userId,
+        string accountId,
+        string description,
+        DateTime transactionDate)
     {
         Id = id;
         UserId = userId;
@@ -35,7 +44,9 @@ public record TransactionDto
         TransactionDate = transactionDate;
     }
 
-    protected TransactionDto(bool isCredit, TransactionTypes.Keys transactionType)
+    protected TransactionDto(
+        bool isCredit,
+        TransactionTypes.Keys transactionType)
     {
         IsCredit = isCredit;
         TransactionType = transactionType.ToString();
@@ -44,6 +55,9 @@ public record TransactionDto
 
 #region - Credit Transactions -
 
+/// <summary>
+/// A Credit Transaction ("CR") is a transaction that takes money from an account.
+/// </summary>
 public abstract record CreditTransactionDto : TransactionDto
 {
     protected CreditTransactionDto(TransactionTypes.Keys transactionType) :
@@ -51,43 +65,23 @@ public abstract record CreditTransactionDto : TransactionDto
     { }
 }
 
-public record DepositTransactionDto() :
-    CreditTransactionDto(TransactionTypes.Keys.DEPOSIT)
-{
-    //public string CategoryId { get; set; } = "";
-
-    public string PayerPayeeId { get; set; } = "";
-
-    public PayerPayeeDto? PayerPayee { get; set; }
-}
-
-#endregion
-
-#region - Debit Transactions -
-
-public abstract record DebitTransactionDto : TransactionDto
-{
-    protected DebitTransactionDto(TransactionTypes.Keys transactionType) :
-        base(false, transactionType)
-    { }
-}
-
-public record PaymentTransactionDto() : DebitTransactionDto(TransactionTypes.Keys.PAYMENT)
+/// <summary>
+/// A payment towards money owed
+/// </summary>
+public sealed record CreditPaymentTransactionDto() :
+    CreditTransactionDto(TransactionTypes.Keys.PAYMENT)
 {
     public string PaymentFromAccountId { get; set; } = "";
 
     public string PaymentToAccountId { get; set; } = "";
 }
 
-public record PurchaseTransactionDto() : DebitTransactionDto(TransactionTypes.Keys.PURCHASE)
+public sealed record PurchaseTransactionDto() :
+    CreditTransactionDto(TransactionTypes.Keys.PURCHASE)
 {
     public bool IsPaid => PaidDate.HasValue;
 
     public List<TransactionItemDto> Items { get; set; } = [];
-
-    public string PayerPayeeId { get; set; } = "";
-
-    public PayerPayeeDto? PayerPayee { get; set; }
 
     public DateTime? PaidDate { get; set; }
 
@@ -98,7 +92,12 @@ public record PurchaseTransactionDto() : DebitTransactionDto(TransactionTypes.Ke
     public decimal TotalPaid { get; set; }
 }
 
-public record WithdrawalTransactionDto() : DebitTransactionDto(TransactionTypes.Keys.WITHDRAWAL)
+/// <summary>
+/// A transaction that takes money out of an account,
+/// such as a withdrawal from a checking account.
+/// </summary>
+public sealed record WithdrawalTransactionDto() :
+    CreditTransactionDto(TransactionTypes.Keys.WITHDRAWAL)
 {
     /// <summary>
     /// The Id of the underlying account that the withdrawal was made FROM.
@@ -109,6 +108,30 @@ public record WithdrawalTransactionDto() : DebitTransactionDto(TransactionTypes.
     /// The Id of the underlying account that the withdrawal was made TO.
     /// </summary>
     public string WithdrewToAccountId { get; set; } = "";
+}
+
+#endregion
+
+#region - Debit Transactions -
+
+/// <summary>
+/// A Debit Transaction ("DR") is a transaction that adds money to an account.
+/// </summary>
+public abstract record DebitTransactionDto : TransactionDto
+{
+    protected DebitTransactionDto(TransactionTypes.Keys transactionType) :
+        base(false, transactionType)
+    { }
+}
+
+/// <summary>
+/// A transaction that adds money to an account,
+/// such as cash to a checking account.
+/// </summary>
+public sealed record DepositTransactionDto() :
+    DebitTransactionDto(TransactionTypes.Keys.DEPOSIT)
+{
+    //public string CategoryId { get; set; } = "";
 }
 
 #endregion

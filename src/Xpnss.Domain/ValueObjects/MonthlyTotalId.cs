@@ -20,7 +20,7 @@ public sealed record MonthlyTotalId : EntityObjectId
     }
 
 
-    public new static MonthlyTotalId New => new(ObjectId.GenerateNewId().ToString());
+    public new static MonthlyTotalId New => new(ObjectId.GenerateNewId());
 
     public new static MonthlyTotalId Empty => new();
 

@@ -6,9 +6,6 @@ namespace Habanerio.Xpnss.PayerPayees.Infrastructure.Data;
 
 public class PayerPayeesDbContext : XpnssDbContext
 {
-    protected IMongoCollection<PayerPayeeDocument> PayerPayees =>
-        base.Collection<PayerPayeeDocument>();
-
     //public PayerPayeesDbContext(IOptions<MongoDbSettings> options) : base(options)
     //{
     //    Configure();
@@ -27,6 +24,6 @@ public class PayerPayeesDbContext : XpnssDbContext
                 .Ascending(a => a.Id),
             new CreateIndexOptions { Unique = true });
 
-        PayerPayees.Indexes.CreateOne(uniqueUserPayerPayeeIdIndex);
+        Collection<PayerPayeeDocument>().Indexes.CreateOne(uniqueUserPayerPayeeIdIndex);
     }
 }

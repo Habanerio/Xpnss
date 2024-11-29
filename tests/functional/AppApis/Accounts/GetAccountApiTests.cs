@@ -16,15 +16,18 @@ public class GetAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Program> 
     [Fact]
     public async Task GetAccount_ReturnsOk()
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         var availableAccounts =
-            (await AccountDocumentsRepository.FindDocumentsAsync(a => a.UserId == USER_ID)).ToList();
+            (await AccountDocumentsRepository.FindDocumentsAsync(a =>
+                a.UserId == USER_ID)).ToList();
 
         foreach (var availableAccount in availableAccounts)
         {
             // Act
             var response = await HttpClient.GetAsync(
                 ENDPOINTS_ACCOUNTS_GET_ACCOUNTS
-                    .Replace("{userId}", USER_ID)
+                    .Replace("{userId}", USER_ID.ToString())
                     .Replace("{accountId}", availableAccount.Id.ToString()));
 
             // Assert
@@ -43,7 +46,7 @@ public class GetAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Program> 
 
             var accountDto = Assert.IsType<AccountDto>(apiResponse.Data);
             Assert.NotNull(accountDto);
-            Assert.Equal(USER_ID, accountDto.UserId);
+            Assert.Equal(USER_ID.ToString(), accountDto.UserId);
             Assert.Equal(availableAccount.Id.ToString(), accountDto.Id);
             Assert.Equal(availableAccount.AccountType.ToString(), accountDto.AccountType);
             Assert.Equal(availableAccount.Balance, accountDto.Balance);

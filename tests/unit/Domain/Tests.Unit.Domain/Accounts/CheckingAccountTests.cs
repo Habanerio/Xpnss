@@ -11,7 +11,18 @@ public class CheckingAccountTests : BaseAccountTests
 
     public CheckingAccountTests()
     {
-        _testClass = AutoFixture.Create<CheckingAccount>();
+        _testClass = CheckingAccount.Load(
+            AccountId.New,
+            UserId.New,
+            new AccountName("Checking Account"),
+            new Money(2000),
+            "Description",
+            "#110022",
+            new Money(1000),
+            null,
+            DateTime.Now,
+            null,
+            null);
     }
 
     [Fact]
@@ -31,7 +42,18 @@ public class CheckingAccountTests : BaseAccountTests
         var dateUpdated = AutoFixture.Create<DateTime?>();
 
         // Act
-        var result = CheckingAccount.Load(id, userId, accountName, balance, description, displayColor, overDraftAmount, dateCreated, dateClosed, dateDeleted, dateUpdated);
+        var result = CheckingAccount.Load(
+            id,
+            userId,
+            accountName,
+            balance,
+            description,
+            displayColor,
+            overDraftAmount,
+            dateClosed,
+            dateCreated,
+            dateDeleted,
+            dateUpdated);
 
         // Assert
         Assert.Equal(id, result.Id);
@@ -59,8 +81,8 @@ public class CheckingAccountTests : BaseAccountTests
                 AutoFixture.Create<string>(),
                 "#110022",
                 NewMoney(58756),
-                AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
+                AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
                 AutoFixture.Create<DateTime?>()));
     }
@@ -77,8 +99,8 @@ public class CheckingAccountTests : BaseAccountTests
                 AutoFixture.Create<string>(),
                 "#110022",
                 NewMoney(58756),
-                AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
+                AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
                 AutoFixture.Create<DateTime?>()));
     }
@@ -104,6 +126,8 @@ public class CheckingAccountTests : BaseAccountTests
         Assert.Equal(description, result.Description);
         Assert.Equal(displayColor, result.DisplayColor);
         Assert.Equal(overDraftAmount, result.OverdraftAmount);
+
+        Assert.False(result.IsCredit);
     }
 
     [Fact]
@@ -258,13 +282,13 @@ public class CheckingAccountTests : BaseAccountTests
         // Arrange
         var previousValue = _testClass.Balance;
 
-        var value = NewMoney(1000);
+        var expectedValue = NewMoney(45674);
 
         // Act
-        _testClass.UpdateBalance(value);
+        _testClass.UpdateBalance(expectedValue);
 
         // Assert
-        Assert.Equal(previousValue + value, _testClass.Balance);
+        Assert.Equal(expectedValue, _testClass.Balance);
     }
 
     /// <summary>

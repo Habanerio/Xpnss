@@ -9,7 +9,7 @@ internal static partial class InfrastructureMapper
     public static Adjustment? Map(AdjustmentDocument? doc)
     {
         if (doc is null)
-            return null;
+            return default;
 
         return Adjustment.Load(
             new EntityObjectId(doc.Id),
@@ -29,7 +29,7 @@ internal static partial class InfrastructureMapper
     public static AdjustmentDocument? Map(Adjustment? entity)
     {
         if (entity is null)
-            return null;
+            return default;
 
         return new AdjustmentDocument
         {

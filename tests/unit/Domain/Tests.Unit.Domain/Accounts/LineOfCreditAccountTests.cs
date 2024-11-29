@@ -40,7 +40,19 @@ public class LineOfCreditAccountTests : BaseAccountTests
         var interestRate = NewPercentageRate(34);
 
         // Act
-        var result = LineOfCreditAccount.Load(id, userId, accountName, balance, description, displayColor, creditLimit, interestRate, dateCreated, dateClosed, dateDeleted, dateUpdated);
+        var result = LineOfCreditAccount.Load(
+            id,
+            userId,
+            accountName,
+            balance,
+            description,
+            displayColor,
+            creditLimit,
+            interestRate,
+            dateClosed,
+            dateCreated,
+            dateUpdated,
+            dateDeleted);
 
         // Assert
         Assert.Equal(id, result.Id);
@@ -70,8 +82,8 @@ public class LineOfCreditAccountTests : BaseAccountTests
                 "#110022",
                 NewMoney(58756),
                 NewPercentageRate(34),
-                AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
+                AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
                 AutoFixture.Create<DateTime?>()));
     }
@@ -89,8 +101,8 @@ public class LineOfCreditAccountTests : BaseAccountTests
                 "#110022",
                 NewMoney(58756),
                 NewPercentageRate(34),
-                AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
+                AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
                 AutoFixture.Create<DateTime?>()));
     }
@@ -118,6 +130,8 @@ public class LineOfCreditAccountTests : BaseAccountTests
         Assert.Equal(description, result.Description);
         Assert.Equal(displayColor, result.DisplayColor);
         Assert.Equal(interestRate, result.InterestRate);
+
+        Assert.True(result.IsCredit);
     }
 
     [Fact]
@@ -272,13 +286,13 @@ public class LineOfCreditAccountTests : BaseAccountTests
         // Arrange
         var previousValue = _testClass.Balance;
 
-        var value = NewMoney(1000);
+        var expectedValue = NewMoney(34634);
 
         // Act
-        _testClass.UpdateBalance(value);
+        _testClass.UpdateBalance(expectedValue);
 
         // Assert
-        Assert.Equal(previousValue + value, _testClass.Balance);
+        Assert.Equal(expectedValue, _testClass.Balance);
     }
 
     /// <summary>

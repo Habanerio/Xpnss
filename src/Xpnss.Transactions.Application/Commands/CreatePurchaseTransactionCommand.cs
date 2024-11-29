@@ -6,21 +6,20 @@ using Habanerio.Xpnss.Domain.ValueObjects;
 using Habanerio.Xpnss.Infrastructure.IntegrationEvents.Transactions;
 using Habanerio.Xpnss.Transactions.Application.Mappers;
 using Habanerio.Xpnss.Transactions.Domain.Entities;
+using Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using MediatR;
 
 namespace Habanerio.Xpnss.Transactions.Application.Commands;
 
-public record CreatePurchaseTransactionCommand(
+public sealed record CreatePurchaseTransactionCommand(
     string UserId,
     CreatePurchaseTransactionRequest Request) :
     ITransactionsCommand<Result<PurchaseTransactionDto>>;
 
-public class CreatePurchaseTransactionHandler(
+public sealed class CreatePurchaseTransactionHandler(
     ITransactionsRepository repository,
-    IMediator mediator
-    //,IEventDispatcher eventDispatcher
-    ) : IRequestHandler<CreatePurchaseTransactionCommand, Result<PurchaseTransactionDto>>
+    IMediator mediator) : IRequestHandler<CreatePurchaseTransactionCommand, Result<PurchaseTransactionDto>>
 {
     // Would like to use the following, but wasn't able to get it to work. Revisit later.
     ///private readonly IEventDispatcher _eventDispatcher = eventDispatcher ??

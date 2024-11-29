@@ -11,7 +11,7 @@ namespace Habanerio.Xpnss.Accounts.Infrastructure.Data.Documents;
 public class AccountDocument : MongoDocument//, IMongoDocument
 {
     [BsonElement("user_id")]
-    public string UserId { get; set; }
+    public ObjectId UserId { get; set; }
 
     [BsonElement("account_type")]
     [BsonRepresentation(BsonType.String)]
@@ -34,15 +34,6 @@ public class AccountDocument : MongoDocument//, IMongoDocument
     [BsonElement("balance")]
     public decimal Balance { get; set; }
 
-    /// <summary>
-    /// Keeps track of all the "Adjustments"
-    /// (eg: AddBalanceAdjustment, AdjustOverdraft, AdjustInterest)
-    /// that the user or system has made to the Account.
-    /// This does not keep track of regular Balance updates.
-    /// </summary>
-    //[BsonElement("adjustment_history")]
-    //public List<AdjustmentDocument> AdjustmentHistories { get; set; }
-
     [BsonElement("is_default")]
     public bool IsDefault { get; set; }
 
@@ -55,13 +46,9 @@ public class AccountDocument : MongoDocument//, IMongoDocument
     [BsonElement("is_deleted")]
     public bool IsDeleted { get; set; }
 
-    // How do I update an item from MonthlyTotals, when it needs to be managed internally?
-    // From a coding perspective, it is easy.
-    // But from a business logic, it's a bit harder.
-    // Don't think having a publicly available "UpdateMonthlyTotal" method is the best way to go.
-    // If Accounts themselves managed Transactions, then it would be easy, and would make sense.
-    //[BsonElement("monthly_totals")]
-    //public List<AccountMonthlyTotalDocument> MonthlyTotals { get; set; }
+    [BsonElement("date_closed")]
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime? DateClosed { get; set; }
 
     [BsonElement("date_created")]
     [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
@@ -70,10 +57,6 @@ public class AccountDocument : MongoDocument//, IMongoDocument
     [BsonElement("date_updated")]
     [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
     public DateTime? DateUpdated { get; set; }
-
-    [BsonElement("date_closed")]
-    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
-    public DateTime? DateClosed { get; set; }
 
     [BsonElement("date_deleted")]
     [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]

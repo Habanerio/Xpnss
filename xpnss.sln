@@ -87,11 +87,25 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpnss.PayerPayees.Infrastru
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "monthlytotals", "monthlytotals", "{CB6E2517-659E-41B0-B5B4-87792C637581}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpnss.MonthlyTotals.Application", "src\MonthlyTotals\Xpnss.MonthlyTotals.Application\Xpnss.MonthlyTotals.Application.csproj", "{C24CA122-0AF5-48EC-A4A2-F440588FB527}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpnss.MonthlyTotals.Application", "src\MonthlyTotals\Xpnss.MonthlyTotals.Application\Xpnss.MonthlyTotals.Application.csproj", "{C24CA122-0AF5-48EC-A4A2-F440588FB527}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpnss.MonthlyTotals.Domain", "src\MonthlyTotals\Xpnss.MonthlyTotals.Domain\Xpnss.MonthlyTotals.Domain.csproj", "{80A95776-AFFF-473F-9FDB-12F7C044AACB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpnss.MonthlyTotals.Domain", "src\MonthlyTotals\Xpnss.MonthlyTotals.Domain\Xpnss.MonthlyTotals.Domain.csproj", "{80A95776-AFFF-473F-9FDB-12F7C044AACB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpnss.MonthlyTotals.Infrastructure", "src\MonthlyTotals\Xpnss.MonthlyTotals.Infrastructure\Xpnss.MonthlyTotals.Infrastructure.csproj", "{7DB93519-E1F3-44DF-BEFE-FD0725CF7A27}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xpnss.MonthlyTotals.Infrastructure", "src\MonthlyTotals\Xpnss.MonthlyTotals.Infrastructure\Xpnss.MonthlyTotals.Infrastructure.csproj", "{7DB93519-E1F3-44DF-BEFE-FD0725CF7A27}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "userprofiles", "userprofiles", "{E0DE14C6-EB88-4194-BE29-DEF01C93A1FF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpnss.UserProfiles.Application", "src\UserProfiles\Xpnss.UserProfiles.Application\Xpnss.UserProfiles.Application.csproj", "{D8FCE66C-C924-4DB3-83D7-53A361AA3441}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpnss.UserProfiles.Domain", "src\UserProfiles\Xpnss.UserProfiles.Domain\Xpnss.UserProfiles.Domain.csproj", "{436B4B19-D649-46CC-BFFB-64B58A3A7312}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xpnss.UserProfiles.Infrastructure", "src\UserProfiles\Xpnss.UserProfiles.Infrastructure\Xpnss.UserProfiles.Infrastructure.csproj", "{26CC9A9E-4E10-4AD8-B678-57DF368E11B8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5C7229C3-D77D-4F62-8B78-49445B5368F7}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.unitTestGeneratorConfig = .unitTestGeneratorConfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -215,6 +229,18 @@ Global
 		{7DB93519-E1F3-44DF-BEFE-FD0725CF7A27}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7DB93519-E1F3-44DF-BEFE-FD0725CF7A27}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7DB93519-E1F3-44DF-BEFE-FD0725CF7A27}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8FCE66C-C924-4DB3-83D7-53A361AA3441}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8FCE66C-C924-4DB3-83D7-53A361AA3441}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8FCE66C-C924-4DB3-83D7-53A361AA3441}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8FCE66C-C924-4DB3-83D7-53A361AA3441}.Release|Any CPU.Build.0 = Release|Any CPU
+		{436B4B19-D649-46CC-BFFB-64B58A3A7312}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{436B4B19-D649-46CC-BFFB-64B58A3A7312}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{436B4B19-D649-46CC-BFFB-64B58A3A7312}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{436B4B19-D649-46CC-BFFB-64B58A3A7312}.Release|Any CPU.Build.0 = Release|Any CPU
+		{26CC9A9E-4E10-4AD8-B678-57DF368E11B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26CC9A9E-4E10-4AD8-B678-57DF368E11B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26CC9A9E-4E10-4AD8-B678-57DF368E11B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26CC9A9E-4E10-4AD8-B678-57DF368E11B8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -263,6 +289,10 @@ Global
 		{C24CA122-0AF5-48EC-A4A2-F440588FB527} = {CB6E2517-659E-41B0-B5B4-87792C637581}
 		{80A95776-AFFF-473F-9FDB-12F7C044AACB} = {CB6E2517-659E-41B0-B5B4-87792C637581}
 		{7DB93519-E1F3-44DF-BEFE-FD0725CF7A27} = {CB6E2517-659E-41B0-B5B4-87792C637581}
+		{E0DE14C6-EB88-4194-BE29-DEF01C93A1FF} = {BCDC1926-6CE6-4942-8720-3E2DD4B49E0C}
+		{D8FCE66C-C924-4DB3-83D7-53A361AA3441} = {E0DE14C6-EB88-4194-BE29-DEF01C93A1FF}
+		{436B4B19-D649-46CC-BFFB-64B58A3A7312} = {E0DE14C6-EB88-4194-BE29-DEF01C93A1FF}
+		{26CC9A9E-4E10-4AD8-B678-57DF368E11B8} = {E0DE14C6-EB88-4194-BE29-DEF01C93A1FF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {33A7DC7B-6CCF-4CE8-9C33-2C0041458710}

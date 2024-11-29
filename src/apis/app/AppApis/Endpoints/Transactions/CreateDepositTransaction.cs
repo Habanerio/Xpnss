@@ -33,7 +33,7 @@ public sealed class CreateDepositTransaction : BaseEndpoint
                 .Produces<ApiResponse<PurchaseTransactionDto>>((int)HttpStatusCode.OK)
                 .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
                 .WithDisplayName("New Deposit Transaction")
-                .WithName("CreateDepositTransaction")
+                .WithName("CreateDepositTransactionCommand")
                 .WithTags("Transactions")
                 .WithOpenApi();
         }

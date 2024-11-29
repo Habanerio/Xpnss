@@ -1,6 +1,6 @@
 namespace Habanerio.Xpnss.Application.DTOs;
 
-public record MonthlyTotalDto
+public sealed record MonthlyTotalDto
 {
     public string EntityId { get; init; }
 

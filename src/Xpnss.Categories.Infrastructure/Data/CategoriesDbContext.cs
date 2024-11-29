@@ -6,8 +6,6 @@ namespace Habanerio.Xpnss.Categories.Infrastructure.Data;
 
 public class CategoriesDbContext : XpnssDbContext
 {
-    protected IMongoCollection<CategoryDocument> Categories => Collection<CategoryDocument>();
-
     //public CategoriesDbContext(IOptions<MongoDbSettings> options) : base(options)
     //{
     //    Configure();
@@ -28,6 +26,6 @@ public class CategoriesDbContext : XpnssDbContext
             new CreateIndexOptions { Unique = true }
         );
 
-        Categories.Indexes.CreateOne(uniqueUserCategoryIdIndex);
+        Collection<CategoryDocument>().Indexes.CreateOne(uniqueUserCategoryIdIndex);
     }
 }

@@ -5,6 +5,24 @@ namespace Habanerio.Xpnss.Accounts.Domain.Entities.Accounts;
 
 public sealed class CashAccount : BaseAccount
 {
+    // New Cash Accounts
+    private CashAccount(
+        UserId userId,
+        AccountName accountName,
+        Money balance,
+        string description,
+        string displayColor) :
+        base(
+            userId,
+            AccountTypes.Keys.Cash,
+            accountName,
+            false,
+            balance,
+            description,
+            displayColor)
+    { }
+
+    // Existing Cash Accounts
     private CashAccount(
         AccountId id,
         UserId userId,
@@ -12,22 +30,23 @@ public sealed class CashAccount : BaseAccount
         Money balance,
         string description,
         string displayColor,
-        DateTime dateCreated,
         DateTime? dateClosed,
-        DateTime? dateDeleted,
-        DateTime? dateUpdated) :
+        DateTime dateCreated,
+        DateTime? dateUpdated = null,
+        DateTime? dateDeleted = null) :
         base(
             id,
             userId,
             AccountTypes.Keys.Cash,
             accountName,
+            false,
             balance,
             description,
             displayColor,
-            dateCreated,
             dateClosed,
-            dateDeleted,
-            dateUpdated)
+            dateCreated,
+            dateUpdated,
+            dateDeleted)
     { }
 
     public static CashAccount Load(
@@ -37,10 +56,10 @@ public sealed class CashAccount : BaseAccount
         Money balance,
         string description,
         string displayColor,
-        DateTime dateCreated,
         DateTime? dateClosed,
-        DateTime? dateDeleted,
-        DateTime? dateUpdated)
+        DateTime dateCreated,
+        DateTime? dateUpdated,
+        DateTime? dateDeleted)
     {
         return new CashAccount(
             id,
@@ -49,10 +68,10 @@ public sealed class CashAccount : BaseAccount
             balance,
             description,
             displayColor,
-            dateCreated,
             dateClosed,
-            dateDeleted,
-            dateUpdated);
+            dateCreated,
+            dateUpdated,
+            dateDeleted);
     }
 
     public static CashAccount New(
@@ -62,14 +81,9 @@ public sealed class CashAccount : BaseAccount
         string displayColor)
     {
         return new CashAccount(
-            AccountId.New,
             userId,
             accountName, Money.Zero,
             description,
-            displayColor,
-            DateTime.UtcNow,
-            null,
-            null,
-            null);
+            displayColor);
     }
 }

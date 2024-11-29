@@ -2,7 +2,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
 using Habanerio.Xpnss.Application.DTOs;
-using Habanerio.Xpnss.Categories.Application.Commands.CreateCategory;
+using Habanerio.Xpnss.Categories.Application.Commands;
 using Microsoft.AspNetCore.Mvc.Testing;
 using MongoDB.Bson;
 
@@ -17,13 +17,15 @@ public class CreateCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
     [Fact]
     public async Task CanCall_CreateCategory_WithValidRequest_ReturnsOk()
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         var uniqueness = Guid.NewGuid();
         var newCategoryName = $"NewId Category {uniqueness.ToString()}";
         var newCategoryDescription = $"{newCategoryName} Description";
 
         // Arrange
         var request = new CreateCategoryCommand(
-            USER_ID,
+            USER_ID.ToString(),
             newCategoryName,
             null,
             newCategoryDescription,
@@ -32,7 +34,7 @@ public class CreateCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
         // Act
         var response = await HttpClient.PostAsJsonAsync(
             ENDPOINTS_CREATE_CATEGORY
-                .Replace("{userId}", USER_ID),
+                .Replace("{userId}", USER_ID.ToString()),
             request);
 
         response.EnsureSuccessStatusCode();
@@ -47,7 +49,7 @@ public class CreateCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
         var actualDto = Assert.IsType<CategoryDto>(apiResponse.Data);
         Assert.NotNull(actualDto);
         Assert.NotEqual(ObjectId.Empty.ToString(), actualDto.Id);
-        Assert.Equal(USER_ID, request.UserId);
+        Assert.Equal(USER_ID.ToString(), request.UserId);
         Assert.Contains(actualDto.Name, request.Name);
         Assert.Equal(request.Description, actualDto.Description);
         // Would rather have it null
@@ -63,9 +65,17 @@ public class CreateCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
     [Fact]
     public async Task CanCall_CreateSubCategory_WithValidRequest_ReturnsOk()
     {
-        var categoryDocs = await CategoryDocumentsRepository.FindDocumentsAsync(c => c.UserId == USER_ID);
+        var USER_ID = await GetTestUserObjectIdAsync();
 
-        var firstCategoryDoc = categoryDocs.First();
+        var categoryDocs =
+            (await CategoryDocumentsRepository
+                .FindDocumentsAsync(c =>
+                    c.UserId == USER_ID))?.ToList() ?? [];
+
+        if (categoryDocs.Count == 0)
+            Assert.Fail("Need to add Categories before running the test");
+
+        var firstCategoryDoc = categoryDocs[0];
 
         var uniqueness = Guid.NewGuid();
         var newCategoryName = $"{firstCategoryDoc.Name} {uniqueness.ToString()}";
@@ -73,7 +83,7 @@ public class CreateCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
 
         // Arrange
         var request = new CreateCategoryCommand(
-            USER_ID,
+            USER_ID.ToString(),
             newCategoryName,
             firstCategoryDoc.Id.ToString(),
             newCategoryDescription,
@@ -82,13 +92,15 @@ public class CreateCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
         // Act
         var response = await HttpClient.PostAsJsonAsync(
             ENDPOINTS_CREATE_CATEGORY
-                .Replace("{userId}", USER_ID),
+                .Replace("{userId}", USER_ID.ToString()),
             request);
 
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<CategoryDto>>(content, JsonSerializationOptions);
+        var apiResponse = JsonSerializer.Deserialize<ApiResponse<CategoryDto>>(
+            content,
+            JsonSerializationOptions);
 
         // Assert
         Assert.NotNull(apiResponse);
@@ -98,7 +110,7 @@ public class CreateCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
         Assert.NotNull(actualDto);
 
         Assert.NotEqual(ObjectId.Empty.ToString(), actualDto.Id);
-        Assert.Equal(USER_ID, request.UserId);
+        Assert.Equal(USER_ID.ToString(), request.UserId);
         Assert.Contains(actualDto.Name, request.Name);
         Assert.Equal(request.Description, actualDto.Description);
         Assert.NotNull(actualDto.ParentId);

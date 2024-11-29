@@ -3,7 +3,7 @@ using Carter;
 using FluentValidation;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
 using Habanerio.Xpnss.Application.DTOs;
-using Habanerio.Xpnss.Categories.Application.Commands.CreateCategory;
+using Habanerio.Xpnss.Categories.Application.Commands;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 

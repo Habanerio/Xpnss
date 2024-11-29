@@ -8,8 +8,28 @@ public sealed class SavingsAccount : BaseAccount, IHasInterestRate
 {
     public PercentageRate InterestRate { get; set; }
 
+    // New Savings Account
+    private SavingsAccount(
+        UserId userId,
+        AccountName accountName,
+        Money balance,
+        string description,
+        string displayColor,
+        PercentageRate interestRate) :
+        base(
+            userId,
+            AccountTypes.Keys.Savings,
+            accountName,
+            false,
+            balance,
+            description,
+            displayColor)
+    {
+        InterestRate = interestRate;
+    }
+
     /// <summary>
-    /// Actual creation of a NEW or EXISTING instance of a Savings Account.
+    /// Existing Savings Account
     /// </summary>
     private SavingsAccount(
         AccountId id,
@@ -19,22 +39,23 @@ public sealed class SavingsAccount : BaseAccount, IHasInterestRate
         string description,
         string displayColor,
         PercentageRate interestRate,
-        DateTime dateCreated,
         DateTime? dateClosed,
-        DateTime? dateDeleted,
-        DateTime? dateUpdated) :
+        DateTime dateCreated,
+        DateTime? dateUpdated = null,
+        DateTime? dateDeleted = null) :
         base(
             id,
             userId,
             AccountTypes.Keys.Savings,
             accountName,
+            false,
             balance,
             description,
             displayColor,
-            dateCreated,
             dateClosed,
-            dateDeleted,
-            dateUpdated)
+            dateCreated,
+            dateUpdated,
+            dateDeleted)
     {
         InterestRate = interestRate;
     }
@@ -55,10 +76,10 @@ public sealed class SavingsAccount : BaseAccount, IHasInterestRate
         string description,
         string displayColor,
         PercentageRate interestRate,
-        DateTime dateCreated,
         DateTime? dateClosed,
-        DateTime? dateDeleted,
-        DateTime? dateUpdated)
+        DateTime dateCreated,
+        DateTime? dateUpdated,
+        DateTime? dateDeleted)
     {
         return new SavingsAccount(
             id,
@@ -68,10 +89,10 @@ public sealed class SavingsAccount : BaseAccount, IHasInterestRate
             description,
             displayColor,
             interestRate,
-            dateCreated,
             dateClosed,
-            dateDeleted,
-            dateUpdated);
+            dateCreated,
+            dateUpdated,
+            dateDeleted);
     }
 
     /// <summary>
@@ -89,23 +110,18 @@ public sealed class SavingsAccount : BaseAccount, IHasInterestRate
         PercentageRate interestRate)
     {
         return new SavingsAccount(
-            AccountId.New,
             userId,
             accountName,
             Money.Zero,
             description,
             displayColor,
-            interestRate,
-            DateTime.UtcNow,
-            null,
-            null,
-            null);
+            interestRate);
     }
 
     /// <summary>
     /// This updates the current Interest Rate of the Account.
     /// This is for when the current Interest Rate is out of sync with reality.
-    /// Use this AFTER adding it to the Adjustments.
+    /// Use this _AFTER_ adding it to the Adjustments (Domain Event).
     /// </summary>
     /// <param name="newInterestRate">The new value for the current Interest Rate</param>
     /// <exception cref="InvalidOperationException">When the account is marked as deleted</exception>

@@ -1,7 +1,6 @@
 using FluentResults;
 using FluentValidation;
 using Habanerio.Xpnss.Accounts.Application.Mappers;
-using Habanerio.Xpnss.Accounts.Domain.Entities;
 using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts;
 using Habanerio.Xpnss.Accounts.Domain.Interfaces;
 using Habanerio.Xpnss.Application.DTOs;
@@ -31,7 +30,7 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository) 
         if (result.IsFailed || result.ValueOrDefault is null)
             return Result.Fail(result.Errors?[0].Message ?? "Could not save the Account");
 
-        var accountDto = ApplicationMapper.Map(account);
+        var accountDto = ApplicationMapper.Map(result.ValueOrDefault);
 
         if (accountDto is null)
             return Result.Fail("Failed to map AccountDocument to AccountDto");
@@ -45,7 +44,7 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository) 
     /// <param name="command"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    private BaseAccount GetAccountFromCommand(CreateAccountCommand command)
+    private static BaseAccount GetAccountFromCommand(CreateAccountCommand command)
     {
         return command.AccountType switch
         {

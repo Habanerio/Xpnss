@@ -11,12 +11,13 @@ namespace Habanerio.Xpnss.Categories.Application.Commands;
 /// <summary>
 /// Adds a collection of one or more Sub Categories to an existing Category
 /// </summary>
-public class AddSubCategories
+public sealed class AddSubCategories
 {
     public record Command(
         string UserId,
         string ParentCategoryId,
-        IEnumerable<CategoryDto> SubCategories) : ICategoriesCommand<Result<CategoryDto>>, IRequest
+        IEnumerable<CategoryDto> SubCategories) :
+        ICategoriesCommand<Result<CategoryDto>>, IRequest
     { }
 
     public class Handler(ICategoriesRepository repository) : IRequestHandler<Command, Result<CategoryDto>>

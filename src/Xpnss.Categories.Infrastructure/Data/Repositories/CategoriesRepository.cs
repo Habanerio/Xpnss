@@ -1,6 +1,6 @@
 using FluentResults;
 using Habanerio.Core.Dbs.MongoDb;
-using Habanerio.Xpnss.Categories.Domain;
+using Habanerio.Xpnss.Categories.Domain.Entities;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
 using Habanerio.Xpnss.Categories.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.Categories.Infrastructure.Mappers;
@@ -35,9 +35,15 @@ public class CategoriesRepository(
 
         await AddDocumentAsync(categoryDoc, cancellationToken);
 
+        // Need to map back to entity to get the Id
+        var newCategory = InfrastructureMapper.Map(categoryDoc);
+
+        if (newCategory is null)
+            return Result.Fail("Could not map the CategoryDocument to Category");
+
         //HandleDomainEvents(category);
 
-        return Result.Ok(category);
+        return Result.Ok(newCategory);
     }
 
     public async Task<Result<Category?>> GetAsync(
@@ -45,15 +51,17 @@ public class CategoriesRepository(
         string categoryId,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(userId))
-            return Result.Fail("UserId cannot be null or empty");
+        if (!ObjectId.TryParse(userId, out var userObjectId) ||
+            userObjectId.Equals(ObjectId.Empty))
+            return Result.Fail($"Invalid UserId: `{userId}`");
 
         if (!ObjectId.TryParse(categoryId, out var parentObjectId) ||
             parentObjectId.Equals(ObjectId.Empty))
             return Result.Fail($"Invalid Parent CategoryId: `{categoryId}`");
 
         var parentDoc = await FirstOrDefaultDocumentAsync(a =>
-                a.Id.Equals(parentObjectId) && a.UserId.Equals(userId),
+                a.UserId.Equals(userObjectId) &&
+                a.Id.Equals(parentObjectId),
             cancellationToken);
 
         // Could not be found
@@ -70,11 +78,12 @@ public class CategoriesRepository(
 
     public async Task<Result<IEnumerable<Category>>> ListAsync(string userId, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(userId))
-            return Result.Fail("UserId cannot be null or empty");
+        if (!ObjectId.TryParse(userId, out var userObjectId) ||
+            userObjectId.Equals(ObjectId.Empty))
+            return Result.Fail($"Invalid UserId: `{userId}`");
 
         var docs = (await FindDocumentsAsync(a =>
-            a.UserId == userId, cancellationToken))
+            a.UserId == userObjectId, cancellationToken))
             .OrderBy(c => c.SortOrder)
             .ThenBy(c => c.Name);
 

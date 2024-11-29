@@ -7,9 +7,9 @@ using MediatR;
 
 namespace Habanerio.Xpnss.Categories.Application.Queries.GetCategories;
 
-public record GetCategoriesQuery(string UserId) : ICategoriesQuery<Result<IEnumerable<CategoryDto>>>;
+public sealed record GetCategoriesQuery(string UserId) : ICategoriesQuery<Result<IEnumerable<CategoryDto>>>;
 
-public class GetCategoriesHandler(ICategoriesRepository repository) : IRequestHandler<GetCategoriesQuery, Result<IEnumerable<CategoryDto>>>
+public sealed class GetCategoriesHandler(ICategoriesRepository repository) : IRequestHandler<GetCategoriesQuery, Result<IEnumerable<CategoryDto>>>
 {
     private readonly ICategoriesRepository _repository = repository ??
          throw new ArgumentNullException(nameof(repository));

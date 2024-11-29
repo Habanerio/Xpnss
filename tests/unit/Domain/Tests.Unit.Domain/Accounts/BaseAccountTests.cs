@@ -13,7 +13,13 @@ public class BaseAccountTests
     public BaseAccountTests()
     {
         AutoFixture = new Fixture().Customize(new AutoMoqCustomization());
+        AutoFixture.Register(UserIdNewObjectId);
         AutoFixture.Register(ObjectId.GenerateNewId);
+    }
+
+    protected UserId UserIdNewObjectId()
+    {
+        return UserId.New;
     }
 
     public static AccountId NewAccountId()
@@ -23,7 +29,7 @@ public class BaseAccountTests
 
     public static UserId NewUserId()
     {
-        return new UserId(Guid.NewGuid().ToString());
+        return UserId.New;
     }
 
     public static AccountName NewAccountName()

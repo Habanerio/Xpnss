@@ -6,6 +6,25 @@ namespace Habanerio.Xpnss.Accounts.Domain.Entities.Accounts;
 public sealed class CreditCardAccount : BaseCreditAccount
 {
     private CreditCardAccount(
+        UserId userId,
+        AccountName accountName,
+        Money balance,
+        string description,
+        string displayColor,
+        Money creditLimit,
+        PercentageRate interestRate) :
+        base(
+            userId,
+            AccountTypes.Keys.CreditCard,
+            accountName,
+            balance,
+            description,
+            displayColor,
+            creditLimit,
+            interestRate)
+    { }
+
+    private CreditCardAccount(
         AccountId id,
         UserId userId,
         AccountName accountName,
@@ -14,10 +33,10 @@ public sealed class CreditCardAccount : BaseCreditAccount
         string displayColor,
         Money creditLimit,
         PercentageRate interestRate,
-        DateTime dateCreated,
         DateTime? dateClosed,
-        DateTime? dateDeleted,
-        DateTime? dateUpdated) :
+        DateTime dateCreated,
+        DateTime? dateUpdated = null,
+        DateTime? dateDeleted = null) :
         base(
             id,
             userId,
@@ -26,14 +45,12 @@ public sealed class CreditCardAccount : BaseCreditAccount
             balance,
             description,
             displayColor,
-
             creditLimit,
             interestRate,
-
-            dateCreated,
             dateClosed,
-            dateDeleted,
-            dateUpdated)
+            dateCreated,
+            dateUpdated,
+            dateDeleted)
     { }
 
     /// <summary>
@@ -54,10 +71,10 @@ public sealed class CreditCardAccount : BaseCreditAccount
         string displayColor,
         Money creditLimit,
         PercentageRate interestRate,
-        DateTime dateCreated,
         DateTime? dateClosed,
-        DateTime? dateDeleted,
-        DateTime? dateUpdated)
+        DateTime dateCreated,
+        DateTime? dateUpdated,
+        DateTime? dateDeleted)
     {
         return new CreditCardAccount(
             id,
@@ -68,10 +85,10 @@ public sealed class CreditCardAccount : BaseCreditAccount
             displayColor,
             creditLimit,
             interestRate,
-            dateCreated,
             dateClosed,
-            dateDeleted,
-            dateUpdated);
+            dateCreated,
+            dateUpdated,
+            dateDeleted);
     }
 
     /// <summary>
@@ -92,17 +109,12 @@ public sealed class CreditCardAccount : BaseCreditAccount
         PercentageRate interestRate)
     {
         return new CreditCardAccount(
-            AccountId.New,
             userId,
             accountName,
             Money.Zero,
             description,
             displayColor,
             creditLimit,
-            interestRate,
-            DateTime.UtcNow,
-            null,
-            null,
-            null);
+            interestRate);
     }
 }

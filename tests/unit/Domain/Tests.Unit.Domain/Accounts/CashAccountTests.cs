@@ -11,7 +11,17 @@ public class CashAccountTests : BaseAccountTests
 
     public CashAccountTests()
     {
-        _testClass = AutoFixture.Create<CashAccount>();
+        _testClass = CashAccount.Load(
+            AccountId.New,
+            UserId.New,
+            new AccountName("Test Account"),
+            NewMoney(1000),
+            "Test Description",
+            "#110022",
+            null,
+            DateTime.Now,
+            null,
+            null);
     }
 
     [Fact]
@@ -30,7 +40,17 @@ public class CashAccountTests : BaseAccountTests
         var dateUpdated = AutoFixture.Create<DateTime?>();
 
         // Act
-        var result = CashAccount.Load(id, userId, accountName, balance, description, displayColor, dateCreated, dateClosed, dateDeleted, dateUpdated);
+        var result = CashAccount.Load(
+            id,
+            userId,
+            accountName,
+            balance,
+            description,
+            displayColor,
+            dateClosed,
+            dateCreated,
+            dateUpdated,
+            dateDeleted);
 
         // Assert
         Assert.Equal(id, result.Id);
@@ -56,8 +76,8 @@ public class CashAccountTests : BaseAccountTests
                 NewMoney(4564),
                 AutoFixture.Create<string>(),
                 "#110022",
-                AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
+                AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
                 AutoFixture.Create<DateTime?>()));
     }
@@ -73,8 +93,8 @@ public class CashAccountTests : BaseAccountTests
                 NewMoney(4564),
                 AutoFixture.Create<string>(),
                 "#110022",
-                AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
+                AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
                 AutoFixture.Create<DateTime?>()));
     }
@@ -98,6 +118,8 @@ public class CashAccountTests : BaseAccountTests
         Assert.Equal(0, result.Balance.Value);
         Assert.Equal(description, result.Description);
         Assert.Equal(displayColor, result.DisplayColor);
+
+        Assert.False(result.IsCredit);
     }
 
     [Fact]
@@ -251,13 +273,13 @@ public class CashAccountTests : BaseAccountTests
         // Arrange
         var previousValue = _testClass.Balance;
 
-        var value = NewMoney(1000);
+        var expectedValue = NewMoney(1000);
 
         // Act
-        _testClass.UpdateBalance(value);
+        _testClass.UpdateBalance(expectedValue);
 
         // Assert
-        Assert.Equal(previousValue + value, _testClass.Balance);
+        Assert.Equal(expectedValue, _testClass.Balance);
     }
 
     /// <summary>

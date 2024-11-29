@@ -7,14 +7,13 @@ using Habanerio.Xpnss.MonthlyTotals.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.MonthlyTotals.Infrastructure.Mappers;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Habanerio.Xpnss.MonthlyTotals.Infrastructure.Data.Repositories;
 
+//TODO: Refactor. Create a private `GetAsync` method that takes nullables.
 public class MonthlyTotalsRepository(
-    IOptions<MongoDbSettings> options,
     IMongoDatabase mongoDb,
     ILogger<MonthlyTotalsRepository> logger,
     IMediator? mediator = null) :
@@ -24,13 +23,27 @@ public class MonthlyTotalsRepository(
     private readonly ILogger<MonthlyTotalsRepository> _logger = logger ??
         throw new ArgumentNullException(nameof(logger));
 
+    /// <summary>
+    /// Adds or appends the MonthlyTotals for the user, entity, year, and month.
+    /// </summary>
+    /// <param name="monthlyTotal">The MonthlyTotal to be added or appended</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public async Task<Result<MonthlyTotal?>> AddAsync(
         MonthlyTotal monthlyTotal,
         CancellationToken cancellationToken = default)
     {
+        if (!ObjectId.TryParse(monthlyTotal.UserId, out var userObjectId) ||
+            userObjectId.Equals(ObjectId.Empty))
+            return Result.Fail($"Invalid UserId: `{monthlyTotal.UserId}`");
+
+        ObjectId? entityObjectId = string.IsNullOrWhiteSpace(monthlyTotal.EntityId?.Value) ?
+            ObjectId.Parse(monthlyTotal.EntityId?.Value) :
+            null;
+
         var existingMonthlyTotalDoc = await FirstOrDefaultDocumentAsync(a =>
                 a.UserId.Equals(monthlyTotal.UserId) &&
-                a.EntityId.Equals(monthlyTotal.EntityId) &&
+                (entityObjectId == null || a.EntityId.Equals(entityObjectId)) &&
                 a.Year == monthlyTotal.Year &&
                 a.Month == monthlyTotal.Month,
             cancellationToken);
@@ -54,7 +67,7 @@ public class MonthlyTotalsRepository(
 
         var newMonthlyTotal = InfrastructureMapper.Map(monthlyTotalDoc);
 
-        return Result.Ok<MonthlyTotal?>(newMonthlyTotal);
+        return Result.Ok(newMonthlyTotal);
     }
 
     public async Task<Result<MonthlyTotal?>> GetAsync(
@@ -65,15 +78,22 @@ public class MonthlyTotalsRepository(
         int month,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(userId))
-            return Result.Fail("UserId cannot be null or empty");
+        if (!ObjectId.TryParse(userId, out var userObjectId) ||
+            userObjectId.Equals(ObjectId.Empty))
+            return Result.Fail($"Invalid UserId: `{userId}`");
 
-        if (string.IsNullOrWhiteSpace(entityId))
-            return Result.Fail($"Invalid EntityId: `{entityId}`");
+        ObjectId? entityObjectId = string.IsNullOrWhiteSpace(entityId) ?
+            null :
+            ObjectId.Parse(entityId);
+
+        //if (!ObjectId.TryParse(entityId, out var entityObjectId) ||
+        //    entityObjectId.Equals(ObjectId.Empty))
+        //    return Result.Fail($"Invalid EntityId: `{entityId}`");
 
         var monthlyTotalDoc = await FirstOrDefaultDocumentAsync(t =>
-                t.UserId.Equals(userId) &&
-                t.EntityId.Equals(entityId) &&
+                t.UserId.Equals(userObjectId) &&
+                //t.EntityId.Equals(entityObjectId) &&
+                (entityObjectId == null || t.EntityId.Equals(entityObjectId)) &&
                 (entityType == null || t.EntityType.Equals(entityType)) &&
                 t.Year == year &&
                 t.Month == month,
@@ -96,15 +116,21 @@ public class MonthlyTotalsRepository(
         EntityTypes.Keys? entityType,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(userId))
-            return Result.Fail("UserId cannot be null or empty");
+        if (!ObjectId.TryParse(userId, out var userObjectId) ||
+            userObjectId.Equals(ObjectId.Empty))
+            return Result.Fail($"Invalid UserId: `{userId}`");
 
-        if (string.IsNullOrWhiteSpace(entityId))
-            return Result.Fail($"Invalid EntityId: `{entityId}`");
+        ObjectId? entityObjectId = string.IsNullOrWhiteSpace(entityId) ?
+            null :
+            ObjectId.Parse(entityId);
+
+        //if (!ObjectId.TryParse(entityId, out var entityObjectId) ||
+        //    entityObjectId.Equals(ObjectId.Empty))
+        //    return Result.Fail($"Invalid EntityId: `{entityId}`");
 
         var monthlyTotalDocs = (await FindDocumentsAsync(t =>
-                t.UserId.Equals(userId) &&
-                t.EntityId.Equals(entityId) &&
+                t.UserId.Equals(userObjectId) &&
+                (entityObjectId == null || t.EntityId.Equals(entityObjectId)) &&
                 (entityType == null || t.EntityType.Equals(entityType)),
             cancellationToken)).ToList();
 
@@ -123,15 +149,21 @@ public class MonthlyTotalsRepository(
         int year,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(userId))
-            return Result.Fail("UserId cannot be null or empty");
+        if (!ObjectId.TryParse(userId, out var userObjectId) ||
+            userObjectId.Equals(ObjectId.Empty))
+            return Result.Fail($"Invalid UserId: `{userId}`");
 
-        if (string.IsNullOrWhiteSpace(entityId))
-            return Result.Fail($"Invalid EntityId: `{entityId}`");
+        ObjectId? entityObjectId = string.IsNullOrWhiteSpace(entityId) ?
+            null :
+            ObjectId.Parse(entityId);
+
+        //if (!ObjectId.TryParse(entityId, out var entityObjectId) ||
+        //    entityObjectId.Equals(ObjectId.Empty))
+        //    return Result.Fail($"Invalid EntityId: `{entityId}`");
 
         var monthlyTotalDocs = (await FindDocumentsAsync(t =>
-                t.UserId.Equals(userId) &&
-                t.EntityId.Equals(entityId) &&
+                t.UserId.Equals(userObjectId) &&
+                (entityObjectId == null || t.EntityId.Equals(entityObjectId)) &&
                 (entityType == null || t.EntityType.Equals(entityType)) &&
                 t.Year.Equals(year),
             cancellationToken)).ToList();
@@ -152,15 +184,21 @@ public class MonthlyTotalsRepository(
         int month,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(userId))
-            return Result.Fail("UserId cannot be null or empty");
+        if (!ObjectId.TryParse(userId, out var userObjectId) ||
+            userObjectId.Equals(ObjectId.Empty))
+            return Result.Fail($"Invalid UserId: `{userId}`");
 
-        if (string.IsNullOrWhiteSpace(entityId))
-            return Result.Fail($"Invalid EntityId: `{entityId}`");
+        ObjectId? entityObjectId = string.IsNullOrWhiteSpace(entityId) ?
+            null :
+            ObjectId.Parse(entityId);
+
+        //if (!ObjectId.TryParse(entityId, out var entityObjectId) ||
+        //    entityObjectId.Equals(ObjectId.Empty))
+        //    return Result.Fail($"Invalid EntityId: `{entityId}`");
 
         var monthlyTotalDocs = (await FindDocumentsAsync(t =>
-                t.UserId.Equals(userId) &&
-                t.EntityId.Equals(entityId) &&
+                t.UserId.Equals(userObjectId) &&
+                (entityObjectId == null || t.EntityId.Equals(entityObjectId)) &&
                 (entityType == null || t.EntityType.Equals(entityType)) &&
                 t.Year.Equals(year) &&
                 t.Month.Equals(month),
@@ -182,15 +220,21 @@ public class MonthlyTotalsRepository(
         (int Year, int Month) endMonth,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(userId))
-            return Result.Fail("UserId cannot be null or empty");
+        if (!ObjectId.TryParse(userId, out var userObjectId) ||
+            userObjectId.Equals(ObjectId.Empty))
+            return Result.Fail($"Invalid UserId: `{userId}`");
 
-        if (string.IsNullOrWhiteSpace(entityId))
-            return Result.Fail($"Invalid EntityId: `{entityId}`");
+        ObjectId? entityObjectId = string.IsNullOrWhiteSpace(entityId) ?
+            null :
+            ObjectId.Parse(entityId);
+
+        //if (!ObjectId.TryParse(entityId, out var entityObjectId) ||
+        //    entityObjectId.Equals(ObjectId.Empty))
+        //    return Result.Fail($"Invalid EntityId: `{entityId}`");
 
         var monthlyTotalDocs = (await FindDocumentsAsync(t =>
-                t.UserId.Equals(userId) &&
-                t.EntityId.Equals(entityId) &&
+                t.UserId.Equals(userObjectId) &&
+                (entityObjectId == null || t.EntityId.Equals(entityObjectId)) &&
                 (entityType == null || t.EntityType.Equals(entityType)) &&
 
                 // Will this work? Could store a DateTime in the Document with yy/mm/01
@@ -208,7 +252,11 @@ public class MonthlyTotalsRepository(
         return Result.Ok(monthlyTotals);
     }
 
-    public async Task<Result<MonthlyTotal>> UpdateAsync(
+    /// <summary>
+    /// Updates an existing MonthlyTotal
+    /// </summary>
+    /// <returns></returns>
+    private async Task<Result<MonthlyTotal>> UpdateAsync(
         MonthlyTotal monthlyTotal,
         CancellationToken cancellationToken = default)
     {
@@ -230,8 +278,6 @@ public class MonthlyTotalsRepository(
 
             return Result.Fail<MonthlyTotal>($"Could not update the MonthlyTotal: {e.Message}");
         }
-
-
 
         return Result.Fail<MonthlyTotal>("Could not update the MonthlyTotal");
     }

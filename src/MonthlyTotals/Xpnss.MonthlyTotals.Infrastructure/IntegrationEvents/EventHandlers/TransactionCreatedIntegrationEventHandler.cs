@@ -115,7 +115,7 @@ public class TransactionCreatedIntegrationEventHandler(
             {
                 existingMonthlyTotal = MonthlyTotal.New(
                     new UserId(userId),
-                    entityId,
+                    new EntityObjectId(entityId),
                     entityType,
                     dateOfTransaction.Year,
                     dateOfTransaction.Month,
@@ -150,9 +150,9 @@ public class TransactionCreatedIntegrationEventHandler(
             if (result.IsFailed)
             {
                 _logger.LogError("An error occurred while trying to update {EntityType} '{AccountId}' " +
-                              "Monthly Total ({@Year}/{@Month}) for User '{@event.UserId}'.\n" +
-                              "Error:{Message}",
-                                userId, entityType, entityId, dateOfTransaction.Year, dateOfTransaction.Month, result.Errors[0]?.Message);
+                  "Monthly Total ({@Year}/{@Month}) for User '{@event.UserId}'.\n" +
+                  "Error:{Message}",
+                    userId, entityType, entityId, dateOfTransaction.Year, dateOfTransaction.Month, result.Errors[0]?.Message);
 
                 return;
             }
@@ -165,8 +165,8 @@ public class TransactionCreatedIntegrationEventHandler(
         catch (Exception e)
         {
             _logger.LogCritical(e, "An error occurred while trying to update {EntityType} '{AccountId}' " +
-                                "Monthly Total ({@Year}/{@Month}) for User '{@event.UserId}'.",
-                                userId, entityType, entityId, dateOfTransaction.Year, dateOfTransaction.Month);
+                "Monthly Total ({@Year}/{@Month}) for User '{@event.UserId}'.",
+                userId, entityType, entityId, dateOfTransaction.Year, dateOfTransaction.Month);
         }
     }
 }

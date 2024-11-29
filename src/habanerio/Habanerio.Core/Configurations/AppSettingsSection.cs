@@ -4,13 +4,15 @@ namespace Habanerio.Core.Configurations;
 
 public abstract class AppSettingsSection
 {
-    public TSettings? Get<TSettings>()
+    public string Environment { get; set; }
+
+    public TSection? Get<TSection>() where TSection : AppSettingsSection
     {
-        return AppSettingsHelper.GetSettings<TSettings>();
+        return AppSettingsHelper.GetSettings<TSection>();
     }
 
-    public IOptions<TSettings> AsIOptions<TSettings>() where TSettings : class
+    public IOptions<TSection> AsIOptions<TSection>() where TSection : AppSettingsSection
     {
-        return (IOptions<TSettings>)Options.Create(this);
+        return (IOptions<TSection>)Options.Create(this);
     }
 }

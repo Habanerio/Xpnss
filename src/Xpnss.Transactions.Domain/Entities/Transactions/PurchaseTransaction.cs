@@ -1,12 +1,12 @@
 using Habanerio.Xpnss.Domain.Types;
 using Habanerio.Xpnss.Domain.ValueObjects;
 
-namespace Habanerio.Xpnss.Transactions.Domain.Entities;
+namespace Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 
 public class PurchaseTransaction : TransactionBase
 {
     private readonly List<TransactionItem> _items;
-    private readonly List<TransactionPayment> _payments;
+    private readonly List<TransactionPaymentItem> _payments;
 
     private const int MAX_ITEMS_PER_TRANSACTION = 25;
 
@@ -14,11 +14,7 @@ public class PurchaseTransaction : TransactionBase
 
     public IReadOnlyCollection<TransactionItem> Items => _items.AsReadOnly();
 
-    // Not sure if I want this nullable, or non-nullable with a "" value?
-    // Same with CategoryId
-    public PayerPayeeId PayerPayeeId { get; }
-
-    public IReadOnlyCollection<TransactionPayment> Payments => _payments.AsReadOnly();
+    public IReadOnlyCollection<TransactionPaymentItem> Payments => _payments.AsReadOnly();
 
     public override Money TotalAmount => new(_items.Sum(i => i.Amount.Value));
 
@@ -55,14 +51,13 @@ public class PurchaseTransaction : TransactionBase
             userId,
             accountId,
             TransactionTypes.Keys.PURCHASE,
+            payerPayeeId,
             new Money(items.Sum(i => i.Amount)),
             description,
             transactionDate,
             tags)
     {
-        PayerPayeeId = payerPayeeId;
-
-        _items = items?.ToList() ?? [];
+        _items = items.ToList();
         _payments = [];
     }
 
@@ -77,7 +72,7 @@ public class PurchaseTransaction : TransactionBase
         string description,
         PayerPayeeId payerPayeeId,
         List<TransactionItem> items,
-        List<TransactionPayment> payments,
+        List<TransactionPaymentItem> payments,
         DateTime transactionDate,
         IEnumerable<string>? tags,
         DateTime dateCreated,
@@ -88,6 +83,7 @@ public class PurchaseTransaction : TransactionBase
             userId,
             accountId,
             TransactionTypes.Keys.PURCHASE,
+            payerPayeeId,
             new Money(items.Sum(i => i.Amount)),
             description,
             transactionDate,
@@ -96,9 +92,7 @@ public class PurchaseTransaction : TransactionBase
             dateUpdated,
             dateDeleted)
     {
-        PayerPayeeId = payerPayeeId;
-
-        _items = items.Any() ? items?.ToList() ?? [] :
+        _items = items.Any() ? items.ToList() :
             throw new ArgumentException($"Purchase Transaction must have at least one Item");
 
         _payments = payments?.ToList() ?? [];
@@ -111,7 +105,7 @@ public class PurchaseTransaction : TransactionBase
         string description,
         PayerPayeeId payerPayeeId,
         IEnumerable<TransactionItem> items,
-        IEnumerable<TransactionPayment> payments,
+        IEnumerable<TransactionPaymentItem> payments,
         DateTime transactionDate,
         List<string>? tags,
         DateTime dateCreated,
@@ -142,15 +136,17 @@ public class PurchaseTransaction : TransactionBase
         DateTime transactionDate,
         IEnumerable<string>? tags)
     {
-        if (!items.TryGetNonEnumeratedCount(out var itemsCount) || itemsCount == 0)
-            throw new ArgumentException("At least one item must be provided.", nameof(items));
+        var itemsArray = items?.ToList() ?? [];
+
+        if (!itemsArray.Any())
+            throw new ArgumentException("The entities cannot be empty", nameof(items));
 
         return new PurchaseTransaction(
             userId,
             accountId,
             description,
             payerPayeeId,
-            items.ToList(),
+            itemsArray,
             transactionDate,
             tags);
     }
@@ -191,7 +187,7 @@ public class PurchaseTransaction : TransactionBase
 
     private void ApplyPayment(Money paymentAmount, DateTime paymentDate)
     {
-        _payments.Add(TransactionPayment.New(paymentAmount, paymentDate));
+        _payments.Add(TransactionPaymentItem.New(paymentAmount, paymentDate));
 
         DateUpdated = DateTime.UtcNow;
     }

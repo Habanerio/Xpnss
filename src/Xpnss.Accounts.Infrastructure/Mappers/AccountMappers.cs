@@ -1,8 +1,8 @@
 using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts;
 using Habanerio.Xpnss.Accounts.Infrastructure.Data.Documents;
+using Habanerio.Xpnss.Domain.Entities;
 using Habanerio.Xpnss.Domain.Types;
 using Habanerio.Xpnss.Domain.ValueObjects;
-using MongoDB.Bson;
 
 namespace Habanerio.Xpnss.Accounts.Infrastructure.Mappers;
 
@@ -11,7 +11,7 @@ internal static partial class InfrastructureMapper
     public static BaseAccount? Map(AccountDocument? document, bool includeTotals = false)
     {
         if (document == null)
-            return null;
+            return default;
 
         var account = GetAccountFromDocument(document, includeTotals);
 
@@ -20,15 +20,22 @@ internal static partial class InfrastructureMapper
 
     public static IEnumerable<BaseAccount> Map(IEnumerable<AccountDocument> documents)
     {
-        return documents.Select(d => Map(d, false)).Where(x => x is not null).Cast<BaseAccount>();
+        return documents
+            .Select(d =>
+                Map(d, false))
+            .Where(x => x is not null)
+            .Cast<BaseAccount>();
     }
 
     public static AccountDocument? Map(BaseAccount? account, bool includeTotals = false)
     {
         if (account is null)
-            return null;
+            return default;
 
-        var accountId = ObjectId.Parse(account.Id);
+        var accountId = account.Id;
+
+        if (account.EntityState == EntityState.ACTIVE && account.Id.Equals(AccountId.Empty))
+            throw new InvalidOperationException("Active Accounts must have an Id");
 
         if (account is CashAccount)
         {
@@ -37,7 +44,6 @@ internal static partial class InfrastructureMapper
                 UserId = account.UserId,
                 AccountType = account.AccountType,
                 Name = account.Name,
-                //AdjustmentHistories = Map(account.AdjustmentHistories).ToList(),
                 Balance = account.Balance,
                 Description = account.Description,
                 DisplayColor = account.DisplayColor,
@@ -45,7 +51,6 @@ internal static partial class InfrastructureMapper
                 DateClosed = account.DateClosed,
                 DateDeleted = account.DateDeleted,
                 DateUpdated = account.DateUpdated
-                //MonthlyTotals = Map(account.MonthlyTotals.ToList())
             };
 
             return cashDocument;
@@ -58,7 +63,6 @@ internal static partial class InfrastructureMapper
                 UserId = account.UserId,
                 AccountType = account.AccountType,
                 Name = account.Name,
-                //AdjustmentHistories = Map(account.AdjustmentHistories).ToList(),
                 Balance = account.Balance,
                 Description = account.Description,
                 DisplayColor = account.DisplayColor,
@@ -66,7 +70,6 @@ internal static partial class InfrastructureMapper
                 DateClosed = account.DateClosed,
                 DateDeleted = account.DateDeleted,
                 DateUpdated = account.DateUpdated,
-                //MonthlyTotals = Map(account.MonthlyTotals.ToList())
             };
 
             return checkingDocument;
@@ -79,7 +82,6 @@ internal static partial class InfrastructureMapper
                 UserId = account.UserId,
                 AccountType = account.AccountType,
                 Name = account.Name,
-                //AdjustmentHistories = Map(account.AdjustmentHistories).ToList(),
                 Balance = account.Balance,
                 Description = account.Description,
                 DisplayColor = account.DisplayColor,
@@ -87,7 +89,6 @@ internal static partial class InfrastructureMapper
                 DateClosed = account.DateClosed,
                 DateDeleted = account.DateDeleted,
                 DateUpdated = account.DateUpdated,
-                //MonthlyTotals = Map(account.MonthlyTotals.ToList())
             };
 
             return savingsDocument;
@@ -100,7 +101,6 @@ internal static partial class InfrastructureMapper
                 UserId = account.UserId,
                 AccountType = account.AccountType,
                 Name = account.Name,
-                //AdjustmentHistories = Map(account.AdjustmentHistories).ToList(),
                 Balance = account.Balance,
                 Description = account.Description,
                 DisplayColor = account.DisplayColor,
@@ -108,7 +108,6 @@ internal static partial class InfrastructureMapper
                 DateClosed = account.DateClosed,
                 DateDeleted = account.DateDeleted,
                 DateUpdated = account.DateUpdated,
-                //MonthlyTotals = Map(account.MonthlyTotals.ToList())
             };
 
             return creditCardDocument;
@@ -121,7 +120,6 @@ internal static partial class InfrastructureMapper
                 UserId = account.UserId,
                 AccountType = account.AccountType,
                 Name = account.Name,
-                //AdjustmentHistories = Map(account.AdjustmentHistories).ToList(),
                 Balance = account.Balance,
                 Description = account.Description,
                 DisplayColor = account.DisplayColor,
@@ -129,7 +127,6 @@ internal static partial class InfrastructureMapper
                 DateClosed = account.DateClosed,
                 DateDeleted = account.DateDeleted,
                 DateUpdated = account.DateUpdated,
-                //MonthlyTotals = Map(account.MonthlyTotals.ToList())
             };
 
             return lineOfCreditDocument;
@@ -146,7 +143,7 @@ internal static partial class InfrastructureMapper
     private static BaseAccount? GetAccountFromDocument(AccountDocument? document, bool includeTotals = false)
     {
         if (document is null)
-            return null;
+            return default;
 
         if (document.AccountType.Equals(AccountTypes.Keys.Cash) && document is CashAccountDocument cashDoc)
         {
@@ -158,16 +155,11 @@ internal static partial class InfrastructureMapper
                 new Money(cashDoc.Balance),
                 cashDoc.Description,
                 cashDoc.DisplayColor,
-                cashDoc.DateCreated,
                 cashDoc.DateClosed,
-                cashDoc.DateDeleted,
-                cashDoc.DateUpdated
+                cashDoc.DateCreated,
+                cashDoc.DateUpdated,
+                cashDoc.DateDeleted
             );
-
-            //cashAccount.LoadMonthlyTotals(Map(cashDoc.MonthlyTotals ?? []).ToList());
-
-            //cashAccount.LoadAdjustmentHistories(Map(cashDoc.AdjustmentHistories ?? []).ToList());
-
 
             return cashAccount;
         }
@@ -183,18 +175,11 @@ internal static partial class InfrastructureMapper
                 checkingDoc.Description,
                 checkingDoc.DisplayColor,
                 new Money(checkingDoc.OverdraftAmount),
-                checkingDoc.DateCreated,
                 checkingDoc.DateClosed,
+                checkingDoc.DateCreated,
                 checkingDoc.DateDeleted,
                 checkingDoc.DateUpdated
             );
-
-            if (includeTotals)
-            {
-                //checkingAccount.LoadMonthlyTotals(Map(checkingDoc.MonthlyTotals ?? []));
-
-                //checkingAccount.LoadAdjustmentHistories(Map(checkingDoc.AdjustmentHistories ?? []).ToList());
-            }
 
             return checkingAccount;
         }
@@ -211,18 +196,11 @@ internal static partial class InfrastructureMapper
                 savingsDoc.DisplayColor,
                 new PercentageRate(savingsDoc.InterestRate),
 
-                savingsDoc.DateCreated,
                 savingsDoc.DateClosed,
-                savingsDoc.DateDeleted,
-                savingsDoc.DateUpdated
+                savingsDoc.DateCreated,
+                savingsDoc.DateUpdated,
+                savingsDoc.DateDeleted
             );
-
-            if (includeTotals)
-            {
-                //savingsAccount.LoadMonthlyTotals(Map(savingsDoc.MonthlyTotals ?? []));
-
-                //savingsAccount.LoadAdjustmentHistories(Map(savingsDoc.AdjustmentHistories ?? []).ToList());
-            }
 
             return savingsAccount;
         }
@@ -240,18 +218,11 @@ internal static partial class InfrastructureMapper
                 new Money(ccDoc.CreditLimit),
                 new PercentageRate(ccDoc.InterestRate),
 
-                ccDoc.DateCreated,
                 ccDoc.DateClosed,
-                ccDoc.DateDeleted,
-                ccDoc.DateUpdated
+                ccDoc.DateCreated,
+                ccDoc.DateUpdated,
+                ccDoc.DateDeleted
             );
-
-            if (includeTotals)
-            {
-                //creditCardAccount.LoadMonthlyTotals(Map(ccDoc.MonthlyTotals ?? []));
-
-                //creditCardAccount.LoadAdjustmentHistories(Map(ccDoc.AdjustmentHistories ?? []).ToList());
-            }
 
             return creditCardAccount;
         }
@@ -269,18 +240,11 @@ internal static partial class InfrastructureMapper
                 new Money(locDoc.CreditLimit),
                 new PercentageRate(locDoc.InterestRate),
 
-                locDoc.DateCreated,
                 locDoc.DateClosed,
-                locDoc.DateDeleted,
-                locDoc.DateUpdated
+                locDoc.DateCreated,
+                locDoc.DateUpdated,
+                locDoc.DateDeleted
             );
-
-            if (includeTotals)
-            {
-                //lineOfCreditAccount.LoadMonthlyTotals(Map(locDoc.MonthlyTotals ?? []));
-
-                //lineOfCreditAccount.LoadAdjustmentHistories(Map(locDoc.AdjustmentHistories ?? []).ToList());
-            }
 
             return lineOfCreditAccount;
         }

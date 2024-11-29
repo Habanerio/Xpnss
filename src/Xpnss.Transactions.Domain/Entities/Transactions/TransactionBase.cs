@@ -2,7 +2,7 @@ using Habanerio.Xpnss.Domain.Entities;
 using Habanerio.Xpnss.Domain.Types;
 using Habanerio.Xpnss.Domain.ValueObjects;
 
-namespace Habanerio.Xpnss.Transactions.Domain.Entities;
+namespace Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 
 public enum TransactionStatus
 {
@@ -22,7 +22,11 @@ public class TransactionBase : AggregateRoot<TransactionId>
 
     public string Description { get; }
 
-    public bool IsDeleted => DateDeleted.HasValue;
+    /// <summary>
+    /// The id of the person, company, or account that is paying or receiving the money.
+    /// Optional
+    /// </summary>
+    public PayerPayeeId PayerPayeeId { get; }
 
     public IReadOnlyCollection<string> Tags => _tags.AsReadOnly();
 
@@ -46,12 +50,6 @@ public class TransactionBase : AggregateRoot<TransactionId>
 
     public TransactionTypes.Keys TransactionType { get; }
 
-    public DateTime DateCreated { get; init; }
-
-    public DateTime? DateUpdated { get; set; }
-
-    public DateTime? DateDeleted { get; set; }
-
     /// <summary>
     /// For NEW (non-existing) Transactions.
     /// This sets `IsTransient = true` and adds a `TransactionCreatedDomainEvent` to the domain events.
@@ -60,22 +58,23 @@ public class TransactionBase : AggregateRoot<TransactionId>
         UserId userId,
         AccountId accountId,
         TransactionTypes.Keys transactionType,
+        PayerPayeeId payerPayeeId,
         Money amount,
         string description,
         DateTime transactionDate,
-        IEnumerable<string>? tags) : base(TransactionId.New)
+        IEnumerable<string>? tags) : this(
+            TransactionId.Empty,
+            userId,
+            accountId,
+            transactionType,
+            payerPayeeId,
+            amount,
+            description,
+            transactionDate,
+            tags,
+            DateTime.UtcNow)
     {
         IsTransient = true;
-
-        UserId = userId;
-        AccountId = accountId;
-        TotalAmount = amount;
-        Description = description;
-        TransactionDate = transactionDate.Date;
-        TransactionType = transactionType;
-        DateCreated = DateTime.UtcNow;
-
-        _tags = tags?.ToList() ?? [];
 
         // AddDomainEvent(new TransactionCreatedDomainEvent(Id));
     }
@@ -88,6 +87,7 @@ public class TransactionBase : AggregateRoot<TransactionId>
         UserId userId,
         AccountId accountId,
         TransactionTypes.Keys transactionType,
+        PayerPayeeId payerPayeeId,
         Money amount,
         string description,
         DateTime transactionDate,
@@ -101,6 +101,7 @@ public class TransactionBase : AggregateRoot<TransactionId>
         AccountId = accountId;
         TransactionType = transactionType;
         Description = description;
+        PayerPayeeId = payerPayeeId;
         TotalAmount = amount;
         TransactionDate = transactionDate.Date;
         DateCreated = dateCreated;

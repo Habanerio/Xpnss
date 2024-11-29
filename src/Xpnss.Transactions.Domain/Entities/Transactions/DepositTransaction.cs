@@ -1,14 +1,10 @@
 using Habanerio.Xpnss.Domain.Types;
 using Habanerio.Xpnss.Domain.ValueObjects;
 
-namespace Habanerio.Xpnss.Transactions.Domain.Entities;
+namespace Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 
 public class DepositTransaction : TransactionBase
 {
-    // Not sure if I want this nullable, or non-nullable with a "" value?
-    // Same with CategoryId
-    public PayerPayeeId PayerPayeeId { get; }
-
     protected DepositTransaction(
         UserId userId,
         AccountId accountId,
@@ -17,10 +13,16 @@ public class DepositTransaction : TransactionBase
         PayerPayeeId payerPayeeId,
         DateTime transactionDate,
         IEnumerable<string>? tags) :
-        base(userId, accountId, TransactionTypes.Keys.DEPOSIT, amount, description, transactionDate, tags)
-    {
-        PayerPayeeId = payerPayeeId;
-    }
+        base(
+            userId,
+            accountId,
+            TransactionTypes.Keys.DEPOSIT,
+            payerPayeeId,
+            amount,
+            description,
+            transactionDate,
+            tags)
+    { }
 
     protected DepositTransaction(
         TransactionId id,
@@ -39,6 +41,7 @@ public class DepositTransaction : TransactionBase
             userId,
             accountId,
             TransactionTypes.Keys.DEPOSIT,
+            payerPayeeId,
             amount,
             description,
             transactionDate,
@@ -46,9 +49,7 @@ public class DepositTransaction : TransactionBase
             dateCreated,
             dateUpdated,
             dateDeleted)
-    {
-        PayerPayeeId = payerPayeeId;
-    }
+    { }
 
     public static DepositTransaction Load(
         TransactionId id,

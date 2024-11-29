@@ -40,7 +40,19 @@ public class CreditCardAccountTests : BaseAccountTests
         var interestRate = NewPercentageRate(34);
 
         // Act
-        var result = CreditCardAccount.Load(id, userId, accountName, balance, description, displayColor, creditLimit, interestRate, dateCreated, dateClosed, dateDeleted, dateUpdated);
+        var result = CreditCardAccount.Load(
+            id,
+            userId,
+            accountName,
+            balance,
+            description,
+            displayColor,
+            creditLimit,
+            interestRate,
+            dateClosed,
+            dateCreated,
+            dateUpdated,
+            dateDeleted);
 
         // Assert
         Assert.Equal(id, result.Id);
@@ -70,8 +82,8 @@ public class CreditCardAccountTests : BaseAccountTests
                 "#110022",
                 NewMoney(58756),
                 NewPercentageRate(34),
-                AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
+                AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
                 AutoFixture.Create<DateTime?>()));
     }
@@ -89,8 +101,8 @@ public class CreditCardAccountTests : BaseAccountTests
                 "#110022",
                 NewMoney(58756),
                 NewPercentageRate(34),
-                AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
+                AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
                 AutoFixture.Create<DateTime?>()));
     }
@@ -118,6 +130,8 @@ public class CreditCardAccountTests : BaseAccountTests
         Assert.Equal(description, result.Description);
         Assert.Equal(displayColor, result.DisplayColor);
         Assert.Equal(interestRate, result.InterestRate);
+
+        Assert.True(result.IsCredit);
     }
 
     [Fact]
@@ -204,18 +218,20 @@ public class CreditCardAccountTests : BaseAccountTests
     /// Cannot perform action when creditLimit is negative
     /// </summary>
     [Fact]
-    public void CannotCall_ApplyTransactionAmount_WithNegativeAmount()
+    public void CannotCall_ApplyTransactionAmount_WithInvalid_NegativeAmount()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => _testClass.ApplyTransactionAmount(NewMoney(-1), TransactionTypes.Keys.DEPOSIT));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            _testClass.ApplyTransactionAmount(NewMoney(-1), TransactionTypes.Keys.DEPOSIT));
     }
 
     /// <summary>
     /// Cannot perform action when creditLimit is negative
     /// </summary>
     [Fact]
-    public void CannotCall_UndoTransactionAmount_WithNegativeAmount()
+    public void CannotCall_UndoTransactionAmount_WithInvalid_NegativeAmount()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => _testClass.UndoTransactionAmount(NewMoney(-1), TransactionTypes.Keys.DEPOSIT));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            _testClass.UndoTransactionAmount(NewMoney(-1), TransactionTypes.Keys.DEPOSIT));
     }
 
     /// <summary>
@@ -226,7 +242,8 @@ public class CreditCardAccountTests : BaseAccountTests
     {
         _testClass.Delete();
 
-        Assert.Throws<InvalidOperationException>(() => _testClass.ApplyTransactionAmount(new Money(1), TransactionTypes.Keys.DEPOSIT));
+        Assert.Throws<InvalidOperationException>(() =>
+            _testClass.ApplyTransactionAmount(new Money(1), TransactionTypes.Keys.DEPOSIT));
     }
 
     /// <summary>
@@ -237,7 +254,8 @@ public class CreditCardAccountTests : BaseAccountTests
     {
         _testClass.Delete();
 
-        Assert.Throws<InvalidOperationException>(() => _testClass.ApplyTransactionAmount(new Money(1), TransactionTypes.Keys.PURCHASE));
+        Assert.Throws<InvalidOperationException>(() =>
+            _testClass.ApplyTransactionAmount(new Money(1), TransactionTypes.Keys.PURCHASE));
     }
 
 
@@ -249,7 +267,8 @@ public class CreditCardAccountTests : BaseAccountTests
     {
         _testClass.Delete();
 
-        Assert.Throws<InvalidOperationException>(() => _testClass.UndoTransactionAmount(new Money(1), TransactionTypes.Keys.PURCHASE));
+        Assert.Throws<InvalidOperationException>(() =>
+            _testClass.UndoTransactionAmount(new Money(1), TransactionTypes.Keys.PURCHASE));
     }
 
     /// <summary>
@@ -260,7 +279,8 @@ public class CreditCardAccountTests : BaseAccountTests
     {
         _testClass.Delete();
 
-        Assert.Throws<InvalidOperationException>(() => _testClass.UndoTransactionAmount(new Money(1), TransactionTypes.Keys.DEPOSIT));
+        Assert.Throws<InvalidOperationException>(() =>
+            _testClass.UndoTransactionAmount(new Money(1), TransactionTypes.Keys.DEPOSIT));
     }
 
 
@@ -273,13 +293,13 @@ public class CreditCardAccountTests : BaseAccountTests
         // Arrange
         var previousValue = _testClass.Balance;
 
-        var value = NewMoney(1000);
+        var expectedValue = NewMoney(34534);
 
         // Act
-        _testClass.UpdateBalance(value);
+        _testClass.UpdateBalance(expectedValue);
 
         // Assert
-        Assert.Equal(previousValue + value, _testClass.Balance);
+        Assert.Equal(previousValue + expectedValue, _testClass.Balance);
     }
 
     /// <summary>
@@ -351,7 +371,8 @@ public class CreditCardAccountTests : BaseAccountTests
         Assert.True(_testClass.IsClosed);
 
         Assert.NotNull(_testClass.DateUpdated);
-        Assert.Equal(DateTime.Now.ToUniversalTime(), _testClass.DateUpdated.Value, new TimeSpan(0, 0, 0, 10));
+        Assert.Equal(DateTime.Now.ToUniversalTime(),
+            _testClass.DateUpdated.Value, new TimeSpan(0, 0, 0, 10));
     }
 
     [Fact]
@@ -370,7 +391,8 @@ public class CreditCardAccountTests : BaseAccountTests
         // Assert
         Assert.Null(_testClass.DateClosed);
         Assert.False(_testClass.IsClosed);
-        Assert.Equal(DateTime.Now.ToUniversalTime(), _testClass.DateUpdated.Value, new TimeSpan(0, 0, 0, 10));
+        Assert.Equal(DateTime.Now.ToUniversalTime(),
+            _testClass.DateUpdated.Value, new TimeSpan(0, 0, 0, 10));
     }
 
     [Fact]
@@ -378,7 +400,8 @@ public class CreditCardAccountTests : BaseAccountTests
     {
         _testClass.Delete();
 
-        Assert.Throws<InvalidOperationException>(() => _testClass.Close(DateTime.Now));
+        Assert.Throws<InvalidOperationException>(() =>
+            _testClass.Close(DateTime.Now));
     }
 
     [Fact]
@@ -387,11 +410,13 @@ public class CreditCardAccountTests : BaseAccountTests
         _testClass.Delete();
 
         Assert.NotNull(_testClass.DateDeleted);
-        Assert.Equal(DateTime.Now.ToUniversalTime(), _testClass.DateDeleted.Value, new TimeSpan(0, 0, 0, 10));
+        Assert.Equal(DateTime.Now.ToUniversalTime(),
+            _testClass.DateDeleted.Value, new TimeSpan(0, 0, 0, 10));
 
         Assert.True(_testClass.IsDeleted);
 
         Assert.NotNull(_testClass.DateUpdated);
-        Assert.Equal(DateTime.Now.ToUniversalTime(), _testClass.DateUpdated.Value, new TimeSpan(0, 0, 0, 10));
+        Assert.Equal(DateTime.Now.ToUniversalTime(),
+            _testClass.DateUpdated.Value, new TimeSpan(0, 0, 0, 10));
     }
 }

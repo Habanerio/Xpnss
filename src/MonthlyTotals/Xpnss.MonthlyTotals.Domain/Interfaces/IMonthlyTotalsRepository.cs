@@ -47,7 +47,7 @@ public interface IMonthlyTotalsRepository
         (int Year, int Month) endMonth,
         CancellationToken cancellationToken = default);
 
-    Task<Result<MonthlyTotal>> UpdateAsync(
-        MonthlyTotal monthlyTotal,
-        CancellationToken cancellationToken = default);
+    //Task<Result<MonthlyTotal>> UpdateAsync(
+    //    MonthlyTotal monthlyTotal,
+    //    CancellationToken cancellationToken = default);
 }

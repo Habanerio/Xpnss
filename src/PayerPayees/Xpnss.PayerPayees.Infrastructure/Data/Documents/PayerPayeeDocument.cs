@@ -13,7 +13,7 @@ namespace Habanerio.Xpnss.PayerPayees.Infrastructure.Data.Documents;
 public sealed class PayerPayeeDocument : MongoDocument
 {
     [BsonElement("user_id")]
-    public string UserId { get; set; }
+    public ObjectId UserId { get; set; }
 
     [BsonElement("name")]
     public string Name { get; set; }
@@ -24,17 +24,15 @@ public sealed class PayerPayeeDocument : MongoDocument
     [BsonElement("locations")]
     public string Location { get; set; }
 
-    public PayerPayeeDocument(string id, string userId, string name, string location)
-    {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("Value cannot be null or whitespace.", nameof(id));
+    [BsonElement("date_created")]
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime DateCreated { get; set; }
 
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
+    [BsonElement("date_updated")]
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime? DateUpdated { get; set; }
 
-        Id = ObjectId.Parse(id);
-        UserId = userId;
-        Name = name;
-        Location = location;
-    }
+    [BsonElement("date_deleted")]
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime? DateDeleted { get; set; }
 }

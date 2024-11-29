@@ -28,7 +28,12 @@ public sealed record AddBalanceAdjustmentCommand : IAccountsCommand<Result<decim
     [JsonConstructor]
     public AddBalanceAdjustmentCommand() { }
 
-    public AddBalanceAdjustmentCommand(string userId, string accountId, decimal balance, DateTime dateOfChange, string reason = "")
+    public AddBalanceAdjustmentCommand(
+        string userId,
+        string accountId,
+        decimal balance,
+        DateTime dateOfChange,
+        string reason = "")
     {
         UserId = userId;
         AccountId = accountId;
@@ -52,9 +57,11 @@ public sealed class AddBalanceAdjustmentHandler(IAccountsRepository repository)
     : IRequestHandler<AddBalanceAdjustmentCommand, Result<decimal>>
 {
     private readonly IAccountsRepository _repository = repository ??
-                                                       throw new ArgumentNullException(nameof(repository));
+        throw new ArgumentNullException(nameof(repository));
 
-    public async Task<Result<decimal>> Handle(AddBalanceAdjustmentCommand request, CancellationToken cancellationToken)
+    public async Task<Result<decimal>> Handle(
+        AddBalanceAdjustmentCommand request,
+        CancellationToken cancellationToken)
     {
         throw new NotImplementedException(
             "Need to rethink this. Some new service may need to be introduced to recalculate and update the balance");

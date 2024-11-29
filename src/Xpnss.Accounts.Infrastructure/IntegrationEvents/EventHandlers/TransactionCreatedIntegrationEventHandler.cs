@@ -1,11 +1,6 @@
-using Habanerio.Xpnss.Accounts.Domain.Entities;
-using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts;
 using Habanerio.Xpnss.Accounts.Domain.Interfaces;
-using Habanerio.Xpnss.Domain.Types;
 using Habanerio.Xpnss.Domain.ValueObjects;
-using Habanerio.Xpnss.Infrastructure.IntegrationEvents;
 using Habanerio.Xpnss.Infrastructure.IntegrationEvents.Transactions;
-
 using Microsoft.Extensions.Logging;
 
 namespace Habanerio.Xpnss.Accounts.Infrastructure.IntegrationEvents.EventHandlers;
@@ -15,38 +10,24 @@ namespace Habanerio.Xpnss.Accounts.Infrastructure.IntegrationEvents.EventHandler
 /// and updating the Account's Balance and the MonthlyTotal.
 /// </summary>
 /// <param name="accountsRepository"></param>
-/// <param name="accountMonthlyTotalsRepository"></param>
 /// <param name="logger"></param>
 public class TransactionCreatedIntegrationEventHandler(
     IAccountsRepository accountsRepository,
-    //IClientSessionHandle mongoSession,
     ILogger<TransactionCreatedIntegrationEventHandler> logger) :
     IIntegrationEventHandler<TransactionCreatedIntegrationEvent>
 {
     private readonly IAccountsRepository _accountsRepository = accountsRepository ??
         throw new ArgumentNullException(nameof(accountsRepository));
 
-    //private readonly IClientSessionHandle _mongoSession = mongoSession ??
-    //    throw new ArgumentNullException(nameof(mongoSession));
-
     private readonly ILogger<TransactionCreatedIntegrationEventHandler> _logger = logger ??
         throw new ArgumentNullException(nameof(logger));
 
     public async Task Handle(
-        TransactionCreatedIntegrationEvent @event,
-        CancellationToken cancellationToken)
+        TransactionCreatedIntegrationEvent @event, CancellationToken cancellationToken)
     {
-        // I want to wrap this in a transaction, but apparently, 'Standalone servers do not support transactions.'
-        //using (_mongoSession)
-        //{
-        //    _mongoSession.StartTransaction();
-
         try
         {
-            // Maybe publish internal Domain Events to handle each one?
             await UpdateAccountBalanceAsync(@event, cancellationToken);
-
-            //      await _mongoSession.CommitTransactionAsync(cancellationToken);
 
             _logger.LogInformation(@event.Id.ToString(),
                 "A '{@transactionType}' Transaction {@transactionId} was added to Account {@accountId}",
@@ -56,13 +37,10 @@ public class TransactionCreatedIntegrationEventHandler(
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "An error occurred while trying to update Account '{@accountId}' for User '{@userId}'", @event.AccountId, @event.UserId);
-
-            //        await _mongoSession.AbortTransactionAsync(cancellationToken);
+            _logger.LogError(e, "An error occurred while trying to update Account '{AccountId}' for User '{UserId}'", @event.AccountId, @event.UserId);
 
             throw;
         }
-        //}
     }
 
     private async Task UpdateAccountBalanceAsync(

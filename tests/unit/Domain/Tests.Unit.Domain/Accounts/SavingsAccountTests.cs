@@ -39,7 +39,18 @@ public class SavingsAccountTests : BaseAccountTests
         var interestRate = NewPercentageRate(34);
 
         // Act
-        var result = SavingsAccount.Load(id, userId, accountName, balance, description, displayColor, interestRate, dateCreated, dateClosed, dateDeleted, dateUpdated);
+        var result = SavingsAccount.Load(
+            id,
+            userId,
+            accountName,
+            balance,
+            description,
+            displayColor,
+            interestRate,
+            dateClosed,
+            dateCreated,
+            dateUpdated,
+            dateDeleted);
 
         // Assert
         Assert.Equal(id, result.Id);
@@ -67,8 +78,8 @@ public class SavingsAccountTests : BaseAccountTests
                 AutoFixture.Create<string>(),
                 "#110022",
                 NewPercentageRate(34),
-                AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
+                AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
                 AutoFixture.Create<DateTime?>()));
     }
@@ -85,8 +96,8 @@ public class SavingsAccountTests : BaseAccountTests
                 AutoFixture.Create<string>(),
                 "#110022",
                 NewPercentageRate(34),
-                AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
+                AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
                 AutoFixture.Create<DateTime?>()));
     }
@@ -112,6 +123,13 @@ public class SavingsAccountTests : BaseAccountTests
         Assert.Equal(description, result.Description);
         Assert.Equal(displayColor, result.DisplayColor);
         Assert.Equal(interestRate, result.InterestRate);
+
+        Assert.Null(result.DateClosed);
+        Assert.Equal(DateTime.Now.ToUniversalTime(), result.DateCreated, new TimeSpan(0, 0, 0, 10));
+        Assert.Null(result.DateUpdated);
+        Assert.Null(result.DateDeleted);
+
+        Assert.False(result.IsCredit);
     }
 
     [Fact]
@@ -266,13 +284,13 @@ public class SavingsAccountTests : BaseAccountTests
         // Arrange
         var previousValue = _testClass.Balance;
 
-        var value = NewMoney(1000);
+        var expectedValue = NewMoney(1000);
 
         // Act
-        _testClass.UpdateBalance(value);
+        _testClass.UpdateBalance(expectedValue);
 
         // Assert
-        Assert.Equal(previousValue + value, _testClass.Balance);
+        Assert.Equal(previousValue + expectedValue, _testClass.Balance);
     }
 
     /// <summary>

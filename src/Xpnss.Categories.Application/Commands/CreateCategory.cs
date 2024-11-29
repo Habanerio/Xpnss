@@ -2,20 +2,31 @@ using FluentResults;
 using FluentValidation;
 using Habanerio.Xpnss.Application.DTOs;
 using Habanerio.Xpnss.Categories.Application.Mappers;
-using Habanerio.Xpnss.Categories.Domain;
+using Habanerio.Xpnss.Categories.Domain.Entities;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
 using Habanerio.Xpnss.Domain.ValueObjects;
 using MediatR;
 using MongoDB.Bson;
 
-namespace Habanerio.Xpnss.Categories.Application.Commands.CreateCategory;
+namespace Habanerio.Xpnss.Categories.Application.Commands;
 
-public class CreateCategoryHandler(ICategoriesRepository repository) : IRequestHandler<CreateCategoryCommand, Result<CategoryDto>>
+public sealed record CreateCategoryCommand(
+    string UserId,
+    string Name,
+    string? ParentId = null,
+    string Description = "",
+    int SortOrder = 99) :
+    ICategoriesCommand<Result<CategoryDto>>;
+
+public class CreateCategoryCommandHandler(ICategoriesRepository repository) :
+    IRequestHandler<CreateCategoryCommand, Result<CategoryDto>>
 {
     private readonly ICategoriesRepository _repository = repository ??
          throw new ArgumentNullException(nameof(repository));
 
-    public async Task<Result<CategoryDto>> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
+    public async Task<Result<CategoryDto>> Handle(
+        CreateCategoryCommand request,
+        CancellationToken cancellationToken)
     {
         var validator = new Validator();
 
@@ -43,7 +54,7 @@ public class CreateCategoryHandler(ICategoriesRepository repository) : IRequestH
             var childDto = ApplicationMapper.Map(subCategory);
 
             if (childDto is null)
-                return Result.Fail("Failed to map Sub CategoryDocument to Sub CategoryDto");
+                return Result.Fail("Failed to map Sub CategoryDocument to SubCategoryDto");
 
             return childDto;
         }
@@ -77,6 +88,7 @@ public class CreateCategoryHandler(ICategoriesRepository repository) : IRequestH
             newSortOrder++;
         }
 
+        // Get the Category that was just updated
         var categoryDto = ApplicationMapper.Map(allCategories.Find(c => c.Id.Equals(result.Value.Id)));
 
         if (categoryDto is null)

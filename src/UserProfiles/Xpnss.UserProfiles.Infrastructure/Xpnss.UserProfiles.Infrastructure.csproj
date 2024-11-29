@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <AssemblyName>Habanerio.Xpnss.UserProfiles.Infrastructure</AssemblyName>
+        <RootNamespace>Habanerio.Xpnss.UserProfiles.Infrastructure</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="Data\Documents\" />
+      <Folder Include="Data\Repositories\" />
+      <Folder Include="Mappers\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\habanerio\Habanerio.Core.Dbs\Habanerio.Core.Dbs.MongoDb\Habanerio.Core.Dbs.MongoDb.csproj" />
+      <ProjectReference Include="..\..\Xpnss.Infrastructure\Xpnss.Infrastructure.csproj" />
+      <ProjectReference Include="..\Xpnss.UserProfiles.Domain\Xpnss.UserProfiles.Domain.csproj" />
+    </ItemGroup>
+
+</Project>

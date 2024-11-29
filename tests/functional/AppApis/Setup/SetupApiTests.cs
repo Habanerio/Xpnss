@@ -1,3 +1,7 @@
+using System.Net.Http.Json;
+using System.Text.Json;
+using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Application.Requests;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis.Setup;
@@ -6,35 +10,38 @@ public class SetupApiTests(WebApplicationFactory<Apis.App.AppApis.Program> facto
     BaseFunctionalApisTests(factory),
     IClassFixture<WebApplicationFactory<Apis.App.AppApis.Program>>
 {
-    private const string ENDPOINTS_SETUP = "/api/v1/setup/{userId}";
+    private const string ENDPOINTS_SETUP = "/api/v1/setup";
 
     [Fact]
     public async Task CanCall_Setup_WithValidRequest_ReturnsOk()
     {
+        var email = TEST_USER_EMAIL;
+        var firstName = "Test";
+        var lastName = "User";
+        var extUserId = "test-user";
+
+
+        var createUserProfileRequest = new CreateUserProfileRequest(email, firstName, lastName, extUserId);
+
         // Act
-        var response = await HttpClient.PostAsync(
-            ENDPOINTS_SETUP
-                .Replace("{userId}", USER_ID),
-            null);
+        var response = await HttpClient.PostAsJsonAsync(
+            ENDPOINTS_SETUP,
+            createUserProfileRequest);
 
         response.EnsureSuccessStatusCode();
 
-        var content = await response.Content.ReadAsStringAsync();
+        var setUpUserProfileDtoContent = await response.Content.ReadAsStringAsync();
 
-    }
+        var userProfile = JsonSerializer.Deserialize<UserProfileDto>(
+            setUpUserProfileDtoContent,
+            JsonSerializationOptions);
 
-    [Fact]
-    public async Task CanCall_Setup_RandomUser_WithValidRequest_ReturnsOk()
-    {
-        // Act
-        var response = await HttpClient.PostAsync(
-            ENDPOINTS_SETUP
-                .Replace("{userId}", Guid.NewGuid().ToString()),
-            null);
-
-        response.EnsureSuccessStatusCode();
-
-        var content = await response.Content.ReadAsStringAsync();
-
+        // Assert
+        Assert.NotNull(userProfile);
+        Assert.NotEmpty(userProfile.Id);
+        Assert.Equal(email, userProfile.Email);
+        Assert.Equal(firstName, userProfile.FirstName);
+        Assert.Equal(lastName, userProfile.LastName);
+        Assert.Equal(extUserId, userProfile.ExtUserId);
     }
 }

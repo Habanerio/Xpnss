@@ -1,5 +1,6 @@
 using Habanerio.Core.Dbs.MongoDb;
 using Habanerio.Core.Dbs.MongoDb.Attributes;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Habanerio.Xpnss.Accounts.Infrastructure.Data.Documents;
@@ -12,10 +13,10 @@ namespace Habanerio.Xpnss.Accounts.Infrastructure.Data.Documents;
 public sealed class AdjustmentDocument : MongoDocument
 {
     [BsonElement("account_id")]
-    public string AccountId { get; set; } = "";
+    public ObjectId AccountId { get; set; }
 
     [BsonElement("user_id")]
-    public string UserId { get; set; } = "";
+    public ObjectId UserId { get; set; }
 
     [BsonElement("new_value")]
     public string Value { get; set; } = "";

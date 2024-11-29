@@ -43,10 +43,15 @@
         <ProjectReference Include="..\..\..\MonthlyTotals\Xpnss.MonthlyTotals.Application\Xpnss.MonthlyTotals.Application.csproj" />
         <ProjectReference Include="..\..\..\PayerPayees\Xpnss.PayerPayees.Application\Xpnss.PayerPayees.Application.csproj" />
         <ProjectReference Include="..\..\..\PayerPayees\Xpnss.PayerPayees.Domain\Xpnss.PayerPayees.Domain.csproj" />
+        <ProjectReference Include="..\..\..\UserProfiles\Xpnss.UserProfiles.Application\Xpnss.UserProfiles.Application.csproj" />
         <ProjectReference Include="..\..\..\Xpnss.Accounts.Application\Xpnss.Accounts.Application.csproj" />
         <ProjectReference Include="..\..\..\Xpnss.Categories.Application\Xpnss.Categories.Application.csproj" />
         <ProjectReference Include="..\..\..\Xpnss.Infrastructure\Xpnss.Infrastructure.csproj" />
         <ProjectReference Include="..\..\..\Xpnss.Transactions.Application\Xpnss.Transactions.Application.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Endpoints\UserProfiles\" />
     </ItemGroup>
 
 </Project>

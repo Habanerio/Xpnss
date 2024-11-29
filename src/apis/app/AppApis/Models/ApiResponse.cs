@@ -23,7 +23,7 @@ public record ApiResponse
     };
 }
 
-public record ApiResponse<T>(T? Data) : ApiResponse
+public sealed record ApiResponse<T>(T? Data) : ApiResponse
 {
     public static ApiResponse<T> Ok(T? data) => new(data)
     {

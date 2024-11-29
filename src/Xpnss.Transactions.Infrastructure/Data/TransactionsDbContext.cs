@@ -6,8 +6,6 @@ namespace Habanerio.Xpnss.Transactions.Infrastructure.Data;
 
 public class TransactionsDbContext : XpnssDbContext
 {
-    protected IMongoCollection<TransactionDocument> Transactions => Collection<TransactionDocument>();
-
     //public TransactionsDbContext(IOptions<MongoDbSettings> options) : base(options)
     //{
     //    Configure();
@@ -29,6 +27,6 @@ public class TransactionsDbContext : XpnssDbContext
             new CreateIndexOptions { Name = "UserId_Id_Index" }
         );
 
-        Transactions.Indexes.CreateOne(createIndexModel);
+        Collection<TransactionDocument>().Indexes.CreateOne(createIndexModel);
     }
 }

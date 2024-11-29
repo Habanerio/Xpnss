@@ -20,9 +20,11 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
     [Fact]
     public async Task CanCall_CreateAccount_CashAccount_WithValidRequest_ReturnsOk()
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         // Arrange
         var request = new CreateAccountCommand(
-            USER_ID,
+            USER_ID.ToString(),
             AccountTypes.Keys.Cash.ToString(),
             "Test Cash Account",
             "Test Cash Account Description", DisplayColor: "#123ABC");
@@ -30,7 +32,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         // Act
         var response = await HttpClient.PostAsJsonAsync(
             ENDPOINTS_CREATE_ACCOUNT
-                .Replace("{userId}", USER_ID),
+                .Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
@@ -45,7 +47,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         var accountDto = Assert.IsType<AccountDto>(apiResponse.Data);
         Assert.NotEqual(accountDto.Id, ObjectId.Empty.ToString());
-        Assert.Equal(USER_ID, accountDto.UserId);
+        Assert.Equal(USER_ID.ToString(), accountDto.UserId);
         Assert.Equal(AccountTypes.Keys.Cash.ToString(), accountDto.AccountType);
         Assert.Equal(request.Name, accountDto.Name);
         Assert.Equal(0, accountDto.Balance);
@@ -65,10 +67,12 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
     [Fact]
     public async Task CanCall_CreateAccount_CheckingAccount_WithValidRequest_ReturnsOk()
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         // Arrange
         var request = new CreateAccountCommand
         (
-            USER_ID,
+            USER_ID.ToString(),
             AccountTypes.Keys.Checking.ToString(),
             "Test Checking Account",
             "Test Checking Account Description",
@@ -76,7 +80,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID),
+            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
@@ -91,7 +95,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         var accountDto = Assert.IsType<AccountDto>(apiResponse.Data);
         Assert.NotEqual(accountDto.Id, ObjectId.Empty.ToString());
-        Assert.Equal(USER_ID, accountDto.UserId);
+        Assert.Equal(USER_ID.ToString(), accountDto.UserId);
         Assert.Equal(AccountTypes.Keys.Checking.ToString(), accountDto.AccountType);
         Assert.Equal(request.Name, accountDto.Name);
         Assert.Equal(0, accountDto.Balance);
@@ -111,10 +115,12 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
     [Fact]
     public async Task CanCall_CreateAccount_SavingsAccount_WithValidRequest_ReturnsOk()
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         // Arrange
         var request = new CreateAccountCommand
         (
-            UserId: USER_ID,
+            UserId: USER_ID.ToString(),
             AccountType: AccountTypes.Keys.Savings.ToString(),
             Name: "Test Savings Account",
             Description: "Test Savings Account Description",
@@ -122,7 +128,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID),
+            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
@@ -137,7 +143,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         var accountDto = Assert.IsType<AccountDto>(apiResponse.Data);
         Assert.NotEqual(accountDto.Id, ObjectId.Empty.ToString());
-        Assert.Equal(USER_ID, accountDto.UserId);
+        Assert.Equal(USER_ID.ToString(), accountDto.UserId);
         Assert.Equal(AccountTypes.Keys.Savings.ToString(), accountDto.AccountType);
         Assert.Equal(request.Name, accountDto.Name);
         Assert.Equal(0, accountDto.Balance);
@@ -157,10 +163,12 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
     [Fact]
     public async Task CanCall_CreateAccount_CreditCardAccount_WithValidRequest_ReturnsOk()
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         // Arrange
         var request = new CreateAccountCommand
         (
-            UserId: USER_ID,
+            UserId: USER_ID.ToString(),
             AccountType: AccountTypes.Keys.CreditCard.ToString(),
             Name: "Test Credit Card Account",
             Description: "Test Credit Card Account Description",
@@ -169,7 +177,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID),
+            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
@@ -184,7 +192,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         var accountDto = Assert.IsType<AccountDto>(apiResponse.Data);
         Assert.NotEqual(accountDto.Id, ObjectId.Empty.ToString());
-        Assert.Equal(USER_ID, accountDto.UserId);
+        Assert.Equal(USER_ID.ToString(), accountDto.UserId);
         Assert.Equal(AccountTypes.Keys.CreditCard.ToString(), accountDto.AccountType);
         Assert.Equal(request.Name, accountDto.Name);
         Assert.Equal(0, accountDto.Balance);
@@ -204,10 +212,12 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
     [Fact]
     public async Task CanCall_CreateAccount_LineOfCreditAccount_WithValidRequest_ReturnsOk()
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         // Arrange
         var request = new CreateAccountCommand
         (
-            UserId: USER_ID,
+            UserId: USER_ID.ToString(),
             AccountType: AccountTypes.Keys.LineOfCredit.ToString(),
             Name: "Test Line Of Credit Account",
             Description: "Test Line Of Credit Account Description",
@@ -216,7 +226,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID),
+            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
@@ -231,7 +241,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         var accountDto = Assert.IsType<AccountDto>(apiResponse.Data);
         Assert.NotEqual(accountDto.Id, ObjectId.Empty.ToString());
-        Assert.Equal(USER_ID, accountDto.UserId);
+        Assert.Equal(USER_ID.ToString(), accountDto.UserId);
         Assert.Equal(AccountTypes.Keys.LineOfCredit.ToString(), accountDto.AccountType);
         Assert.Equal(request.Name, accountDto.Name);
         Assert.Equal(0, accountDto.Balance);
@@ -252,12 +262,14 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
     [Fact]
     public async Task CannotCall_CreateAccount_WithInvalidRequest_NULL_ReturnsBadRequest()
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         // Arrange
         CreateAccountCommand? request = null;
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID),
+            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
@@ -269,6 +281,8 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
     [Fact]
     public async Task CannotCall_CreateAccount_WithInvalidRequest_EmptyUserId_ReturnsBadRequest()
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         // Arrange
         var request = new CreateAccountCommand
         (
@@ -279,7 +293,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID),
+            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
@@ -297,17 +311,19 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
     [Fact]
     public async Task CannotCall_CreateAccount_WithInvalidRequest_EmptyAccountType_ReturnsBadRequest()
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         // Arrange
         var request = new CreateAccountCommand
         (
-            UserId: USER_ID,
+            UserId: USER_ID.ToString(),
             AccountType: string.Empty,
             Name: "Test Cash Account",
             Description: "Test Cash Account Description", DisplayColor: "#000000");
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID),
+            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
@@ -325,10 +341,12 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
     [Fact]
     public async Task CannotCall_CreateAccount_WithInvalidRequest_EmptyName_ReturnsBadRequest()
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         // Arrange
         var request = new CreateAccountCommand
         (
-            UserId: USER_ID,
+            UserId: USER_ID.ToString(),
             AccountType: AccountTypes.Keys.Cash.ToString(),
             Name: string.Empty,
             Description: "Test Cash Account Description",
@@ -336,7 +354,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID),
+            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
@@ -354,10 +372,12 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
     [Fact]
     public async Task CannotCall_CreateAccount_WithInvalidRequest_CreditLimit_ReturnsBadRequest()
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         // Arrange
         var request = new CreateAccountCommand
         (
-            UserId: USER_ID,
+            UserId: USER_ID.ToString(),
             AccountType: "CreditCard",
             Name: "Test Cash Account",
             Description: "Test Cash Account Description",
@@ -367,7 +387,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID),
+            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
@@ -385,10 +405,12 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
     [Fact]
     public async Task CannotCall_CreateAccount_WithInvalidRequest_InterestRate_BelowZero_ReturnsBadRequest()
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         // Arrange
         var request = new CreateAccountCommand
         (
-            UserId: USER_ID,
+            UserId: USER_ID.ToString(),
             AccountType: "CreditCard",
             Name: "Test Cash Account",
             Description: "Test Cash Account Description",
@@ -399,7 +421,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID),
+            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
@@ -417,10 +439,12 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
     [Fact]
     public async Task CannotCall_CreateAccount_WithInvalidRequest_InterestRate_AboveHundred_ReturnsBadRequest()
     {
+        var USER_ID = await GetTestUserObjectIdAsync();
+
         // Arrange
         var request = new CreateAccountCommand
         (
-            UserId: USER_ID,
+            UserId: USER_ID.ToString(),
             AccountType: "CreditCard",
             Name: "Test Cash Account",
             Description: "Test Cash Account Description",
@@ -431,7 +455,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID),
+            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
