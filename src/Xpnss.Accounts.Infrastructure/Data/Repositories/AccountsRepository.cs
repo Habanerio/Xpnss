@@ -129,8 +129,11 @@ public sealed class AccountsRepository(IMongoDatabase mongoDb) :
             userObjectId.Equals(ObjectId.Empty))
             return Result.Fail($"Invalid UserId: `{userId}`");
 
-        var docs = await FindDocumentsAsync(a =>
-            a.UserId == userObjectId, cancellationToken);
+        var docs = (await FindDocumentsAsync(a =>
+            a.UserId == userObjectId, cancellationToken))?.ToList() ?? [];
+
+        if (!docs.Any())
+            return Result.Ok(Enumerable.Empty<BaseAccount>());
 
         var accounts = InfrastructureMapper.Map(docs);
 

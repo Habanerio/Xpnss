@@ -78,8 +78,12 @@ public class Category : AggregateRoot<CategoryId>
         DateTime? dateUpdated,
         DateTime? dateDeleted)
     {
+        if (string.IsNullOrWhiteSpace(id.Value))
+            throw new ArgumentException($"{nameof(id)} cannot be null or whitespace.", nameof(id));
+
         if (sortOrder < 0)
-            throw new ArgumentOutOfRangeException(nameof(sortOrder), $"{nameof(sortOrder)} cannot be less than 0.");
+            throw new ArgumentOutOfRangeException(nameof(sortOrder),
+                $"{nameof(sortOrder)} cannot be less than 0.");
 
         return new Category(
             id,

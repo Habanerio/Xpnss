@@ -1,6 +1,7 @@
 using FluentResults;
 using FluentValidation;
 using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Infrastructure.IntegrationEvents.UserProfiles;
 using Habanerio.Xpnss.UserProfiles.Domain.Entities;
 using Habanerio.Xpnss.UserProfiles.Domain.Interfaces;
 using MediatR;
@@ -17,11 +18,15 @@ public sealed record CreateUserProfileCommand(
 
 public class CreateUserProfileCommandHandler(
     IUserProfilesRepository repository,
+    IMediator mediator,
     ILogger<CreateUserProfileCommandHandler> logger) :
     IRequestHandler<CreateUserProfileCommand, Result<UserProfileDto>>
 {
     private readonly ILogger<CreateUserProfileCommandHandler> _logger = logger ??
         throw new ArgumentNullException(nameof(logger));
+
+    private readonly IMediator _mediator = mediator ??
+        throw new ArgumentNullException(nameof(mediator));
 
     private readonly IUserProfilesRepository _repository = repository ??
         throw new ArgumentNullException(nameof(repository));
@@ -60,10 +65,14 @@ public class CreateUserProfileCommandHandler(
         if (userProfileDto is null)
         {
             _logger.LogError("{GetType}: Failed to map {FirstName} UserProfile ({Email}) to UserProfileDto",
-                nameof(GetType), firstName, email);
+            nameof(GetType), firstName, email);
 
             return Result.Fail($"{nameof(GetType)}: Failed to map {firstName} UserProfile ({email}) to UserProfileDto");
         }
+
+        var userProfileCreatedEvent = new UserProfileCreatedIntegrationEvent(userProfileDto.Id);
+
+        await _mediator.Publish(userProfileCreatedEvent, cancellationToken);
 
         return userProfileDto;
     }
