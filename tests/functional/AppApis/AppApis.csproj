@@ -55,4 +55,8 @@
         <Using Include="Xunit" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="UserProfiles\" />
+    </ItemGroup>
+
 </Project>
