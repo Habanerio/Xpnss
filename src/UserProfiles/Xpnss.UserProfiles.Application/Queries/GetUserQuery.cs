@@ -4,6 +4,7 @@ using Habanerio.Xpnss.Application.DTOs;
 using Habanerio.Xpnss.UserProfiles.Application.Mappers;
 using Habanerio.Xpnss.UserProfiles.Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Habanerio.Xpnss.UserProfiles.Application.Queries;
 
@@ -12,11 +13,16 @@ namespace Habanerio.Xpnss.UserProfiles.Application.Queries;
 /// </summary>
 /// <param name="UserId">The Id (internal) of the user</param>
 public sealed record GetUserQuery(string UserId) :
-    IUserProfilesCommand<Result<UserProfileDto?>>;
+    IUserProfilesQuery<Result<UserProfileDto?>>;
 
-public sealed class GetUserQueryHandler(IUserProfilesRepository repository) :
+public sealed class GetUserQueryHandler(
+    IUserProfilesRepository repository,
+    ILogger<GetUserQueryHandler> logger) :
     IRequestHandler<GetUserQuery, Result<UserProfileDto?>>
 {
+    private readonly ILogger<GetUserQueryHandler> _logger = logger ??
+        throw new ArgumentNullException(nameof(logger));
+
     private readonly IUserProfilesRepository _repository = repository ??
         throw new ArgumentNullException(nameof(repository));
 
@@ -36,10 +42,18 @@ public sealed class GetUserQueryHandler(IUserProfilesRepository repository) :
         if (docsResult.IsFailed)
             return Result.Fail(docsResult.Errors);
 
+        if (docsResult.ValueOrDefault is null)
+            return Result.Ok<UserProfileDto?>(default);
+
         var dto = ApplicationMapper.Map(docsResult.Value);
 
         if (dto is null)
-            return Result.Fail("Failed to map UserProfile to UserProfileDto");
+        {
+            _logger.LogError("Failed to map UserProfile {Id} ({Email}) to UserProfileDto",
+                docsResult.ValueOrDefault.Id, docsResult.ValueOrDefault.Email);
+
+            return Result.Ok<UserProfileDto?>(default);
+        }
 
         return dto;
     }

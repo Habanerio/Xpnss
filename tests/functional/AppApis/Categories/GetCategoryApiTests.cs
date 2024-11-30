@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Habanerio.Xpnss.Apis.App.AppApis;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
 using Habanerio.Xpnss.Application.DTOs;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -6,11 +7,11 @@ using MongoDB.Bson;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis.Categories;
 
-public class GetCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Program> factory) :
+public class GetCategoryApiTests(WebApplicationFactory<Program> factory) :
     BaseFunctionalApisTests(factory),
-    IClassFixture<WebApplicationFactory<Apis.App.AppApis.Program>>
+    IClassFixture<WebApplicationFactory<Program>>
 {
-    private const string ENDPOINTS_GET_CATEGORY = "/api/v1/users/{userId}/categories/{categoryId}";
+    private const string ENDPOINTS_CATEGORIES_GET_CATEGORY = "/api/v1/users/{userId}/categories/{categoryId}";
 
     [Fact]
     public async Task CanCall_GetCategory_WithValidRequest_ReturnsOk()
@@ -28,7 +29,7 @@ public class GetCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Program>
             foreach (var categoryDoc in categoryDocs)
             {
                 // Act
-                var response = await HttpClient.GetAsync(ENDPOINTS_GET_CATEGORY
+                var response = await HttpClient.GetAsync(ENDPOINTS_CATEGORIES_GET_CATEGORY
                         .Replace("{userId}", USER_ID.ToString())
                         .Replace("{categoryId}", categoryDoc.Id.ToString()));
 
