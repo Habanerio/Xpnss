@@ -1,7 +1,9 @@
+using System.Net;
 using System.Text.Json;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
 using Habanerio.Xpnss.Application.DTOs;
 using Microsoft.AspNetCore.Mvc.Testing;
+using MongoDB.Bson;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis.UserProfiles;
 
@@ -45,5 +47,17 @@ public class GetUserProfileApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
         Assert.Equal(actualUserProfileDocument.FirstName, actualDto.FirstName);
         Assert.Equal(actualUserProfileDocument.LastName, actualDto.LastName);
         Assert.Equal(actualUserProfileDocument.Email, actualDto.Email);
+    }
+
+    [Fact]
+    public async Task CannotCall_GetUserProfile_WithInvalid_UserId_ReturnsNotFound()
+    {
+        var userId = ObjectId.GenerateNewId();
+
+        // Act
+        var response = await HttpClient.GetAsync(ENDPOINTS_USER_PROFILES_GET_USER_PROFILE
+            .Replace("{userId}", userId.ToString()));
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }

@@ -48,6 +48,9 @@ public sealed class GetUserProfileEndpoint : BaseEndpoint
             if (userResult.IsFailed)
                 return BadRequestWithErrors(userResult.Errors);
 
+            if (userResult.ValueOrDefault is null)
+                return Results.NotFound();
+
             return Results.Ok(new ApiResponse<UserProfileDto>(userResult.Value));
         }
     }
