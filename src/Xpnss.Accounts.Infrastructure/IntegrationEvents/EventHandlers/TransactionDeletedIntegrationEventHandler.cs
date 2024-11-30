@@ -1,6 +1,5 @@
 using Habanerio.Xpnss.Accounts.Domain.Interfaces;
 using Habanerio.Xpnss.Domain.ValueObjects;
-using Habanerio.Xpnss.Infrastructure.IntegrationEvents;
 using Habanerio.Xpnss.Infrastructure.IntegrationEvents.Transactions;
 
 using Microsoft.Extensions.Logging;
@@ -11,18 +10,18 @@ namespace Habanerio.Xpnss.Accounts.Infrastructure.IntegrationEvents.EventHandler
 /// Responsible for handling the 'TransactionDeletedIntegrationEventHandler'
 /// and updating the Account's Balance accordingly.
 /// </summary>
-/// <param name="accountsRepository"></param>
+/// <param name="repository"></param>
 /// <param name="logger"></param>
 public class TransactionDeletedIntegrationEventHandler(
-    IAccountsRepository accountsRepository,
+    IAccountsRepository repository,
     ILogger<TransactionDeletedIntegrationEventHandler> logger) :
     IIntegrationEventHandler<TransactionDeletedIntegrationEvent>
 {
-    private readonly IAccountsRepository _accountsRepository = accountsRepository ??
-                                throw new ArgumentNullException(nameof(accountsRepository));
+    private readonly IAccountsRepository _accountsRepository = repository ??
+        throw new ArgumentNullException(nameof(repository));
 
     private readonly ILogger<TransactionDeletedIntegrationEventHandler> _logger = logger ??
-                                throw new ArgumentNullException(nameof(logger));
+        throw new ArgumentNullException(nameof(logger));
 
     public async Task Handle(TransactionDeletedIntegrationEvent @event, CancellationToken cancellationToken)
     {

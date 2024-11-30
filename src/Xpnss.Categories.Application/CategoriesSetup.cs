@@ -16,13 +16,13 @@ public static class CategoriesSetup
 
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
-        /*
-            services.AddMediatR(cfg =>
-            {
-               cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
-               cfg.RegisterServicesFromAssembly(typeof(Infrastructure.IntegrationEvents.EventHandlers.TransactionCreatedIntegrationEventHandler).Assembly);
-            });
-        */
+
+        services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+            cfg.RegisterServicesFromAssembly(typeof(Infrastructure.IntegrationEvents.EventHandlers.UserProfileCreatedIntegrationEventHandler).Assembly);
+        });
+
 
         BsonClassMap.RegisterClassMap<CategoryDocument>(cm =>
         {

@@ -9,15 +9,15 @@ namespace Habanerio.Xpnss.Accounts.Infrastructure.IntegrationEvents.EventHandler
 /// Responsible for handling the 'TransactionCreatedIntegrationEvent'
 /// and updating the Account's Balance and the MonthlyTotal.
 /// </summary>
-/// <param name="accountsRepository"></param>
+/// <param name="repository"></param>
 /// <param name="logger"></param>
 public class TransactionCreatedIntegrationEventHandler(
-    IAccountsRepository accountsRepository,
+    IAccountsRepository repository,
     ILogger<TransactionCreatedIntegrationEventHandler> logger) :
     IIntegrationEventHandler<TransactionCreatedIntegrationEvent>
 {
-    private readonly IAccountsRepository _accountsRepository = accountsRepository ??
-        throw new ArgumentNullException(nameof(accountsRepository));
+    private readonly IAccountsRepository _accountsRepository = repository ??
+        throw new ArgumentNullException(nameof(repository));
 
     private readonly ILogger<TransactionCreatedIntegrationEventHandler> _logger = logger ??
         throw new ArgumentNullException(nameof(logger));
