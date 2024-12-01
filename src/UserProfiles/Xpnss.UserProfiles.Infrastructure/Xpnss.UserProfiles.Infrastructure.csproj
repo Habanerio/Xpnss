@@ -15,7 +15,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\habanerio\Habanerio.Core.Dbs\Habanerio.Core.Dbs.MongoDb\Habanerio.Core.Dbs.MongoDb.csproj" />
       <ProjectReference Include="..\..\Xpnss.Infrastructure\Xpnss.Infrastructure.csproj" />
       <ProjectReference Include="..\Xpnss.UserProfiles.Domain\Xpnss.UserProfiles.Domain.csproj" />
     </ItemGroup>

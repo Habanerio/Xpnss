@@ -2,11 +2,10 @@ using MongoDB.Bson;
 
 namespace Habanerio.Xpnss.Domain.ValueObjects;
 
-public sealed record CategoryId : EntityObjectId
+//NOTE: Should I make the CategoryId properties in other entities nullable?
+//      Or allow nullable values to be passed into the CategoryId()?
+public record CategoryId : EntityObjectId
 {
-    private CategoryId() : this(ObjectId.Empty.ToString())
-    { }
-
     public CategoryId(ObjectId? id) : this(id?.ToString())
     { }
 

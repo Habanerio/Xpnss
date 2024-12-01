@@ -5,7 +5,7 @@ namespace Habanerio.Xpnss.Categories.Domain.Entities;
 
 public class Category : AggregateRoot<CategoryId>
 {
-    private readonly List<Category> _subCategories;
+    private readonly List<SubCategory> _subCategories;
 
     public UserId UserId { get; private set; }
 
@@ -15,24 +15,21 @@ public class Category : AggregateRoot<CategoryId>
 
     public int SortOrder { get; set; }
 
-    public CategoryId ParentId { get; private set; }
+    public IReadOnlyCollection<SubCategory> SubCategories => _subCategories.AsReadOnly();
 
-    public IReadOnlyCollection<Category> SubCategories => _subCategories.AsReadOnly();
 
     private Category(
         UserId userId,
         CategoryName name,
         string description,
         int sortOrder,
-        CategoryId parentId,
-        IEnumerable<Category> subCategories
+        IEnumerable<SubCategory> subCategories
     ) : this(
-            parentId,
+            CategoryId.New,
             userId,
             name,
             description,
             sortOrder,
-            parentId,
             subCategories,
             DateTime.UtcNow)
     {
@@ -47,8 +44,7 @@ public class Category : AggregateRoot<CategoryId>
         CategoryName name,
         string description,
         int sortOrder,
-        CategoryId parentId,
-        IEnumerable<Category> subCategories,
+        IEnumerable<SubCategory> subCategories,
         DateTime dateCreated,
         DateTime? dateUpdated = null,
         DateTime? dateDeleted = null) : base(id)
@@ -57,8 +53,7 @@ public class Category : AggregateRoot<CategoryId>
         UserId = userId;
         Name = name;
         Description = description;
-        SortOrder = sortOrder;
-        ParentId = parentId;
+        SortOrder = sortOrder < 0 ? 99 : sortOrder;
         DateCreated = dateCreated;
         DateUpdated = dateUpdated;
         DateDeleted = dateDeleted;
@@ -72,26 +67,17 @@ public class Category : AggregateRoot<CategoryId>
         CategoryName name,
         string description,
         int sortOrder,
-        CategoryId parentId,
-        IEnumerable<Category> subCategories,
+        IEnumerable<SubCategory> subCategories,
         DateTime dateCreated,
         DateTime? dateUpdated,
         DateTime? dateDeleted)
     {
-        if (string.IsNullOrWhiteSpace(id.Value))
-            throw new ArgumentException($"{nameof(id)} cannot be null or whitespace.", nameof(id));
-
-        if (sortOrder < 0)
-            throw new ArgumentOutOfRangeException(nameof(sortOrder),
-                $"{nameof(sortOrder)} cannot be less than 0.");
-
         return new Category(
             id,
             userId,
             name,
             description,
             sortOrder,
-            parentId,
             subCategories,
             dateCreated,
             dateUpdated,
@@ -102,7 +88,6 @@ public class Category : AggregateRoot<CategoryId>
         UserId userId,
         CategoryName name,
         string description,
-        CategoryId parentId,
         int sortOrder = 99)
     {
         return new Category(
@@ -110,33 +95,17 @@ public class Category : AggregateRoot<CategoryId>
             name,
             description,
             sortOrder,
-            parentId,
             []);
-    }
-
-    public Category AddSubCategory(CategoryName name, string description, int sortOrder)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException($"{nameof(name)} cannot be null or whitespace.", nameof(name));
-
-        var subCategory = New(UserId, name, description, Id, sortOrder);
-
-        _subCategories.Add(subCategory);
-
-        var idx = 1;
-        foreach (var _subCategory in _subCategories.OrderBy(c => c.SortOrder).ThenBy(c => c.Name.Value))
-        {
-            _subCategory.SortOrder = idx;
-            idx++;
-        }
-
-        return subCategory;
     }
 
     public void Delete()
     {
         if (!IsDeleted)
+        {
             DateDeleted = DateTime.UtcNow;
+
+            //TODO: Add `CategoryDeleted` Domain Event
+        }
     }
 
     public void Update(CategoryName name, string description, int sortOrder)
@@ -144,12 +113,148 @@ public class Category : AggregateRoot<CategoryId>
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException($"{nameof(name)} cannot be null or whitespace.", nameof(name));
 
-        if (sortOrder < 0)
-            throw new ArgumentOutOfRangeException(nameof(sortOrder), $"{nameof(sortOrder)} cannot be less than 0.");
+        sortOrder = sortOrder < 1 ? 99 : sortOrder;
 
         Name = name;
         Description = description;
         SortOrder = sortOrder;
         DateUpdated = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Adds a new Sub Category to this Parent Category
+    /// This is the only way to create a new Sub Category
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public void AddSubCategory(CategoryName subCategoryName, string subCategoryDescription, int sortOrder)
+    {
+        var existingSubCategory = _subCategories.Find(c =>
+            c.Name.Equals(subCategoryName));
+
+        // If the SubCategory already exists, then maybe it has a new description?
+        if (existingSubCategory is not null)
+        {
+            existingSubCategory.Description = subCategoryDescription;
+            existingSubCategory.SortOrder = sortOrder;
+
+            return;
+        }
+
+        var newSubCategory = new SubCategory(
+            Id,
+            subCategoryName,
+            subCategoryDescription,
+            sortOrder);
+
+        _subCategories.Add(newSubCategory);
+
+        // Reorder the SubCategories
+        var idx = 1;
+
+        foreach (var subCategory2 in _subCategories
+                     .OrderBy(c => c.SortOrder)
+                     .ThenBy(c => c.Name.Value))
+        {
+            subCategory2.SortOrder = idx;
+
+            idx++;
+        }
+
+        // Add `SubCategoryCreated` Domain Event ?
+    }
+
+    public void RemoveSubCategory(SubCategoryId subCategoryId)
+    {
+        var subCategory = _subCategories.Find(c => c.Id == subCategoryId);
+
+        if (subCategory is null)
+            return;
+
+        subCategory.Delete();
+
+        // Do we really want to remove it from the list, or just mark it as deleted?
+        // Could permanently remove it after so many days?
+        //_subCategories.Remove(subCategory);
+
+        var idx = 1;
+
+        foreach (var subCategory2 in _subCategories
+                     .OrderBy(c => c.SortOrder)
+                     .ThenBy(c => c.Name.Value))
+        {
+            subCategory2.SortOrder = idx;
+
+            idx++;
+        }
+
+        // Add `SubCategoryDeleted` Domain Event
+    }
+}
+
+public class SubCategory : Entity<SubCategoryId>
+{
+    public CategoryName Name { get; internal set; }
+
+    public string Description { get; internal set; }
+
+    public CategoryId ParentId { get; }
+
+    public int SortOrder { get; internal set; }
+
+    // New SubCategories
+    internal SubCategory(CategoryId parentId, CategoryName name, string description, int sortOrder) :
+        base(SubCategoryId.New)
+    {
+        Name = name;
+        Description = description;
+        ParentId = parentId;
+        SortOrder = sortOrder < 1 ? 99 : sortOrder;
+    }
+
+    // Existing SubCategories
+    private SubCategory(
+        SubCategoryId id,
+        CategoryId parentId,
+        CategoryName name,
+        string description,
+        int sortOrder,
+        DateTime dateCreated, DateTime? dateUpdated, DateTime? dateDeleted) :
+        base(id)
+    {
+        Name = name;
+        Description = description;
+        ParentId = parentId;
+        SortOrder = sortOrder < 1 ? 99 : sortOrder;
+        DateCreated = dateCreated;
+        DateUpdated = dateUpdated;
+        DateDeleted = dateDeleted;
+    }
+
+    public static SubCategory Load(
+        SubCategoryId id,
+        CategoryId parentId,
+        CategoryName name,
+        string description,
+        int sortOrder,
+        DateTime dateCreated,
+        DateTime? dateUpdated,
+        DateTime? dateDeleted)
+    {
+        return new SubCategory(
+            id,
+            parentId,
+            name,
+            description,
+            sortOrder,
+            dateCreated, dateUpdated, dateDeleted);
+    }
+
+    internal void Delete()
+    {
+        if (!IsDeleted)
+        {
+            DateDeleted = DateTime.UtcNow;
+        }
     }
 }

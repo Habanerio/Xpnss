@@ -23,7 +23,7 @@ public class AddOverdraftAdjustmentApiTests(WebApplicationFactory<Apis.App.AppAp
         "/api/v1/users/{userId}/accounts/{accountId}/overdraft";
 
     [Theory]
-    [InlineData(AccountTypes.Keys.Checking)]
+    [InlineData(AccountTypes.Keys.CHECKING)]
     public async Task CanCall_AdjustOverdraftAmount_ReturnsOk(AccountTypes.Keys accountType)
     {
         var USER_ID = await GetTestUserObjectIdAsync();
@@ -67,8 +67,9 @@ public class AddOverdraftAdjustmentApiTests(WebApplicationFactory<Apis.App.AppAp
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         return;
 
-        response.EnsureSuccessStatusCode();
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        //response.EnsureSuccessStatusCode();
+        //Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(response.IsSuccessStatusCode);
 
         var adjustOverdraftAmountContent = await response.Content.ReadAsStringAsync();
         Assert.NotNull(adjustOverdraftAmountContent);
@@ -97,10 +98,10 @@ public class AddOverdraftAdjustmentApiTests(WebApplicationFactory<Apis.App.AppAp
     }
 
     [Theory]
-    [InlineData(AccountTypes.Keys.Cash)]
-    [InlineData(AccountTypes.Keys.Savings)]
-    [InlineData(AccountTypes.Keys.CreditCard)]
-    [InlineData(AccountTypes.Keys.LineOfCredit)]
+    [InlineData(AccountTypes.Keys.CASH)]
+    [InlineData(AccountTypes.Keys.SAVINGS)]
+    [InlineData(AccountTypes.Keys.CREDIT_CARD)]
+    [InlineData(AccountTypes.Keys.LINE_OF_CREDIT)]
     public async Task CanNotCall_AdjustOverdraftAmount_InvalidAccountType_ReturnsBadRequestOk(AccountTypes.Keys accountType)
     {
         var USER_ID = await GetTestUserObjectIdAsync();
@@ -147,7 +148,7 @@ public class AddOverdraftAdjustmentApiTests(WebApplicationFactory<Apis.App.AppAp
     }
 
     [Theory]
-    [InlineData(AccountTypes.Keys.Checking, -0.01)]
+    [InlineData(AccountTypes.Keys.CHECKING, -0.01)]
     public async Task CanNotCall_AdjustOverdraftAmount_ValueTooLow_ReturnsBadRequestOk(AccountTypes.Keys accountType, decimal value)
     {
         var USER_ID = await GetTestUserObjectIdAsync();

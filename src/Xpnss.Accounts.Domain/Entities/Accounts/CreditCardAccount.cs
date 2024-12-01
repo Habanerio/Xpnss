@@ -15,7 +15,7 @@ public sealed class CreditCardAccount : BaseCreditAccount
         PercentageRate interestRate) :
         base(
             userId,
-            AccountTypes.Keys.CreditCard,
+            AccountTypes.Keys.CREDIT_CARD,
             accountName,
             balance,
             description,
@@ -40,7 +40,7 @@ public sealed class CreditCardAccount : BaseCreditAccount
         base(
             id,
             userId,
-            AccountTypes.Keys.CreditCard,
+            AccountTypes.Keys.CREDIT_CARD,
             accountName,
             balance,
             description,

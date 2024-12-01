@@ -397,3 +397,8 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 /.idea/.idea.xpnss/.idea
+/xpnss-all.sln
+/hidden/*
+/libraries/habanerio/Habanerio.Ofx
+/xpnss-all.sln.bak
+/xpnss-all2.sln

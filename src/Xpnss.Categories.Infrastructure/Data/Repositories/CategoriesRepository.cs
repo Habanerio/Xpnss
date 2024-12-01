@@ -17,13 +17,13 @@ namespace Habanerio.Xpnss.Categories.Infrastructure.Data.Repositories;
 public class CategoriesRepository(
     IMongoDatabase mongoDb,
     IMediator? mediator = null)
-    //TODO: Inject `CategoriesDbContext` instead of `IMongoDatabase`, and have `IMongoDatabase` injected into `CategoriesDbContext` instead?
-    //      This would allow the sharing of the same `CategoriesDbContext` between related repositories.
     : MongoDbRepository<CategoryDocument>(new CategoriesDbContext(mongoDb)), ICategoriesRepository
 {
     private readonly IMediator? _mediator = mediator;
 
-    public async Task<Result<Category>> AddAsync(Category category, CancellationToken cancellationToken = default)
+    public async Task<Result<Category>> AddAsync(
+        Category category,
+        CancellationToken cancellationToken = default)
     {
         if (category is null)
             return Result.Fail("Category cannot be null");
@@ -44,6 +44,28 @@ public class CategoriesRepository(
         //HandleDomainEvents(category);
 
         return Result.Ok(newCategory);
+    }
+
+    public async Task<Result<bool>> ExistsAsync(
+        string userId,
+        string name,
+        CancellationToken cancellationToken = default)
+    {
+        if (!ObjectId.TryParse(userId, out var userObjectId) ||
+            userObjectId.Equals(ObjectId.Empty))
+            return Result.Fail($"Invalid UserId: `{userId}`");
+
+        if (string.IsNullOrWhiteSpace(name))
+            return Result.Fail("Name cannot be null or empty");
+
+        var rslt = await FirstOrDefaultDocumentAsync(c =>
+                c.UserId.Equals(userObjectId) &&
+                c.Name.Equals(name),
+            cancellationToken);
+
+        var doesExist = rslt is not null;
+
+        return Result.Ok(doesExist);
     }
 
     public async Task<Result<Category?>> GetAsync(

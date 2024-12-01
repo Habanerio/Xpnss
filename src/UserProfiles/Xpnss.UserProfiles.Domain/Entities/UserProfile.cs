@@ -21,7 +21,7 @@ public class UserProfile : AggregateRoot<UserId>
     // New User Profiles
     private UserProfile(string extUserId, string firstName, string lastName, string email) :
         this(
-            UserId.Empty,
+            UserId.New,
             extUserId,
             firstName,
             lastName,
@@ -29,6 +29,8 @@ public class UserProfile : AggregateRoot<UserId>
             DateTime.UtcNow,
             DateTime.UtcNow)
     {
+        IsTransient = true;
+
         // AddDomainEvent();
     }
 

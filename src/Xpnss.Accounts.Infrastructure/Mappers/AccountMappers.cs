@@ -145,7 +145,7 @@ internal static partial class InfrastructureMapper
         if (document is null)
             return default;
 
-        if (document.AccountType.Equals(AccountTypes.Keys.Cash) && document is CashAccountDocument cashDoc)
+        if (document.AccountType.Equals(AccountTypes.Keys.CASH) && document is CashAccountDocument cashDoc)
         {
             var cashAccount = CashAccount.Load(
                 new AccountId(cashDoc.Id.ToString()),
@@ -164,7 +164,7 @@ internal static partial class InfrastructureMapper
             return cashAccount;
         }
 
-        if (document.AccountType.Equals(AccountTypes.Keys.Checking) && document is CheckingAccountDocument checkingDoc)
+        if (document.AccountType.Equals(AccountTypes.Keys.CHECKING) && document is CheckingAccountDocument checkingDoc)
         {
             var checkingAccount = CheckingAccount.Load(
                 new AccountId(checkingDoc.Id.ToString()),
@@ -184,7 +184,7 @@ internal static partial class InfrastructureMapper
             return checkingAccount;
         }
 
-        if (document.AccountType.Equals(AccountTypes.Keys.Savings) && document is SavingsAccountDocument savingsDoc)
+        if (document.AccountType.Equals(AccountTypes.Keys.SAVINGS) && document is SavingsAccountDocument savingsDoc)
         {
             var savingsAccount = SavingsAccount.Load(
                 new AccountId(savingsDoc.Id.ToString()),
@@ -205,7 +205,7 @@ internal static partial class InfrastructureMapper
             return savingsAccount;
         }
 
-        if (document.AccountType.Equals(AccountTypes.Keys.CreditCard) && document is CreditCardAccountDocument ccDoc)
+        if (document.AccountType.Equals(AccountTypes.Keys.CREDIT_CARD) && document is CreditCardAccountDocument ccDoc)
         {
             var creditCardAccount = CreditCardAccount.Load(
                 new AccountId(ccDoc.Id.ToString()),
@@ -227,7 +227,7 @@ internal static partial class InfrastructureMapper
             return creditCardAccount;
         }
 
-        if (document.AccountType.Equals(AccountTypes.Keys.LineOfCredit) && document is LineOfCreditAccountDocument locDoc)
+        if (document.AccountType.Equals(AccountTypes.Keys.LINE_OF_CREDIT) && document is LineOfCreditAccountDocument locDoc)
         {
             var lineOfCreditAccount = LineOfCreditAccount.Load(
                 new AccountId(locDoc.Id.ToString()),

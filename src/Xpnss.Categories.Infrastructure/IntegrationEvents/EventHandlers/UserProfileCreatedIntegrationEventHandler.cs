@@ -8,14 +8,21 @@ namespace Habanerio.Xpnss.Categories.Infrastructure.IntegrationEvents.EventHandl
 
 public class UserProfileCreatedIntegrationEventHandler(
     ICategoriesRepository repository,
+    //IClientSessionHandle mongoSession,
     ILogger<UserProfileCreatedIntegrationEventHandler> logger) :
     IIntegrationEventHandler<UserProfileCreatedIntegrationEvent>
 {
-    private readonly ICategoriesRepository _repository = repository ??
-        throw new ArgumentNullException(nameof(repository));
-
     private readonly ILogger<UserProfileCreatedIntegrationEventHandler> _logger = logger ??
         throw new ArgumentNullException(nameof(logger));
+
+    //TODO: Would like to use IClientSessionHandle,
+    //      but get error: 'Standalone servers do not support transactions.'
+
+    ////    private readonly IClientSessionHandle _mongoSession = mongoSession ??
+    ////    throw new ArgumentNullException(nameof(mongoSession));
+
+    private readonly ICategoriesRepository _repository = repository ??
+        throw new ArgumentNullException(nameof(repository));
 
     public async Task Handle(
         UserProfileCreatedIntegrationEvent @event,
@@ -28,97 +35,127 @@ public class UserProfileCreatedIntegrationEventHandler(
         if (doesUserHaveAccountsResult.Value.Any())
             return;
 
-        var categories = new Dictionary<Category, List<Category>>()
-        {
-            {
-                Category.New(new UserId(userId), new CategoryName("Income"), "Income Categories", CategoryId.Empty, 1),
-                new[]
-                {
-                    Category.New(new UserId(userId), new CategoryName("Salary"), "Salary Income", CategoryId.Empty, 1),
-                    Category.New(new UserId(userId), new CategoryName("Bonus"), "Bonus Income", CategoryId.Empty, 2),
-                    Category.New(new UserId(userId), new CategoryName("Interest Income"), "Interest Income", CategoryId.Empty, 3),
-                    Category.New(new UserId(userId), new CategoryName("Misc Income"), "Misc Income", CategoryId.Empty, 4)
-                }.ToList()
-            },
-            {
-                Category.New(new UserId(userId), new CategoryName("Credit Cards / Loans"), "Credit Card or Loan Payments", CategoryId.Empty, 2),
-                new[]
-                {
-                    Category.New(new UserId(userId), new CategoryName("Payments"), "Credit Card Payments", CategoryId.Empty, 1)
-                }.ToList()
-            },
-            {
-                Category.New(new UserId(userId), new CategoryName("Home"), "Home Expenses", CategoryId.Empty, 3),
-                new[]
-                {
-                    Category.New(new UserId(userId), new CategoryName("Rent/Mortgage"), "Rent/Mortgage Payments", CategoryId.Empty, 1),
-                    Category.New(new UserId(userId), new CategoryName("Home Insurance"), "Home Insurance Payments", CategoryId.Empty, 2),
-                    Category.New(new UserId(userId), new CategoryName("Groceries"), "Groceries Expenses", CategoryId.Empty, 3),
-                    Category.New(new UserId(userId), new CategoryName("Streaming Service"), "Streaming Services Payments", CategoryId.Empty, 4),
-                    Category.New(new UserId(userId), new CategoryName("Internet"), "Internet Payments", CategoryId.Empty, 5),
-                    Category.New(new UserId(userId), new CategoryName("Phone"), "Phone Payments", CategoryId.Empty, 6),
-                    Category.New(new UserId(userId), new CategoryName("Utilities"), "Utility Payments", CategoryId.Empty, 7),
-                    Category.New(new UserId(userId), new CategoryName("Misc"), "Misc Expenses", CategoryId.Empty, 8)
-                }.ToList()
-            },
-            {
-                Category.New(new UserId(userId), new CategoryName("Personal"), "Personal Expenses", CategoryId.Empty, 5),
-                new[]
-                {
-                    Category.New(new UserId(userId), new CategoryName("Dining Out"), "Dining Out Expenses", CategoryId.Empty, 1),
-                    Category.New(new UserId(userId), new CategoryName("Entertainment"), "Entertainment Expenses", CategoryId.Empty, 2),
-                    Category.New(new UserId(userId), new CategoryName("Clothing"), "Clothing Expenses", CategoryId.Empty, 3),
-                    Category.New(new UserId(userId), new CategoryName("Health/Wellness"), "Health Expenses", CategoryId.Empty, 4),
-                    Category.New(new UserId(userId), new CategoryName("Vacation"), "Vacation Expenses", CategoryId.Empty, 5),
-                    Category.New(new UserId(userId), new CategoryName("Donations / Charity"), "Donations or Charity Expenses", CategoryId.Empty, 6),
-                    Category.New(new UserId(userId), new CategoryName("Misc"), "Misc Expenses", CategoryId.Empty, 7)
-                }.ToList()
-            }
-        };
+        var categories = new List<Category>();
 
-        foreach (var kvp in categories)
+        var incomeCategory = Category.New(
+            new UserId(userId), new CategoryName("Income"), "Income Categories", 1);
+        incomeCategory.AddSubCategory(
+            new CategoryName("Pay"), "Work Pay", 1);
+        incomeCategory.AddSubCategory
+            (new CategoryName("Interest Income"), "Interest Income", 3);
+        incomeCategory.AddSubCategory(
+            new CategoryName("Misc Income"), "Misc Income", 4);
+
+        categories.Add(incomeCategory);
+
+
+        var ccLoansCategory = Category.New(
+            new UserId(userId), new CategoryName("Credit Cards / Loans"),
+            "Credit Card or Loan Payments", 2);
+        ccLoansCategory.AddSubCategory(
+            new CategoryName("Payments"), "Credit Card Payments", 1);
+
+        categories.Add(ccLoansCategory);
+
+
+        var homeCategory = Category.New(
+            new UserId(userId), new CategoryName("Home"), "Home Expenses", 3);
+        homeCategory.AddSubCategory(
+            new CategoryName("Rent/Mortgage"), "Rent/Mortgage Payments", 1);
+        homeCategory.AddSubCategory(
+            new CategoryName("Home Insurance"), "Home Insurance Payments", 2);
+        homeCategory.AddSubCategory(
+            new CategoryName("Groceries"), "Groceries Expenses", 3);
+        homeCategory.AddSubCategory(
+            new CategoryName("Streaming Service"), "Streaming Services Payments", 4);
+        homeCategory.AddSubCategory
+            (new CategoryName("Internet"), "Internet Payments", 5);
+        homeCategory.AddSubCategory(
+            new CategoryName("Phone"), "Phone Payments", 6);
+        homeCategory.AddSubCategory
+            (new CategoryName("Utilities"), "Utility Payments", 7);
+        homeCategory.AddSubCategory(
+            new CategoryName("Misc"), "Misc Expenses", 8);
+
+        categories.Add(homeCategory);
+
+
+        var carCategory = Category.New(
+            new UserId(userId), new CategoryName("Car"), "Car", 4);
+        carCategory.AddSubCategory(
+            new CategoryName("Car Payment"), "Car Payment", 1);
+        carCategory.AddSubCategory(
+            new CategoryName("Car Insurance"), "Car Insurance", 2);
+        carCategory.AddSubCategory(
+            new CategoryName("Gas"), "Gas Expenses", 3);
+        carCategory.AddSubCategory(
+            new CategoryName("Maintenance"), "Car Maintenance Expenses", 4);
+        carCategory.AddSubCategory(
+            new CategoryName("Parking"), "Parking Expenses", 5);
+        carCategory.AddSubCategory(
+            new CategoryName("Misc"), "Misc Expenses", 6);
+
+        categories.Add(carCategory);
+
+
+        var personalCategory = Category.New(
+            new UserId(userId), new CategoryName("Personal"), "Personal Expenses", 5);
+        personalCategory.AddSubCategory(
+            new CategoryName("Dining Out"), "Dining Out Expenses", 1);
+        personalCategory.AddSubCategory(
+            new CategoryName("Entertainment"), "Theatres, Concerts, ...", 2);
+        personalCategory.AddSubCategory(
+            new CategoryName("Clothing"), "Clothing Expenses", 3);
+        personalCategory.AddSubCategory(
+            new CategoryName("Health/Wellness"), "Health Expenses", 4);
+        personalCategory.AddSubCategory(
+            new CategoryName("Vacation"), "Vacation Expenses", 5);
+        personalCategory.AddSubCategory(
+            new CategoryName("Donations / Charity"), "Donations or Charity Expenses", 6);
+        personalCategory.AddSubCategory(
+            new CategoryName("Misc"), "Misc Expenses", 7);
+
+        categories.Add(personalCategory);
+
+        foreach (var category in categories)
         {
+            //using (_mongoSession)
+            //{
+            //      _mongoSession.StartTransaction();
+
             try
             {
-                var category = kvp.Key;
-
                 var rslt = await _repository.AddAsync(category, cancellationToken);
 
                 if (rslt.IsSuccess)
                 {
                     var newCategory = rslt.Value;
 
-                    _logger.LogInformation("{EventId}: Category '{CategoryName}' was created for User '{UserId}'",
-                        @event.Id, newCategory.Name, userId);
-
-                    if (kvp.Value.Any())
+                    if (category.SubCategories.Any() && newCategory.SubCategories.Count == 0)
                     {
-                        var subCategoryOrder = 1;
-                        foreach (var subCategory in kvp.Value)
-                        {
-                            newCategory.AddSubCategory(subCategory.Name, subCategory.Description, subCategoryOrder);
+                        //await _mongoSession.AbortTransactionAsync(cancellationToken);
 
-                            subCategoryOrder++;
-
-                            var subCategoryResult = await _repository.UpdateAsync(userId, newCategory, cancellationToken);
-
-                            if (subCategoryResult.IsSuccess)
-                            {
-                                _logger.LogInformation("{EventId}: Category '{CategoryName}/{SubCategoryName}' was created for User '{UserId}'",
-                                    @event.Id, newCategory.Name, subCategory.Name, userId);
-                            }
-                        }
+                        throw new InvalidOperationException(
+                            $"SubCategories were not created for Category '{newCategory.Name}'");
                     }
+
+                    //await _mongoSession.CommitTransactionAsync(cancellationToken);
+                    _logger.LogInformation("{EventId}:" +
+                                           " Category '{NewCategoryName}' was created for User '{UserId}'",
+                                @event.Id, newCategory.Name, userId);
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                _logger.LogError(e,
-                    "{EventId}: An error occurred while trying to create Category '{Name}' for User '{UserId}'",
-                    @event.Id, kvp.Key.Name, userId);
+                _logger.LogError(ex,
+                    "{EventId}: " +
+                    "An error occurred while trying to create Category '{CategoryName}' for User '{UserId}'",
+                    @event.Id, category.Name, userId);
 
                 throw;
             }
+            //}
+
         }
     }
 }

@@ -19,7 +19,7 @@ public sealed class PayerPayee : AggregateRoot<PayerPayeeId>
         string description,
         string location) :
         this(
-            PayerPayeeId.Empty,
+            PayerPayeeId.New,
             userId,
             name,
             description,

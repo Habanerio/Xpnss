@@ -14,9 +14,6 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
     BaseFunctionalApisTests(factory),
     IClassFixture<WebApplicationFactory<Apis.App.AppApis.Program>>
 {
-    private const string ENDPOINTS_CREATE_ACCOUNT = "/api/v1/users/{userId}/accounts";
-
-
     [Fact]
     public async Task CanCall_CreateAccount_CashAccount_WithValidRequest_ReturnsOk()
     {
@@ -25,18 +22,20 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         // Arrange
         var request = new CreateAccountCommand(
             USER_ID.ToString(),
-            AccountTypes.Keys.Cash.ToString(),
+            AccountTypes.Keys.CASH.ToString(),
             "Test Cash Account",
             "Test Cash Account Description", DisplayColor: "#123ABC");
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT
+            ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT
                 .Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
-        response.EnsureSuccessStatusCode();
+        //response.EnsureSuccessStatusCode();
+        //Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(response.IsSuccessStatusCode);
 
         var content = await response.Content.ReadAsStringAsync();
         var apiResponse = JsonSerializer.Deserialize<ApiResponse<AccountDto>>(content, JsonSerializationOptions);
@@ -48,7 +47,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         var accountDto = Assert.IsType<AccountDto>(apiResponse.Data);
         Assert.NotEqual(accountDto.Id, ObjectId.Empty.ToString());
         Assert.Equal(USER_ID.ToString(), accountDto.UserId);
-        Assert.Equal(AccountTypes.Keys.Cash.ToString(), accountDto.AccountType);
+        Assert.Equal(AccountTypes.Keys.CASH.ToString(), accountDto.AccountType);
         Assert.Equal(request.Name, accountDto.Name);
         Assert.Equal(0, accountDto.Balance);
         Assert.Equal(request.Description, accountDto.Description);
@@ -73,18 +72,20 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         var request = new CreateAccountCommand
         (
             USER_ID.ToString(),
-            AccountTypes.Keys.Checking.ToString(),
+            AccountTypes.Keys.CHECKING.ToString(),
             "Test Checking Account",
             "Test Checking Account Description",
             OverdraftAmount: 4232, DisplayColor: "#0df000");
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
+            ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
-        response.EnsureSuccessStatusCode();
+        //response.EnsureSuccessStatusCode();
+        //Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(response.IsSuccessStatusCode);
 
         var content = await response.Content.ReadAsStringAsync();
         var apiResponse = JsonSerializer.Deserialize<ApiResponse<AccountDto>>(content, JsonSerializationOptions);
@@ -96,7 +97,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         var accountDto = Assert.IsType<AccountDto>(apiResponse.Data);
         Assert.NotEqual(accountDto.Id, ObjectId.Empty.ToString());
         Assert.Equal(USER_ID.ToString(), accountDto.UserId);
-        Assert.Equal(AccountTypes.Keys.Checking.ToString(), accountDto.AccountType);
+        Assert.Equal(AccountTypes.Keys.CHECKING.ToString(), accountDto.AccountType);
         Assert.Equal(request.Name, accountDto.Name);
         Assert.Equal(0, accountDto.Balance);
         Assert.Equal(request.Description, accountDto.Description);
@@ -121,18 +122,20 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         var request = new CreateAccountCommand
         (
             UserId: USER_ID.ToString(),
-            AccountType: AccountTypes.Keys.Savings.ToString(),
+            AccountType: AccountTypes.Keys.SAVINGS.ToString(),
             Name: "Test Savings Account",
             Description: "Test Savings Account Description",
             InterestRate: 10, DisplayColor: "#000000");
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
+            ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
-        response.EnsureSuccessStatusCode();
+        //response.EnsureSuccessStatusCode();
+        //Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(response.IsSuccessStatusCode);
 
         var content = await response.Content.ReadAsStringAsync();
         var apiResponse = JsonSerializer.Deserialize<ApiResponse<AccountDto>>(content, JsonSerializationOptions);
@@ -144,7 +147,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         var accountDto = Assert.IsType<AccountDto>(apiResponse.Data);
         Assert.NotEqual(accountDto.Id, ObjectId.Empty.ToString());
         Assert.Equal(USER_ID.ToString(), accountDto.UserId);
-        Assert.Equal(AccountTypes.Keys.Savings.ToString(), accountDto.AccountType);
+        Assert.Equal(AccountTypes.Keys.SAVINGS.ToString(), accountDto.AccountType);
         Assert.Equal(request.Name, accountDto.Name);
         Assert.Equal(0, accountDto.Balance);
         Assert.Equal(request.Description, accountDto.Description);
@@ -169,7 +172,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         var request = new CreateAccountCommand
         (
             UserId: USER_ID.ToString(),
-            AccountType: AccountTypes.Keys.CreditCard.ToString(),
+            AccountType: AccountTypes.Keys.CREDIT_CARD.ToString(),
             Name: "Test Credit Card Account",
             Description: "Test Credit Card Account Description",
             CreditLimit: 1000,
@@ -177,11 +180,13 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
+            ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
-        response.EnsureSuccessStatusCode();
+        //response.EnsureSuccessStatusCode();
+        //Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(response.IsSuccessStatusCode);
 
         var content = await response.Content.ReadAsStringAsync();
         var apiResponse = JsonSerializer.Deserialize<ApiResponse<AccountDto>>(content, JsonSerializationOptions);
@@ -193,7 +198,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         var accountDto = Assert.IsType<AccountDto>(apiResponse.Data);
         Assert.NotEqual(accountDto.Id, ObjectId.Empty.ToString());
         Assert.Equal(USER_ID.ToString(), accountDto.UserId);
-        Assert.Equal(AccountTypes.Keys.CreditCard.ToString(), accountDto.AccountType);
+        Assert.Equal(AccountTypes.Keys.CREDIT_CARD.ToString(), accountDto.AccountType);
         Assert.Equal(request.Name, accountDto.Name);
         Assert.Equal(0, accountDto.Balance);
         Assert.Equal(request.CreditLimit, accountDto.CreditLimit);
@@ -218,7 +223,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         var request = new CreateAccountCommand
         (
             UserId: USER_ID.ToString(),
-            AccountType: AccountTypes.Keys.LineOfCredit.ToString(),
+            AccountType: AccountTypes.Keys.LINE_OF_CREDIT.ToString(),
             Name: "Test Line Of Credit Account",
             Description: "Test Line Of Credit Account Description",
             CreditLimit: 1000,
@@ -226,11 +231,13 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
+            ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
-        response.EnsureSuccessStatusCode();
+        //response.EnsureSuccessStatusCode();
+        //Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(response.IsSuccessStatusCode);
 
         var content = await response.Content.ReadAsStringAsync();
         var apiResponse = JsonSerializer.Deserialize<ApiResponse<AccountDto>>(content, JsonSerializationOptions);
@@ -242,7 +249,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         var accountDto = Assert.IsType<AccountDto>(apiResponse.Data);
         Assert.NotEqual(accountDto.Id, ObjectId.Empty.ToString());
         Assert.Equal(USER_ID.ToString(), accountDto.UserId);
-        Assert.Equal(AccountTypes.Keys.LineOfCredit.ToString(), accountDto.AccountType);
+        Assert.Equal(AccountTypes.Keys.LINE_OF_CREDIT.ToString(), accountDto.AccountType);
         Assert.Equal(request.Name, accountDto.Name);
         Assert.Equal(0, accountDto.Balance);
         Assert.Equal(request.CreditLimit, accountDto.CreditLimit);
@@ -269,7 +276,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
+            ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
@@ -293,7 +300,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
+            ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
@@ -323,7 +330,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
+            ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
@@ -347,14 +354,14 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         var request = new CreateAccountCommand
         (
             UserId: USER_ID.ToString(),
-            AccountType: AccountTypes.Keys.Cash.ToString(),
+            AccountType: AccountTypes.Keys.CASH.ToString(),
             Name: string.Empty,
             Description: "Test Cash Account Description",
             DisplayColor: "#000000");
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
+            ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
@@ -387,7 +394,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
+            ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
@@ -421,7 +428,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
+            ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert
@@ -455,7 +462,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
+            ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", USER_ID.ToString()),
             request);
 
         // Assert

@@ -48,7 +48,7 @@ public abstract class Entity<TId>(TId id)
 
     public bool IsTransient { get; init; }
 
-    public DateTime DateCreated { get; init; }
+    public DateTime DateCreated { get; init; } = DateTime.UtcNow;
 
     public DateTime? DateUpdated { get; set; }
 

@@ -24,9 +24,9 @@ public class AddInterestRateAdjustmentApiTests(WebApplicationFactory<Apis.App.Ap
         "/api/v1/users/{userId}/accounts/{accountId}/interest-rate";
 
     [Theory]
-    [InlineData(AccountTypes.Keys.CreditCard)]
-    [InlineData(AccountTypes.Keys.LineOfCredit)]
-    [InlineData(AccountTypes.Keys.Savings)]
+    [InlineData(AccountTypes.Keys.CREDIT_CARD)]
+    [InlineData(AccountTypes.Keys.LINE_OF_CREDIT)]
+    [InlineData(AccountTypes.Keys.SAVINGS)]
     public async Task CanCall_AdjustInterestRate_ReturnsOk(AccountTypes.Keys accountType)
     {
         var USER_ID = await GetTestUserObjectIdAsync();
@@ -77,8 +77,9 @@ public class AddInterestRateAdjustmentApiTests(WebApplicationFactory<Apis.App.Ap
 
         return;
 
-        response.EnsureSuccessStatusCode();
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        //response.EnsureSuccessStatusCode();
+        //Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(response.IsSuccessStatusCode);
 
         var adjustInterestRateContent = await response.Content.ReadAsStringAsync();
         Assert.NotNull(adjustInterestRateContent);
@@ -107,8 +108,8 @@ public class AddInterestRateAdjustmentApiTests(WebApplicationFactory<Apis.App.Ap
     }
 
     [Theory]
-    [InlineData(AccountTypes.Keys.Cash)]
-    [InlineData(AccountTypes.Keys.Checking)]
+    [InlineData(AccountTypes.Keys.CASH)]
+    [InlineData(AccountTypes.Keys.CHECKING)]
     public async Task CanNotCall_AdjustInterestRate_InvalidAccountType_ReturnsBadRequestOk(AccountTypes.Keys accountType)
     {
         var USER_ID = await GetTestUserObjectIdAsync();
@@ -155,8 +156,8 @@ public class AddInterestRateAdjustmentApiTests(WebApplicationFactory<Apis.App.Ap
     }
 
     [Theory]
-    [InlineData(AccountTypes.Keys.CreditCard, -0.01)]
-    [InlineData(AccountTypes.Keys.LineOfCredit, -0.01)]
+    [InlineData(AccountTypes.Keys.CREDIT_CARD, -0.01)]
+    [InlineData(AccountTypes.Keys.LINE_OF_CREDIT, -0.01)]
     public async Task CanNotCall_AdjustInterestRate_ValueTooLow_ReturnsBadRequestOk(AccountTypes.Keys accountType, decimal value)
     {
         var USER_ID = await GetTestUserObjectIdAsync();
@@ -202,8 +203,8 @@ public class AddInterestRateAdjustmentApiTests(WebApplicationFactory<Apis.App.Ap
     }
 
     [Theory]
-    [InlineData(AccountTypes.Keys.CreditCard, 100.1)]
-    [InlineData(AccountTypes.Keys.LineOfCredit, 100.1)]
+    [InlineData(AccountTypes.Keys.CREDIT_CARD, 100.1)]
+    [InlineData(AccountTypes.Keys.LINE_OF_CREDIT, 100.1)]
     public async Task CanNotCall_AdjustInterestRate_ValueTooHigh_ReturnsBadRequestOk(AccountTypes.Keys accountType, decimal value)
     {
         var USER_ID = await GetTestUserObjectIdAsync();

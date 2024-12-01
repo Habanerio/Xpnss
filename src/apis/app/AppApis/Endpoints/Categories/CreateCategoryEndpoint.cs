@@ -67,7 +67,6 @@ public class CreateCategoryEndpoint : BaseEndpoint
         {
             RuleFor(x => x.UserId).NotEmpty();
             RuleFor(x => x.Name).NotEmpty();
-            RuleFor(x => x.SortOrder).GreaterThan(0);
         }
     }
 }

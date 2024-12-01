@@ -48,27 +48,27 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository) 
     {
         return command.AccountType switch
         {
-            nameof(AccountTypes.Keys.Cash) => CashAccount.New(
+            nameof(AccountTypes.Keys.CASH) => CashAccount.New(
                 new UserId(command.UserId),
                 new AccountName(command.Name),
                 command.Description,
                 command.DisplayColor),
 
-            nameof(AccountTypes.Keys.Checking) => CheckingAccount.New(
+            nameof(AccountTypes.Keys.CHECKING) => CheckingAccount.New(
                 new UserId(command.UserId),
                 new AccountName(command.Name),
                 command.Description,
                 command.DisplayColor,
                 new Money(command.OverdraftAmount)),
 
-            nameof(AccountTypes.Keys.Savings) => SavingsAccount.New(
+            nameof(AccountTypes.Keys.SAVINGS) => SavingsAccount.New(
                 new UserId(command.UserId),
                 new AccountName(command.Name),
                 command.Description,
                 command.DisplayColor,
                 new PercentageRate(command.InterestRate)),
 
-            nameof(AccountTypes.Keys.CreditCard) => CreditCardAccount.New(
+            nameof(AccountTypes.Keys.CREDIT_CARD) => CreditCardAccount.New(
                 new UserId(command.UserId),
                 new AccountName(command.Name),
                 command.Description,
@@ -76,7 +76,7 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository) 
                 new Money(command.CreditLimit),
                 new PercentageRate(command.InterestRate)),
 
-            nameof(AccountTypes.Keys.LineOfCredit) => LineOfCreditAccount.New(
+            nameof(AccountTypes.Keys.LINE_OF_CREDIT) => LineOfCreditAccount.New(
                 new UserId(command.UserId),
                 new AccountName(command.Name),
                 command.Description,

@@ -9,7 +9,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\habanerio\Habanerio.Core.Dbs\Habanerio.Core.Dbs.MongoDb\Habanerio.Core.Dbs.MongoDb.csproj" />
       <ProjectReference Include="..\Xpnss.Infrastructure\Xpnss.Infrastructure.csproj" />
       <ProjectReference Include="..\Xpnss.Transactions.Domain\Xpnss.Transactions.Domain.csproj" />
     </ItemGroup>

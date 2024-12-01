@@ -9,6 +9,11 @@ public interface ICategoriesRepository
         Category category,
         CancellationToken cancellationToken = default);
 
+    Task<Result<bool>> ExistsAsync(
+        string userId,
+        string name,
+        CancellationToken cancellationToken = default);
+
     Task<Result<Category?>> GetAsync(
         string userId,
         string categoryId,

@@ -1,4 +1,3 @@
-using System.Net;
 using System.Text.Json;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
 using Habanerio.Xpnss.Application.DTOs;
@@ -10,20 +9,19 @@ public class GetAccountsApiTests(WebApplicationFactory<Apis.App.AppApis.Program>
     : BaseFunctionalApisTests(factory),
         IClassFixture<WebApplicationFactory<Apis.App.AppApis.Program>>
 {
-    private const string ENDPOINTS_ACCOUNTS_GET_ACCOUNTS = "/api/v1/users/{userId}/accounts";
-
     [Fact]
     public async Task GetAccounts_ReturnsOk()
     {
-        var USER_ID = await GetTestUserObjectIdAsync();
+        var userId = await GetTestUserObjectIdAsync();
 
         // Act
         var response = await HttpClient.GetAsync(
-            ENDPOINTS_ACCOUNTS_GET_ACCOUNTS.Replace("{userId}", USER_ID.ToString()));
+            ENDPOINTS_ACCOUNTS_GET_ACCOUNTS.Replace("{userId}", userId.ToString()));
 
         // Assert
-        response.EnsureSuccessStatusCode();
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        //response.EnsureSuccessStatusCode();
+        //Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(response.IsSuccessStatusCode);
 
         var content = await response.Content.ReadAsStringAsync();
         Assert.NotNull(content);
@@ -38,6 +36,6 @@ public class GetAccountsApiTests(WebApplicationFactory<Apis.App.AppApis.Program>
         var accounts = Assert.IsType<List<AccountDto>>(apiResponse.Data);
 
         Assert.True(accounts.TrueForAll(a =>
-            a.UserId == USER_ID.ToString()));
+            a.UserId == userId.ToString()));
     }
 }

@@ -7,17 +7,10 @@ internal static partial class ApplicationMapper
 {
     public static IEnumerable<CategoryDto> Map(IEnumerable<Category> documents)
     {
-        var results = new List<CategoryDto>();
-
-        foreach (var document in documents)
-        {
-            var dto = Map(document);
-
-            if (dto is not null)
-                results.Add(dto);
-        }
-
-        return results;
+        return documents
+            .Select(Map)
+            .Where(d => d is not null)
+            .Cast<CategoryDto>();
     }
 
     public static CategoryDto? Map(Category? document)
@@ -30,12 +23,35 @@ internal static partial class ApplicationMapper
             Id = document.Id,
             UserId = document.UserId,
             Name = document.Name,
-            ParentId = document.ParentId,
             Description = document.Description,
             SortOrder = document.SortOrder,
             SubCategories = Map(document.SubCategories)?.ToList() ?? []
         };
 
         return dto;
+    }
+
+    public static SubCategoryDto? Map(SubCategory? document)
+    {
+        if (document is null)
+            return default;
+
+        var dto = new SubCategoryDto
+        {
+            Id = document.Id,
+            Name = document.Name,
+            Description = document.Description,
+            ParentId = document.ParentId,
+            SortOrder = document.SortOrder
+        };
+
+        return dto;
+    }
+
+    public static IEnumerable<SubCategoryDto> Map(IEnumerable<SubCategory> documents)
+    {
+        return documents.Select(Map)
+            .Where(d => d is not null)
+            .Cast<SubCategoryDto>();
     }
 }
