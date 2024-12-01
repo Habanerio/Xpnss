@@ -82,7 +82,7 @@ public class CashAccountDocument : AccountDocument
 {
     public CashAccountDocument(ObjectId id) : base(id)
     {
-        AccountType = AccountTypes.Keys.Cash;
+        AccountType = AccountTypes.Keys.CASH;
     }
 }
 
@@ -93,7 +93,7 @@ public sealed class CheckingAccountDocument : CashAccountDocument, IDocumentHasO
 
     public CheckingAccountDocument(ObjectId id, decimal overDraftAmount) : base(id)
     {
-        AccountType = AccountTypes.Keys.Checking;
+        AccountType = AccountTypes.Keys.CHECKING;
         OverdraftAmount = overDraftAmount;
     }
 }
@@ -105,7 +105,7 @@ public sealed class SavingsAccountDocument : CashAccountDocument, IDocumentHasIn
 
     public SavingsAccountDocument(ObjectId id, decimal interestRate) : base(id)
     {
-        AccountType = AccountTypes.Keys.Savings;
+        AccountType = AccountTypes.Keys.SAVINGS;
         InterestRate = interestRate;
     }
 }
@@ -127,7 +127,7 @@ public abstract class CreditAccountDocument : AccountDocument, IDocumentHasCredi
 }
 
 public sealed class CreditCardAccountDocument(ObjectId id, decimal creditLimit, decimal interestRate)
-    : CreditAccountDocument(id, AccountTypes.Keys.CreditCard, creditLimit, interestRate);
+    : CreditAccountDocument(id, AccountTypes.Keys.CREDIT_CARD, creditLimit, interestRate);
 
 public sealed class LineOfCreditAccountDocument(ObjectId id, decimal creditLimit, decimal interestRate)
-    : CreditAccountDocument(id, AccountTypes.Keys.LineOfCredit, creditLimit, interestRate);
+    : CreditAccountDocument(id, AccountTypes.Keys.LINE_OF_CREDIT, creditLimit, interestRate);

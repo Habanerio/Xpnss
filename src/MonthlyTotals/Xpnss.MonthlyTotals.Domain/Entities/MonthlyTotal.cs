@@ -57,7 +57,7 @@ public class MonthlyTotal : AggregateRoot<EntityObjectId>
         Money debitTotalAmount,
         int debitCount) :
         this(
-            EntityObjectId.Empty,
+            EntityObjectId.New,
             userId,
             entityId,
             entityType,

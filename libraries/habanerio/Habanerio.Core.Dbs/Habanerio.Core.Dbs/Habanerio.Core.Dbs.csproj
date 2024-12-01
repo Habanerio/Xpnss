@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Habanerio.Core\Habanerio.Core.csproj" />
+        <ProjectReference Include="..\..\Habanerio.Core\Habanerio.Core.csproj" />
     </ItemGroup>
 
 </Project>

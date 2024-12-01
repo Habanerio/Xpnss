@@ -42,6 +42,24 @@ public class CreateUserProfileCommandHandler(
         if (!validationResult.IsValid)
             return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
+        var doesUserExistResult = await _repository.GetByEmailAsync(request.Email, cancellationToken);
+
+        if (doesUserExistResult.IsFailed)
+        {
+            _logger.LogError("{GetType}: Could not check if the User Profile already exists for {Email}",
+                nameof(GetType), request.Email);
+
+            return Result.Fail($"Could not check if the User Profile already exists for {request.Email}");
+        }
+
+        if (doesUserExistResult.ValueOrDefault is not null)
+        {
+            _logger.LogWarning("{GetType}: User Profile already exists for {Email}",
+                nameof(GetType), request.Email);
+
+            return Result.Fail($"User Profile already exists for {request.Email}");
+        }
+
         var extUserId = request.ExtUserId.Trim();
         var firstName = request.FirstName.Trim();
         var lastName = request.LastName.Trim();
@@ -57,7 +75,7 @@ public class CreateUserProfileCommandHandler(
                 nameof(GetType), firstName, email);
 
             return Result.Fail(result.Errors?[0].Message ??
-                               $"Could not save the {firstName} User Profile ({email})");
+                $"Could not save the {firstName} User Profile ({email})");
         }
 
         var userProfileDto = Mappers.ApplicationMapper.Map(result.ValueOrDefault);

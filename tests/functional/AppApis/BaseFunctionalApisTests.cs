@@ -29,6 +29,24 @@ public class BaseFunctionalApisTests
 
     protected readonly IConfiguration Config;
 
+    protected const string ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT = "/api/v1/users/{userId}/accounts";
+    protected const string ENDPOINTS_ACCOUNTS_GET_ACCOUNT = "/api/v1/users/{userId}/accounts/{accountId}";
+    protected const string ENDPOINTS_ACCOUNTS_GET_ACCOUNTS = "/api/v1/users/{userId}/accounts";
+    protected const string ENDPOINTS_ACCOUNTS_UPDATE_ACCOUNT_DETAILS = "/api/v1/users/{userId}/accounts/{accountId}";
+
+    protected const string ENDPOINTS_CATEGORIES_CREATE_CATEGORY = "/api/v1/users/{userId}/categories";
+    protected const string ENDPOINTS_CATEGORIES_ADD_SUBCATEGORIES = "/api/v1/users/{userId}/categories/{categoryId}/subcategories";
+    protected const string ENDPOINTS_CATEGORIES_GET_CATEGORY = "/api/v1/users/{userId}/categories/{categoryId}";
+    protected const string ENDPOINTS_CATEGORIES_GET_CATEGORIES = "/api/v1/users/{userId}/categories";
+
+    protected const string ENDPOINTS_SETUP_SETUP = "/api/v1/setup";
+
+    protected const string ENDPOINTS_TRANSACTIONS_CREATE_PURCHASE_TRANSACTION = "/api/v1/users/{userId}/transactions/purchase";
+
+    protected const string ENDPOINTS_TRANSACTIONS_CREATE_DEPOSIT_TRANSACTION = "/api/v1/users/{userId}/transactions/deposit";
+
+    protected const string ENDPOINTS_USER_PROFILES_GET_USER_PROFILE = "/api/v1/users/{userId}";
+
     protected readonly AccountsRepository AccountDocumentsRepository;
     protected readonly CategoriesRepository CategoryDocumentsRepository;
     protected readonly MonthlyTotalsRepository MonthlyTotalDocumentsRepository;

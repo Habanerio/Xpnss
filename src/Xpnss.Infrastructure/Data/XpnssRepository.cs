@@ -8,17 +8,17 @@ public class XpnssDbRepository<TDocument> :
     MongoDbRepository<TDocument> where TDocument :
     IMongoDocument
 {
-    public XpnssDbRepository(IOptions<MongoDbSettings> options) : base(options)
-    {
-    }
+    public XpnssDbRepository(IOptions<MongoDbSettings> options) :
+        base(options)
+    { }
 
-    public XpnssDbRepository(string connectionString, string databaseName) : base(connectionString, databaseName)
-    {
-    }
+    public XpnssDbRepository(string connectionString, string databaseName) :
+        base(connectionString, databaseName)
+    { }
 
-    public XpnssDbRepository(MongoDbContext dbContext) : base(dbContext)
-    {
-    }
+    public XpnssDbRepository(MongoDbContext dbContext) :
+        base(dbContext)
+    { }
 
     /// <summary>
     /// Wrapper around the base AddDocumentAsync method that returns a boolean indicating if the document was saved.

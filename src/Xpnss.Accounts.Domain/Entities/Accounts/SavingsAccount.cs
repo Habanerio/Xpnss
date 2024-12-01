@@ -18,7 +18,7 @@ public sealed class SavingsAccount : BaseAccount, IHasInterestRate
         PercentageRate interestRate) :
         base(
             userId,
-            AccountTypes.Keys.Savings,
+            AccountTypes.Keys.SAVINGS,
             accountName,
             false,
             balance,
@@ -46,7 +46,7 @@ public sealed class SavingsAccount : BaseAccount, IHasInterestRate
         base(
             id,
             userId,
-            AccountTypes.Keys.Savings,
+            AccountTypes.Keys.SAVINGS,
             accountName,
             false,
             balance,

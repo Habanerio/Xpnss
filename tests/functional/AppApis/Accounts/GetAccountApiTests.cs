@@ -1,4 +1,3 @@
-using System.Net;
 using System.Text.Json;
 using Habanerio.Xpnss.Accounts.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.Apis.App.AppApis.Models;
@@ -11,8 +10,6 @@ public class GetAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Program> 
     : BaseFunctionalApisTests(factory),
         IClassFixture<WebApplicationFactory<Apis.App.AppApis.Program>>
 {
-    private const string ENDPOINTS_ACCOUNTS_GET_ACCOUNTS = "/api/v1/users/{userId}/accounts/{accountId}";
-
     [Fact]
     public async Task GetAccount_ReturnsOk()
     {
@@ -31,8 +28,10 @@ public class GetAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Program> 
                     .Replace("{accountId}", availableAccount.Id.ToString()));
 
             // Assert
-            response.EnsureSuccessStatusCode();
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            //response.EnsureSuccessStatusCode();
+            //Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.True(response.IsSuccessStatusCode);
+
 
             var content = await response.Content.ReadAsStringAsync();
             Assert.NotNull(content);

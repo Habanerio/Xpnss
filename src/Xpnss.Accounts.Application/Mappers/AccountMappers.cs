@@ -13,7 +13,7 @@ internal static partial class ApplicationMapper
 
         var accountDto = PopulateCommonDtoProperties(entity, monthlyTotals);
 
-        if (entity.AccountType == AccountTypes.Keys.Cash)
+        if (entity.AccountType == AccountTypes.Keys.CASH)
         {
             if (entity is not CashAccount)
                 throw new InvalidOperationException("Account Type not supported");
@@ -21,7 +21,7 @@ internal static partial class ApplicationMapper
             return accountDto;
         }
 
-        if (entity.AccountType == AccountTypes.Keys.Checking)
+        if (entity.AccountType == AccountTypes.Keys.CHECKING)
         {
             if (entity is not CheckingAccount checkingAccount)
                 throw new InvalidOperationException("Account Type not supported");
@@ -31,7 +31,7 @@ internal static partial class ApplicationMapper
             return accountDto;
         }
 
-        if (entity.AccountType == AccountTypes.Keys.Savings)
+        if (entity.AccountType == AccountTypes.Keys.SAVINGS)
         {
             if (entity is not SavingsAccount savingsAccount)
                 throw new InvalidOperationException("Account Type not supported");
@@ -41,7 +41,7 @@ internal static partial class ApplicationMapper
             return accountDto;
         }
 
-        if (entity.AccountType == AccountTypes.Keys.CreditCard)
+        if (entity.AccountType == AccountTypes.Keys.CREDIT_CARD)
         {
             if (entity is not CreditCardAccount creditCardAccount)
                 throw new InvalidOperationException("Account Type not supported");
@@ -52,7 +52,7 @@ internal static partial class ApplicationMapper
             return accountDto;
         }
 
-        if (entity.AccountType == AccountTypes.Keys.LineOfCredit)
+        if (entity.AccountType == AccountTypes.Keys.LINE_OF_CREDIT)
         {
             if (entity is not LineOfCreditAccount lineOfCreditAccount)
                 throw new InvalidOperationException("Account Type not supported");

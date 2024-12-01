@@ -4,17 +4,19 @@ public static class AccountTypes
 {
     public enum Keys
     {
-        None = 0,
+        NONE = 0,
 
-        Cash,
-        Checking,
-        Savings,
-        Investment,
+        CASH,
+        CHECKING,
+        SAVINGS,
+        INVESTMENT,
 
-        CreditCard,
-        LineOfCredit,
-        Loan,
-        Mortgage,
+        CREDIT_CARD,
+        LINE_OF_CREDIT,
+        LOAN,
+        MORTGAGE,
+
+        UNKNOWN = 999
     }
 
     public static IReadOnlyCollection<Keys> AllAccountTypes =>
@@ -30,19 +32,19 @@ public static class AccountTypes
     public static IReadOnlyCollection<Keys> CreditAccountTypes =>
     new[]
     {
-        Keys.CreditCard,
-        Keys.LineOfCredit,
-        Keys.Loan,
-        Keys.Mortgage,
+        Keys.CREDIT_CARD,
+        Keys.LINE_OF_CREDIT,
+        Keys.LOAN,
+        Keys.MORTGAGE,
     };
 
     public static IReadOnlyCollection<Keys> DebitAccountTypes =>
     new[]
     {
-        Keys.Cash,
-        Keys.Checking,
-        Keys.Savings,
-        Keys.Investment,
+        Keys.CASH,
+        Keys.CHECKING,
+        Keys.SAVINGS,
+        Keys.INVESTMENT,
     };
 
     public static bool IsCreditAccount(Keys accountType) =>

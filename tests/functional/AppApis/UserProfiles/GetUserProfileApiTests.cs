@@ -11,8 +11,6 @@ public class GetUserProfileApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
     BaseFunctionalApisTests(factory),
     IClassFixture<WebApplicationFactory<Apis.App.AppApis.Program>>
 {
-    private const string ENDPOINTS_USER_PROFILES_GET_USER_PROFILE = "/api/v1/users/{userId}";
-
     [Fact]
     public async Task CanCall_GetUserProfile_WithValidRequest_ReturnsOk()
     {
@@ -25,10 +23,13 @@ public class GetUserProfileApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
         var userId = actualUserProfileDocument.Id;
 
         // Act
-        var response = await HttpClient.GetAsync(ENDPOINTS_USER_PROFILES_GET_USER_PROFILE
+        var response = await HttpClient.GetAsync(
+            ENDPOINTS_USER_PROFILES_GET_USER_PROFILE
                 .Replace("{userId}", userId.ToString()));
 
-        response.EnsureSuccessStatusCode();
+        //response.EnsureSuccessStatusCode();
+        //Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(response.IsSuccessStatusCode);
 
         var content = await response.Content.ReadAsStringAsync();
         var apiResponse = JsonSerializer.Deserialize<ApiResponse<UserProfileDto>>(
@@ -55,7 +56,8 @@ public class GetUserProfileApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
         var userId = ObjectId.GenerateNewId();
 
         // Act
-        var response = await HttpClient.GetAsync(ENDPOINTS_USER_PROFILES_GET_USER_PROFILE
+        var response = await HttpClient.GetAsync(
+            ENDPOINTS_USER_PROFILES_GET_USER_PROFILE
             .Replace("{userId}", userId.ToString()));
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

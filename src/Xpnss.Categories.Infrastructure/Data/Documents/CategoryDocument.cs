@@ -11,7 +11,7 @@ public class CategoryDocument : MongoDocument
     [BsonElement("user_id")]
     public ObjectId UserId { get; set; }
 
-    [BsonElement("accountName")]
+    [BsonElement("category_name")]
     public string Name { get; set; } = "";
 
     [BsonElement("description")]
@@ -20,11 +20,8 @@ public class CategoryDocument : MongoDocument
     [BsonElement("sort_order")]
     public int SortOrder { get; set; }
 
-    [BsonElement("parent_id")]
-    public ObjectId? ParentId { get; set; }
-
     [BsonElement("sub_categories")]
-    public List<CategoryDocument> SubCategories { get; set; } = [];
+    public List<SubCategoryDocument> SubCategories { get; set; } = [];
 
     [BsonElement("is_deleted")]
     public bool IsDeleted { get; set; }
@@ -40,86 +37,37 @@ public class CategoryDocument : MongoDocument
     [BsonElement("date_deleted")]
     [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
     public DateTime? DateDeleted { get; set; }
+}
 
-    //[BsonConstructor]
-    //public CategoryDocument() { }
+public class SubCategoryDocument : MongoDocument
+{
+    [BsonElement("user_id")]
+    public ObjectId UserId { get; set; }
 
-    //public CategoryDocument(
-    //    ObjectId categoryId,
-    //    string userId,
-    //    string name,
-    //    string description,
-    //    int sortOrder,
-    //    List<CategoryDocument> subCategories,
-    //    ObjectId? parentId,
-    //    DateTime dateCreated,
-    //    DateTime? dateUpdated,
-    //    DateTime? dateDeleted)
-    //{
-    //    Id = categoryId;
-    //    UserId = userId;
-    //    Name = name;
-    //    Description = description;
-    //    SubCategories = subCategories;
-    //    ParentId = parentId.ToString();
-    //    SortOrder = sortOrder;
-    //    IsDeleted = false;
-    //    DateCreated = dateCreated;
-    //    DateUpdated = dateUpdated;
-    //    DateDeleted = dateDeleted;
-    //}
+    [BsonElement("subCategory_Name")]
+    public string Name { get; set; } = "";
 
-    //public static CategoryDocument NewId(
-    //    string userId,
-    //    string name,
-    //    List<CategoryDocument> subCategories,
-    //    string description,
-    //    int sortOrder = 99)
-    //{
-    //    if (string.IsNullOrWhiteSpace(userId))
-    //        throw new ArgumentNullException(nameof(userId));
+    [BsonElement("description")]
+    public string Description { get; set; } = "";
 
-    //    return new CategoryDocument(
-    //        ObjectId.GenerateNewId(), 
-    //        userId, 
-    //        name, 
-    //        description, 
-    //        sortOrder, 
-    //        subCategories,
-    //        null,
-    //        DateTime.UtcNow,
-    //        null,
-    //        null);
-    //}
+    [BsonElement("parent_id")]
+    public ObjectId ParentId { get; set; }
 
-    //public static CategoryDocument NewSub(
-    //    string userId,
-    //    string name,
-    //    List<CategoryDocument> subCategories,
-    //    string description,
-    //    string parentId,
-    //    int sortOrder = 99)
-    //{
-    //    if (string.IsNullOrWhiteSpace(userId))
-    //        throw new ArgumentNullException(nameof(userId));
+    [BsonElement("sort_order")]
+    public int SortOrder { get; set; }
 
-    //    if (string.IsNullOrWhiteSpace(parentId))
-    //        throw new ArgumentNullException(nameof(parentId));
+    [BsonElement("is_deleted")]
+    public bool IsDeleted { get; set; }
 
-    //    return new CategoryDocument(
-    //        ObjectId.GenerateNewId(), 
-    //        userId, 
-    //        name, 
-    //        description, 
-    //        sortOrder, 
-    //        subCategories, 
-    //        ObjectId.Parse(parentId));
-    //}
+    [BsonElement("date_created")]
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime DateCreated { get; set; }
 
-    //public void AddSubCategory(string name, string description, int sortOrder)
-    //{
-    //    var subCategory = NewSub(UserId, name, [], description, Id.ToString(), sortOrder);
+    [BsonElement("date_updated")]
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime? DateUpdated { get; set; }
 
-    //    SubCategories.Add(subCategory);
-    //}
+    [BsonElement("date_deleted")]
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime? DateDeleted { get; set; }
 }

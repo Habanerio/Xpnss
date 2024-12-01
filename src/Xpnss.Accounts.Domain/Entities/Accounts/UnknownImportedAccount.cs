@@ -3,87 +3,86 @@ using Habanerio.Xpnss.Domain.ValueObjects;
 
 namespace Habanerio.Xpnss.Accounts.Domain.Entities.Accounts;
 
-public sealed class CashAccount : BaseAccount
+/// <summary>
+/// For any accounts that were imported and if we don't know what type they are,
+/// or can't match with an existing account type.
+/// </summary>
+public class UnknownImportedAccount : BaseAccount
 {
-    // New Cash Accounts
-    private CashAccount(
+    private UnknownImportedAccount(
         UserId userId,
         AccountName accountName,
+        bool isCredit,
         Money balance,
-        string description,
-        string displayColor) :
+        string description) :
         base(
             userId,
-            AccountTypes.Keys.CASH,
+            AccountTypes.Keys.UNKNOWN,
             accountName,
-            false,
+            isCredit,
             balance,
             description,
-            displayColor)
+            "#ff0000")
     { }
 
-    // Existing Cash Accounts
-    private CashAccount(
-        AccountId id,
+    private UnknownImportedAccount(
+        AccountId accountId,
         UserId userId,
         AccountName accountName,
+        bool isCredit,
         Money balance,
         string description,
-        string displayColor,
         DateTime? dateClosed,
         DateTime dateCreated,
         DateTime? dateUpdated = null,
         DateTime? dateDeleted = null) :
-        base(
-            id,
+        base(accountId,
             userId,
-            AccountTypes.Keys.CASH,
+            AccountTypes.Keys.UNKNOWN,
             accountName,
-            false,
+            isCredit,
             balance,
             description,
-            displayColor,
+            "#ff0000",
             dateClosed,
             dateCreated,
             dateUpdated,
             dateDeleted)
     { }
 
-    public static CashAccount Load(
-        AccountId id,
+    public static UnknownImportedAccount Load(
+        AccountId accountId,
         UserId userId,
         AccountName accountName,
+        bool isCredit,
         Money balance,
         string description,
-        string displayColor,
         DateTime? dateClosed,
         DateTime dateCreated,
-        DateTime? dateUpdated,
-        DateTime? dateDeleted)
+        DateTime? dateUpdated = null,
+        DateTime? dateDeleted = null)
     {
-        return new CashAccount(
-            id,
+        return new(
+            accountId,
             userId,
             accountName,
+            isCredit,
             balance,
             description,
-            displayColor,
             dateClosed,
             dateCreated,
             dateUpdated,
             dateDeleted);
     }
 
-    public static CashAccount New(
+
+    public static UnknownImportedAccount New(
         UserId userId,
         AccountName accountName,
-        string description,
-        string displayColor)
+        bool isCredit,
+        Money balance,
+        string description)
     {
-        return new CashAccount(
-            userId,
-            accountName, Money.Zero,
-            description,
-            displayColor);
+        return new(userId, accountName, isCredit, balance, description);
     }
 }

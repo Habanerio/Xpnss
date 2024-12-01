@@ -15,10 +15,6 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
     BaseFunctionalApisTests(factory),
     IClassFixture<WebApplicationFactory<Program>>
 {
-    protected const string ENDPOINTS_TRANSACTIONS_CREATE_PURCHASE_TRANSACTION = "/api/v1/users/{userId}/transactions/purchase";
-
-    protected const string ENDPOINTS_TRANSACTIONS_CREATE_DEPOSIT_TRANSACTION = "/api/v1/users/{userId}/transactions/deposit";
-
     /// <summary>
     /// Helper for Asserting the tests
     /// </summary>

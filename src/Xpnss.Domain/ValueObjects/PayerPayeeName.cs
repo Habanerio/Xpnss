@@ -2,7 +2,7 @@ namespace Habanerio.Xpnss.Domain.ValueObjects;
 
 public readonly record struct PayerPayeeName
 {
-    public const int MAX_LENGTH = 32;
+    public const int MAX_LENGTH = 50;
 
     public readonly string Value;
 

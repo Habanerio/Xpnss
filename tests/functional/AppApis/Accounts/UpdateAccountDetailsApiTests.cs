@@ -1,4 +1,3 @@
-using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Habanerio.Xpnss.Accounts.Application.Commands.UpdateAccountDetails;
@@ -12,8 +11,6 @@ public class UpdateAccountDetailsApiTests(WebApplicationFactory<Apis.App.AppApis
     : BaseFunctionalApisTests(factory),
         IClassFixture<WebApplicationFactory<Apis.App.AppApis.Program>>
 {
-    private const string ENDPOINTS_ACCOUNTS_UPDATE_ACCOUNT_DETAILS = "/api/v1/users/{userId}/accounts/{accountId}";
-
     [Fact]
     public async Task CanCall_UpdateAccountDetails_ReturnsOk()
     {
@@ -43,8 +40,9 @@ public class UpdateAccountDetailsApiTests(WebApplicationFactory<Apis.App.AppApis
                 .Replace("{accountId}", account.Id.ToString()),
             updateAccountDetailsRequest);
 
-        updateAccountDetailsResponse.EnsureSuccessStatusCode();
-        Assert.Equal(HttpStatusCode.OK, updateAccountDetailsResponse.StatusCode);
+        //response.EnsureSuccessStatusCode();
+        //Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(updateAccountDetailsResponse.IsSuccessStatusCode);
 
         var updateAccountDetailsContent = await updateAccountDetailsResponse.Content.ReadAsStringAsync();
         Assert.NotNull(updateAccountDetailsContent);

@@ -40,7 +40,7 @@ public abstract class BaseAccount : AggregateRoot<AccountId>
         string description,
         string displayColor) :
         this(
-            AccountId.Empty,
+            AccountId.New,
             userId,
             accountType,
             accountName,
@@ -51,7 +51,6 @@ public abstract class BaseAccount : AggregateRoot<AccountId>
             null,
             DateTime.UtcNow)
     {
-        IsCredit = isCredit;
         IsTransient = true;
 
         // Add `AccountCreated` Domain Event

@@ -15,7 +15,7 @@ public sealed class LineOfCreditAccount : BaseCreditAccount
         PercentageRate interestRate) :
         base(
             userId,
-            AccountTypes.Keys.LineOfCredit,
+            AccountTypes.Keys.LINE_OF_CREDIT,
             accountName,
             balance,
             description,
@@ -40,7 +40,7 @@ public sealed class LineOfCreditAccount : BaseCreditAccount
         base(
             id,
             userId,
-            AccountTypes.Keys.LineOfCredit,
+            AccountTypes.Keys.LINE_OF_CREDIT,
             accountName,
             balance,
             description,
@@ -104,7 +104,6 @@ public sealed class LineOfCreditAccount : BaseCreditAccount
         AccountName accountName,
         string description,
         string displayColor,
-
         Money creditLimit,
         PercentageRate interestRate)
     {

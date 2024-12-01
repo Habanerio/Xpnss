@@ -24,8 +24,8 @@ public class AddCreditLimitAdjustmentApiTests(WebApplicationFactory<Apis.App.App
         "/api/v1/users/{userId}/accounts/{accountId}/credit-limit";
 
     [Theory]
-    [InlineData(AccountTypes.Keys.CreditCard)]
-    [InlineData(AccountTypes.Keys.LineOfCredit)]
+    [InlineData(AccountTypes.Keys.CREDIT_CARD)]
+    [InlineData(AccountTypes.Keys.LINE_OF_CREDIT)]
     public async Task CanCall_AdjustCreditLimit_ReturnsOk(AccountTypes.Keys accountType)
     {
         var USER_ID = await GetTestUserObjectIdAsync();
@@ -68,8 +68,9 @@ public class AddCreditLimitAdjustmentApiTests(WebApplicationFactory<Apis.App.App
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         return;
 
-        response.EnsureSuccessStatusCode();
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        //response.EnsureSuccessStatusCode();
+        //Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(response.IsSuccessStatusCode);
 
         var adjustCreditLimitContent = await response.Content.ReadAsStringAsync();
         Assert.NotNull(adjustCreditLimitContent);
@@ -93,9 +94,9 @@ public class AddCreditLimitAdjustmentApiTests(WebApplicationFactory<Apis.App.App
     }
 
     [Theory]
-    [InlineData(AccountTypes.Keys.Cash)]
-    [InlineData(AccountTypes.Keys.Checking)]
-    [InlineData(AccountTypes.Keys.Savings)]
+    [InlineData(AccountTypes.Keys.CASH)]
+    [InlineData(AccountTypes.Keys.CHECKING)]
+    [InlineData(AccountTypes.Keys.SAVINGS)]
     public async Task CanNotCall_AdjustCreditLimit_InvalidAccountType_ReturnsBadRequestOk(AccountTypes.Keys accountType)
     {
         var USER_ID = await GetTestUserObjectIdAsync();

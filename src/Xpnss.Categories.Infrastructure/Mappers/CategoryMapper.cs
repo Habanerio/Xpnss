@@ -6,6 +6,10 @@ namespace Habanerio.Xpnss.Categories.Infrastructure.Mappers;
 
 public static partial class InfrastructureMapper
 {
+    /// <summary>
+    /// Maps a Category Document to a Category Entity
+    /// </summary>
+    /// <returns></returns>
     public static Category? Map(CategoryDocument? document)
     {
         if (document is null)
@@ -17,7 +21,6 @@ public static partial class InfrastructureMapper
             new CategoryName(document.Name),
             document.Description,
             document.SortOrder,
-            new CategoryId(document.ParentId),
             Map(document.SubCategories),
             document.DateCreated,
             document.DateUpdated,
@@ -25,6 +28,11 @@ public static partial class InfrastructureMapper
 
     }
 
+    /// <summary>
+    /// Maps a collection of Category Documents to a collection of Category Entities
+    /// </summary>
+    /// <param name="documents"></param>
+    /// <returns></returns>
     public static IEnumerable<Category> Map(IEnumerable<CategoryDocument> documents)
     {
         return documents.Select(Map)
@@ -32,6 +40,11 @@ public static partial class InfrastructureMapper
             .Cast<Category>();
     }
 
+    /// <summary>
+    /// Maps a Category Entity to a Category Document
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <returns></returns>
     public static CategoryDocument? Map(Category? entity)
     {
         if (entity is null)
@@ -43,23 +56,90 @@ public static partial class InfrastructureMapper
             UserId = entity.UserId,
             Name = entity.Name,
             Description = entity.Description,
+            IsDeleted = entity.IsDeleted,
             SortOrder = entity.SortOrder,
             SubCategories = Map(entity.SubCategories).ToList(),
-            //TODO: See if this implicit conversion works
-            ParentId = entity.ParentId,
-            //ParentId = string.IsNullOrWhiteSpace(entity.ParentId) ?
-            //    null :
-            //    ObjectId.Parse(entity.ParentId),
             DateCreated = entity.DateCreated,
             DateUpdated = entity.DateUpdated,
             DateDeleted = entity.DateDeleted
         };
     }
 
+    /// <summary>
+    /// Maps a collection of Category Entities to a collection of Category Documents
+    /// </summary>
+    /// <returns></returns>
     public static IEnumerable<CategoryDocument> Map(IEnumerable<Category> entities)
     {
         return entities.Select(Map)
             .Where(x => x is not null)
             .Cast<CategoryDocument>();
+    }
+
+    /// <summary>
+    /// Maps a SubCategory Document to a SubCategory Entity
+    /// </summary>
+    /// <returns></returns>
+    public static SubCategoryDocument? Map(SubCategory? entity)
+    {
+        if (entity is null)
+            return null;
+
+        return new SubCategoryDocument
+        {
+            Id = entity.Id,
+            ParentId = entity.ParentId,
+            Name = entity.Name,
+            Description = entity.Description,
+            IsDeleted = entity.IsDeleted,
+            SortOrder = entity.SortOrder,
+            DateCreated = entity.DateCreated,
+            DateUpdated = entity.DateUpdated,
+            DateDeleted = entity.DateDeleted
+        };
+    }
+
+    /// <summary>
+    /// Maps a collection of SubCategory Documents to a collection of SubCategory Entities
+    /// </summary>
+    /// <returns></returns>
+    public static IEnumerable<SubCategoryDocument> Map(IEnumerable<SubCategory> entities)
+    {
+        return entities.Select(Map)
+            .Where(x => x is not null)
+            .Cast<SubCategoryDocument>();
+    }
+
+    /// <summary>
+    /// Maps a SubCategory Entity to a SubCategory Document
+    /// </summary>
+    /// <param name="document"></param>
+    /// <returns></returns>
+    public static SubCategory? Map(SubCategoryDocument? document)
+    {
+        if (document is null)
+            return null;
+
+        return SubCategory.Load(
+            new SubCategoryId(document.Id),
+            new CategoryId(document.ParentId),
+            new CategoryName(document.Name),
+            document.Description,
+            document.SortOrder,
+            document.DateCreated,
+            document.DateUpdated,
+            document.DateDeleted);
+    }
+
+    /// <summary>
+    /// Maps a collection of SubCategory Documents to a collection of SubCategory Entities
+    /// </summary>
+    /// <param name="documents"></param>
+    /// <returns></returns>
+    public static IEnumerable<SubCategory> Map(IEnumerable<SubCategoryDocument> documents)
+    {
+        return documents.Select(Map)
+            .Where(x => x is not null)
+            .Cast<SubCategory>();
     }
 }

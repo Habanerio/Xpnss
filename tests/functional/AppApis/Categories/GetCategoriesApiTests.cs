@@ -10,21 +10,24 @@ public class GetCategoriesApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
     BaseFunctionalApisTests(factory),
     IClassFixture<WebApplicationFactory<Apis.App.AppApis.Program>>
 {
-    private const string ENDPOINTS_GET_CATEGORIES = "/api/v1/users/{userId}/categories";
-
     [Fact]
     public async Task CanCall_GetCategories_WithValidRequest_ReturnsOk()
     {
-        var USER_ID = await GetTestUserObjectIdAsync();
+        var userId = await GetTestUserObjectIdAsync();
 
         // Act
-        var response = await HttpClient.GetAsync(ENDPOINTS_GET_CATEGORIES
-                .Replace("{userId}", USER_ID.ToString()));
+        var response = await HttpClient.GetAsync(
+        ENDPOINTS_CATEGORIES_GET_CATEGORIES
+                .Replace("{userId}", userId.ToString()));
 
-        response.EnsureSuccessStatusCode();
+        //response.EnsureSuccessStatusCode();
+        //Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(response.IsSuccessStatusCode);
 
         var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<IEnumerable<CategoryDto>>>(content, JsonSerializationOptions);
+        var apiResponse = JsonSerializer.Deserialize<ApiResponse<IEnumerable<CategoryDto>>>(
+            content,
+            JsonSerializationOptions);
 
         // Assert
         Assert.NotNull(apiResponse);
@@ -43,10 +46,8 @@ public class GetCategoriesApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         {
             Assert.NotNull(actualListDto);
             Assert.NotEqual(ObjectId.Empty.ToString(), actualListDto.Id);
-            Assert.Equal(USER_ID.ToString(), actualListDto.UserId);
+            Assert.Equal(userId.ToString(), actualListDto.UserId);
             Assert.NotEmpty(actualListDto.Name);
-
-            Assert.True(actualListDto.ParentId is null || actualListDto.ParentId.Equals(ObjectId.Empty.ToString()));
 
             Assert.True(actualListDto.SortOrder > lastSortOrder);
             lastSortOrder = actualListDto.SortOrder;

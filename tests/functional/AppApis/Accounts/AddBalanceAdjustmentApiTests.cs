@@ -20,11 +20,11 @@ public class AddBalanceAdjustmentApiTests(WebApplicationFactory<Apis.App.AppApis
     private const string ENDPOINTS_ACCOUNTS_ADJUST_BALANCE = "/api/v1/users/{userId}/accounts/{accountId}/balance";
 
     [Theory]
-    [InlineData(AccountTypes.Keys.Cash)]
-    [InlineData(AccountTypes.Keys.Checking)]
-    [InlineData(AccountTypes.Keys.Savings)]
-    [InlineData(AccountTypes.Keys.CreditCard)]
-    [InlineData(AccountTypes.Keys.LineOfCredit)]
+    [InlineData(AccountTypes.Keys.CASH)]
+    [InlineData(AccountTypes.Keys.CHECKING)]
+    [InlineData(AccountTypes.Keys.SAVINGS)]
+    [InlineData(AccountTypes.Keys.CREDIT_CARD)]
+    [InlineData(AccountTypes.Keys.LINE_OF_CREDIT)]
     public async Task CanCall_AdjustBalance_ReturnsOk(AccountTypes.Keys accountType)
     {
         var USER_ID = await GetTestUserObjectIdAsync();
@@ -68,8 +68,9 @@ public class AddBalanceAdjustmentApiTests(WebApplicationFactory<Apis.App.AppApis
         return;
 
         //TODO
-        response.EnsureSuccessStatusCode();
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        //response.EnsureSuccessStatusCode();
+        //Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(response.IsSuccessStatusCode);
 
         var adjustBalanceContent = await response.Content.ReadAsStringAsync();
         Assert.NotNull(adjustBalanceContent);

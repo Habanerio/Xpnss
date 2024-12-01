@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\habanerio\Habanerio.Core.Dbs\Habanerio.Core.Dbs.MongoDb\Habanerio.Core.Dbs.MongoDb.csproj" />
+      <ProjectReference Include="..\..\libraries\habanerio\Habanerio.Core.Dbs\Habanerio.Core.Dbs.MongoDb\Habanerio.Core.Dbs.MongoDb.csproj" />
       <ProjectReference Include="..\Xpnss.Domain\Xpnss.Domain.csproj" />
     </ItemGroup>
 

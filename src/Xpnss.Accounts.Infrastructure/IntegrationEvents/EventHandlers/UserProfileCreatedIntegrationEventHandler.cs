@@ -6,6 +6,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Habanerio.Xpnss.Accounts.Infrastructure.IntegrationEvents.EventHandlers;
 
+/// <summary>
+/// Handles when the user's profile is created and creates the default account(s) for them.
+/// </summary>
 public class UserProfileCreatedIntegrationEventHandler(
     IAccountsRepository repository,
     ILogger<UserProfileCreatedIntegrationEventHandler> logger) :
@@ -28,7 +31,6 @@ public class UserProfileCreatedIntegrationEventHandler(
         if (doesUserHaveAccountsResult.Value.Any())
             return;
 
-
         var accounts = new List<BaseAccount>
         {
             CashAccount.New(
@@ -36,11 +38,12 @@ public class UserProfileCreatedIntegrationEventHandler(
                 new AccountName("Wallet"),
                 "Wallet Account",
                 "#E3FCD9"),
-            CheckingAccount.New(
-                new UserId(userId),
-                new AccountName("Checking"),
-                "Checking Account",
-                "#ea7d33", Money.Zero),
+
+            //CheckingAccount.New(
+            //    new UserId(userId),
+            //    new AccountName("Checking"),
+            //    "Checking Account",
+            //    "#ea7d33", Money.Zero),
         };
 
         foreach (var account in accounts)
@@ -49,11 +52,14 @@ public class UserProfileCreatedIntegrationEventHandler(
             {
                 await _accountsRepository.AddAsync(account, cancellationToken);
 
-                _logger.LogInformation("{EventId}: Account '{Id}' was created for User '{UserId}'", @event.Id, account.Id, userId);
+                _logger.LogInformation("{EventId}: Account '{Id}' was created for User '{UserId}'",
+                    @event.Id, account.Id, userId);
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "{EventId}: An error occurred while trying to create Account '{Id}' for User '{UserId}'", @event.Id, account.Id, userId);
+                _logger.LogError(e, "{EventId}: An error occurred while trying to create Account " +
+                                    "'{Id}' for User '{UserId}'", @event.Id, account.Id, userId);
+
                 throw;
             }
         }

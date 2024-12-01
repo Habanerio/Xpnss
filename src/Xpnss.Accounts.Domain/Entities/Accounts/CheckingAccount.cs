@@ -19,7 +19,7 @@ public sealed class CheckingAccount : BaseAccount, IHasOverdraftAmount
         Money overDraftAmount) :
         base(
             userId,
-            AccountTypes.Keys.Checking,
+            AccountTypes.Keys.CHECKING,
             accountName,
             false,
             balance,
@@ -44,7 +44,7 @@ public sealed class CheckingAccount : BaseAccount, IHasOverdraftAmount
         base(
             id,
             userId,
-            AccountTypes.Keys.Checking,
+            AccountTypes.Keys.CHECKING,
             accountName,
             false,
             balance,
