@@ -1,6 +1,5 @@
 using System.Net;
 using Carter;
-using Habanerio.Xpnss.Apis.App.AppApis.Models;
 using Habanerio.Xpnss.Application.DTOs;
 using Habanerio.Xpnss.UserProfiles.Application.Queries;
 using Habanerio.Xpnss.UserProfiles.Domain.Interfaces;
@@ -23,7 +22,7 @@ public sealed class GetUserProfileEndpoint : BaseEndpoint
                         return await HandleAsync(userId, service, cancellationToken);
                     })
                 .Produces<UserProfileDto>((int)HttpStatusCode.OK)
-                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
+                .Produces<string>((int)HttpStatusCode.BadRequest)
                 .WithDisplayName("Get User Profile")
                 .WithName("GetUserProfile")
                 .WithTags("UserProfiles")
@@ -35,13 +34,13 @@ public sealed class GetUserProfileEndpoint : BaseEndpoint
             IUserProfilesService service,
             CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(userId))
-                return BadRequestWithErrors("User Id is required");
-
             if (service is null)
                 return BadRequestWithErrors("User Profile Service is required");
 
-            var query = new GetUserQuery(userId);
+            if (string.IsNullOrWhiteSpace(userId))
+                return BadRequestWithErrors("User Id is required");
+
+            var query = new GetUserProfileByIdQuery(userId);
 
             var userResult = await service.QueryAsync(query, cancellationToken);
 
@@ -51,7 +50,7 @@ public sealed class GetUserProfileEndpoint : BaseEndpoint
             if (userResult.ValueOrDefault is null)
                 return Results.NotFound();
 
-            return Results.Ok(new ApiResponse<UserProfileDto>(userResult.Value));
+            return Results.Ok(userResult.Value);
         }
     }
 }

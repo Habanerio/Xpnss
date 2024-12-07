@@ -14,15 +14,20 @@ public sealed record CreatePayerPayeeCommand(
     string Name,
     string Description,
     string Location) :
-    IPayerPayeesCommand<Result<PayerPayeeDto>>;
+    IPayerPayeesCommand<Result<PayerPayeeDto?>>;
 
-public class CreatePayerPayeeHandler(IPayerPayeesRepository repository) :
-    IRequestHandler<CreatePayerPayeeCommand, Result<PayerPayeeDto>>
+/// <summary>
+/// Will attempt to get the PayerPayee by name first.
+/// If one exists for this user, then it will be returned.
+/// </summary>
+/// <param name="repository"></param>
+public class CreatePayerPayeeCommandHandler(IPayerPayeesRepository repository) :
+    IRequestHandler<CreatePayerPayeeCommand, Result<PayerPayeeDto?>>
 {
     private readonly IPayerPayeesRepository _repository = repository ??
         throw new ArgumentNullException(nameof(repository));
 
-    public async Task<Result<PayerPayeeDto>> Handle(CreatePayerPayeeCommand command, CancellationToken cancellationToken)
+    public async Task<Result<PayerPayeeDto?>> Handle(CreatePayerPayeeCommand command, CancellationToken cancellationToken)
     {
         var validator = new Validator();
         var validationResult = await validator.ValidateAsync(command, cancellationToken);
@@ -30,23 +35,41 @@ public class CreatePayerPayeeHandler(IPayerPayeesRepository repository) :
         if (!validationResult.IsValid)
             return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
-        var payerPayee = PayerPayee.New(
+        if (string.IsNullOrWhiteSpace(command.Name))
+            return Result.Fail("Id or Name must be provided");
+
+        PayerPayee? payerPayee;
+
+        if (!string.IsNullOrWhiteSpace(command.Name))
+        {
+            var getResult =
+                await _repository.GetByNameAsync(command.UserId, command.Name, cancellationToken);
+
+            payerPayee = getResult.ValueOrDefault;
+
+            if (getResult is { IsSuccess: true, ValueOrDefault: not null })
+            {
+                return Result.Ok(ApplicationMapper.Map(payerPayee));
+            }
+        }
+
+        payerPayee = PayerPayee.New(
             new UserId(command.UserId),
             new PayerPayeeName(command.Name),
             command.Description,
             command.Location);
 
-        var result = await _repository.AddAsync(payerPayee, cancellationToken);
+        var newResult = await _repository.AddAsync(payerPayee, cancellationToken);
 
-        if (result.IsFailed || result.ValueOrDefault is null)
-            return Result.Fail(result.Errors[0].Message ?? "Could not save the PayerPayee");
+        if (newResult.IsFailed || newResult.ValueOrDefault is null)
+            return Result.Fail(newResult.Errors[0].Message ?? "Could not save the PayerPayee");
 
-        var payerPayeeDto = ApplicationMapper.Map(result.ValueOrDefault);
+        var payerPayeeDto = ApplicationMapper.Map(payerPayee);
 
         if (payerPayeeDto is null)
-            return Result.Fail("Failed to map PayerPayeeDocument to PayerPayeeDto");
+            throw new InvalidCastException("Failed to map PayerPayeeDocument to PayerPayeeDto");
 
-        return Result.Ok(payerPayeeDto);
+        return Result.Ok<PayerPayeeDto?>(payerPayeeDto);
     }
 
     public class Validator : AbstractValidator<CreatePayerPayeeCommand>
@@ -54,7 +77,6 @@ public class CreatePayerPayeeHandler(IPayerPayeesRepository repository) :
         public Validator()
         {
             RuleFor(x => x.UserId).NotEmpty();
-            RuleFor(x => x.Name).NotEmpty();
         }
     }
 }

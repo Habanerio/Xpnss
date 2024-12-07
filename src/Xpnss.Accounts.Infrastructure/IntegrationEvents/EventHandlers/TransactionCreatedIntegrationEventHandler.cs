@@ -30,14 +30,15 @@ public class TransactionCreatedIntegrationEventHandler(
             await UpdateAccountBalanceAsync(@event, cancellationToken);
 
             _logger.LogInformation(@event.Id.ToString(),
-                "A '{@transactionType}' Transaction {@transactionId} was added to Account {@accountId}",
+                "A '{@transactionType}' Transaction ({@transactionId}) was added to Account {@accountId} for the amount of {@Amount}",
                 @event.TransactionType,
                 @event.TransactionId,
-                @event.AccountId);
+                @event.AccountId,
+                @event.Amount);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "An error occurred while trying to update Account '{AccountId}' for User '{UserId}'", @event.AccountId, @event.UserId);
+            _logger.LogError(e, "An error occurred while trying to update Account '{ExtAcctId}' for User '{UserId}'", @event.AccountId, @event.UserId);
 
             throw;
         }
@@ -59,7 +60,7 @@ public class TransactionCreatedIntegrationEventHandler(
 
         var account = accountResult.Value;
 
-        account.ApplyTransactionAmount(new Money(@event.Amount), @event.TransactionType);
+        account.AddTransactionAmount(new Money(@event.Amount), @event.TransactionType);
 
         try
         {
@@ -69,7 +70,7 @@ public class TransactionCreatedIntegrationEventHandler(
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "Error occurred while trying to update the Balance for Account '{AccountId}'", @event.AccountId);
+            _logger.LogCritical(e, "Error occurred while trying to update the Balance for Account '{ExtAcctId}'", @event.AccountId);
         }
     }
 }

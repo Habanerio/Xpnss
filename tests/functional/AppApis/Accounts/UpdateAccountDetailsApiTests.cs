@@ -1,7 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using Habanerio.Xpnss.Accounts.Application.Commands.UpdateAccountDetails;
-using Habanerio.Xpnss.Apis.App.AppApis.Models;
 using Habanerio.Xpnss.Application.DTOs;
 using Microsoft.AspNetCore.Mvc.Testing;
 
@@ -47,14 +46,13 @@ public class UpdateAccountDetailsApiTests(WebApplicationFactory<Apis.App.AppApis
         var updateAccountDetailsContent = await updateAccountDetailsResponse.Content.ReadAsStringAsync();
         Assert.NotNull(updateAccountDetailsContent);
 
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<AccountDto>>(
+        var apiResponse = JsonSerializer.Deserialize<AccountDto>(
             updateAccountDetailsContent,
             JsonSerializationOptions);
 
         Assert.NotNull(apiResponse);
-        Assert.True(apiResponse.IsSuccess);
 
-        var accountDto = Assert.IsType<AccountDto>(apiResponse.Data);
+        var accountDto = Assert.IsType<AccountDto>(apiResponse);
 
         Assert.NotNull(accountDto);
         Assert.Equal(USER_ID.ToString(), accountDto.UserId);

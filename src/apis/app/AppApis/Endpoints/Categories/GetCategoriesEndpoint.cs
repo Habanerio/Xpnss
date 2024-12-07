@@ -1,6 +1,5 @@
 using System.Net;
 using Carter;
-using Habanerio.Xpnss.Apis.App.AppApis.Models;
 using Habanerio.Xpnss.Application.DTOs;
 using Habanerio.Xpnss.Categories.Application.Queries.GetCategories;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
@@ -22,8 +21,8 @@ public sealed class GetCategoriesEndpoint : BaseEndpoint
                     {
                         return await HandleAsync(userId, service, cancellationToken);
                     })
-                .Produces<ApiResponse<IEnumerable<CategoryDto>>>((int)HttpStatusCode.OK)
-                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
+                .Produces<IEnumerable<CategoryDto>>((int)HttpStatusCode.OK)
+                .Produces<string>((int)HttpStatusCode.BadRequest)
                 .WithDisplayName("Get Categories")
                 .WithName("GetCategories")
                 .WithTags("Categories")
@@ -49,8 +48,6 @@ public sealed class GetCategoriesEndpoint : BaseEndpoint
         if (result.ValueOrDefault is null)
             return Results.NotFound();
 
-        var response = ApiResponse<IEnumerable<CategoryDto>>.Ok(result.Value);
-
-        return Results.Ok(response);
+        return Results.Ok(result.Value);
     }
 }

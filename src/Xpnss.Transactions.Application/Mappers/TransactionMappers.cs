@@ -41,7 +41,7 @@ internal static partial class ApplicationMapper
         if (entity is null)
             return default;
 
-        if (!entity.TransactionType.Equals(TransactionTypes.Keys.DEPOSIT))
+        if (!entity.TransactionType.Equals(TransactionEnums.TransactionKeys.DEPOSIT))
             throw new InvalidOperationException("Invalid transaction type");
 
         return new DepositTransactionDto()
@@ -49,6 +49,7 @@ internal static partial class ApplicationMapper
             Id = entity.Id,
             UserId = entity.UserId,
             AccountId = entity.AccountId,
+            ExtTransactionId = entity.ExtTransactionId,
             TotalAmount = entity.TotalAmount,
             Description = entity.Description,
             PayerPayeeId = entity.PayerPayeeId,
@@ -68,7 +69,7 @@ internal static partial class ApplicationMapper
         if (entity is null)
             return default;
 
-        if (!entity.TransactionType.Equals(TransactionTypes.Keys.PURCHASE))
+        if (!entity.TransactionType.Equals(TransactionEnums.TransactionKeys.PURCHASE))
             throw new InvalidOperationException("Invalid transaction type");
 
         return new PurchaseTransactionDto()
@@ -76,11 +77,11 @@ internal static partial class ApplicationMapper
             Id = entity.Id,
             UserId = entity.UserId,
             AccountId = entity.AccountId,
-            TotalAmount = entity.TotalAmount,
             Description = entity.Description,
             Items = Map(entity.Items).ToList(),
             PayerPayeeId = entity.PayerPayeeId.Value,
             Tags = entity.Tags.ToList(),
+            TotalAmount = entity.TotalAmount,
             TotalPaid = entity.TotalPaid,
             TransactionDate = entity.TransactionDate,
             PaidDate = entity.DatePaid,

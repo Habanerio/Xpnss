@@ -20,8 +20,6 @@ public abstract class BaseEndpoint
     public static IResult BadRequestWithErrors(List<ValidationFailure> errors)
     {
         return Results.BadRequest(errors.Select(e => e.ErrorMessage));
-        //return Results.BadRequest(string.Join(Environment.NewLine,
-        //    errors.Select(e => e.ErrorMessage)));
     }
 
     /// <summary>
@@ -34,7 +32,5 @@ public abstract class BaseEndpoint
     public static IResult BadRequestWithErrors(List<IError> errors)
     {
         return Results.BadRequest(errors.Select(e => e.Message));
-        //return Results.BadRequest(string.Join(Environment.NewLine,
-        //    errors.Select(e => e.Message)));
     }
 }

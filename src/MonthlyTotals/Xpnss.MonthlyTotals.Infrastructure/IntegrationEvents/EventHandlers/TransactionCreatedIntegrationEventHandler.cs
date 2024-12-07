@@ -1,6 +1,5 @@
 using Habanerio.Xpnss.Domain.Types;
 using Habanerio.Xpnss.Domain.ValueObjects;
-using Habanerio.Xpnss.Infrastructure.IntegrationEvents;
 using Habanerio.Xpnss.Infrastructure.IntegrationEvents.Transactions;
 using Habanerio.Xpnss.MonthlyTotals.Domain.Entities;
 using Habanerio.Xpnss.MonthlyTotals.Domain.Interfaces;
@@ -30,7 +29,7 @@ public class TransactionCreatedIntegrationEventHandler(
     {
         try
         {
-            var isCreditTransaction = TransactionTypes.IsCreditTransaction(@event.TransactionType);
+            var isCreditTransaction = TransactionEnums.IsCreditTransaction(@event.TransactionType);
 
             if (!string.IsNullOrWhiteSpace(@event.AccountId))
                 await UpdateMonthlyTotalAsync(

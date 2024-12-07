@@ -18,14 +18,14 @@
         <PackageReference Include="Aspire.Hosting.MongoDB" Version="8.2.2" />
         <PackageReference Include="Aspire.Hosting.RabbitMQ" Version="8.2.1" />
         <PackageReference Include="Aspire.Hosting.Redis" Version="8.2.1" />
-        <PackageReference Include="SonarAnalyzer.CSharp" Version="9.32.0.97167">
+        <PackageReference Include="SonarAnalyzer.CSharp" Version="10.3.0.106239">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\apis\admin\AdminApis\AdminApis.csproj" />
+        <ProjectReference Include="..\..\..\hidden\website\XpnssWeb\XpnssWeb.csproj" />
         <ProjectReference Include="..\..\apis\app\AppApis\AppApis.csproj" />
     </ItemGroup>
 

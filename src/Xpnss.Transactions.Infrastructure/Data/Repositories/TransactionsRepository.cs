@@ -46,6 +46,52 @@ public class TransactionsRepository(IMongoDatabase mongoDb)
         }
     }
 
+    public async Task<Result<IEnumerable<TransactionBase>>> FindAsync(
+        string userId,
+        string accountId = "",
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        string userTimeZone = "",
+        CancellationToken cancellationToken = default)
+    {
+        if (!ObjectId.TryParse(userId, out var userObjectId) ||
+            userObjectId.Equals(ObjectId.Empty))
+            return Result.Fail($"Invalid UserId: `{userId}`");
+
+        var newEndDate = string.IsNullOrWhiteSpace(userTimeZone) ?
+            DateTime.UtcNow :
+            TimeZoneInfo.ConvertTimeToUtc(endDate ??
+                                          DateTime.Now,
+                TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
+
+        var newStartDate = string.IsNullOrWhiteSpace(userTimeZone) ?
+            startDate ?? newEndDate.AddMonths(-1) :
+            TimeZoneInfo.ConvertTimeToUtc(startDate ??
+                                          newEndDate.AddMonths(-1),
+                TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
+
+        ObjectId? accountObjectId = !string.IsNullOrWhiteSpace(accountId) ?
+            ObjectId.Parse(accountId) :
+            null;
+
+
+        var transactionDocs = (await FindDocumentsAsync(t =>
+                t.UserId.Equals(userObjectId) &&
+                (accountObjectId == null || t.AccountId.Equals(accountObjectId)) &&
+                t.TransactionDate.Date >= newStartDate.Date &&
+                t.TransactionDate.Date <= newEndDate.Date,
+            cancellationToken))?
+            .OrderBy(t => t.TransactionDate)
+            .ToList() ?? [];
+
+        if (!transactionDocs.Any())
+            return Result.Ok<IEnumerable<TransactionBase>>(new List<TransactionBase>());
+
+        var transactions = InfrastructureMapper.Map(transactionDocs);
+
+        return Result.Ok(transactions);
+    }
+
     public async Task<Result<TransactionBase?>> GetAsync(
         string userId,
         string transactionId,
@@ -73,42 +119,6 @@ public class TransactionsRepository(IMongoDatabase mongoDb)
             return Result.Fail("Could not map the Transaction");
 
         return Result.Ok<TransactionBase?>(transaction);
-    }
-
-    public async Task<Result<IEnumerable<TransactionBase>>> ListAsync(
-        string userId,
-        string accountId = "",
-        DateTime? startDate = null,
-        DateTime? endDate = null,
-        string userTimeZone = "",
-        CancellationToken cancellationToken = default)
-    {
-        if (!ObjectId.TryParse(userId, out var userObjectId) ||
-            userObjectId.Equals(ObjectId.Empty))
-            return Result.Fail($"Invalid UserId: `{userId}`");
-
-        var newEndDate = string.IsNullOrWhiteSpace(userTimeZone) ?
-            DateTime.UtcNow :
-            TimeZoneInfo.ConvertTimeToUtc(endDate ?? DateTime.Now, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
-
-        var newStartDate = string.IsNullOrWhiteSpace(userTimeZone) ?
-            startDate ?? newEndDate.AddMonths(-1) :
-            TimeZoneInfo.ConvertTimeToUtc(startDate ?? newEndDate.AddMonths(-1), TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
-
-        ObjectId? accountObjectId = !string.IsNullOrWhiteSpace(accountId) ?
-            ObjectId.Parse(accountId) :
-            null;
-
-        var transactionDocs = await FindDocumentsAsync(t =>
-                t.UserId.Equals(userObjectId) &&
-                (accountObjectId == null || t.AccountId.Equals(accountObjectId)) &&
-                t.TransactionDate.Date >= newStartDate.Date &&
-                t.TransactionDate.Date <= newEndDate.Date,
-            cancellationToken);
-
-        var transactions = InfrastructureMapper.Map(transactionDocs);
-
-        return Result.Ok(transactions);
     }
 
     public async Task<Result<TransactionBase>> UpdateAsync(

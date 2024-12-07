@@ -1,11 +1,11 @@
 using AutoFixture;
-using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts;
+using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts.BankAccounts;
 using Habanerio.Xpnss.Domain.Types;
 using Habanerio.Xpnss.Domain.ValueObjects;
 
 namespace Habanerio.Xpnss.Tests.Unit.Domain.Accounts;
 
-public class CheckingAccountTests : BaseAccountTests
+public class CheckingAccountTests : TestsBase
 {
     private readonly CheckingAccount _testClass;
 
@@ -16,11 +16,15 @@ public class CheckingAccountTests : BaseAccountTests
             UserId.New,
             new AccountName("Checking Account"),
             new Money(2000),
-            "Description",
-            "#110022",
-            new Money(1000),
+            AutoFixture.Create<string>(),
             null,
-            DateTime.Now,
+            AutoFixture.Create<string>(),
+            "#110022",
+            AutoFixture.Create<string>(),
+            AutoFixture.Create<bool>(),
+            new Money(1000),
+            AutoFixture.Create<int>(),
+            DateTime.UtcNow,
             null,
             null);
     }
@@ -33,9 +37,14 @@ public class CheckingAccountTests : BaseAccountTests
         var userId = NewUserId();
         var accountName = NewAccountName();
         var balance = NewMoney(3453);
+        var closedDate = AutoFixture.Create<DateTime?>();
         var description = AutoFixture.Create<string>();
         var displayColor = "#110022";
+        var extAcctId = AutoFixture.Create<string>();
+        var institutionName = AutoFixture.Create<string>();
+        var isDefault = AutoFixture.Create<bool>();
         var overDraftAmount = NewMoney(2134);
+        var sortOrder = AutoFixture.Create<int>();
         var dateCreated = AutoFixture.Create<DateTime>();
         var dateClosed = AutoFixture.Create<DateTime?>();
         var dateDeleted = AutoFixture.Create<DateTime?>();
@@ -47,13 +56,17 @@ public class CheckingAccountTests : BaseAccountTests
             userId,
             accountName,
             balance,
+            institutionName,
+            closedDate,
             description,
             displayColor,
+            extAcctId,
+            true,
             overDraftAmount,
-            dateClosed,
+            sortOrder,
             dateCreated,
-            dateDeleted,
-            dateUpdated);
+            dateUpdated,
+            dateDeleted);
 
         // Assert
         Assert.Equal(id, result.Id);
@@ -62,9 +75,9 @@ public class CheckingAccountTests : BaseAccountTests
         Assert.Equal(balance, result.Balance);
         Assert.Equal(description, result.Description);
         Assert.Equal(displayColor, result.DisplayColor);
-        Assert.Equal(overDraftAmount, result.OverdraftAmount);
+        Assert.Equal(overDraftAmount, result.OverdraftLimit);
         Assert.Equal(dateCreated, result.DateCreated);
-        Assert.Equal(dateClosed, result.DateClosed);
+        Assert.Equal(dateClosed, result.ClosedDate);
         Assert.Equal(dateDeleted, result.DateDeleted);
         Assert.Equal(dateUpdated, result.DateUpdated);
     }
@@ -79,9 +92,13 @@ public class CheckingAccountTests : BaseAccountTests
                 NewAccountName(),
                 NewMoney(4564),
                 AutoFixture.Create<string>(),
+                null,
+                AutoFixture.Create<string>(),
                 "#110022",
+                AutoFixture.Create<string>(),
+                AutoFixture.Create<bool>(),
                 NewMoney(58756),
-                AutoFixture.Create<DateTime?>(),
+                AutoFixture.Create<int>(),
                 AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
                 AutoFixture.Create<DateTime?>()));
@@ -97,9 +114,13 @@ public class CheckingAccountTests : BaseAccountTests
                 NewAccountName(),
                 NewMoney(4564),
                 AutoFixture.Create<string>(),
+                null,
+                AutoFixture.Create<string>(),
                 "#110022",
+                AutoFixture.Create<string>(),
+                AutoFixture.Create<bool>(),
                 NewMoney(58756),
-                AutoFixture.Create<DateTime?>(),
+                AutoFixture.Create<int>(),
                 AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
                 AutoFixture.Create<DateTime?>()));
@@ -125,7 +146,7 @@ public class CheckingAccountTests : BaseAccountTests
         Assert.Equal(0, result.Balance.Value);
         Assert.Equal(description, result.Description);
         Assert.Equal(displayColor, result.DisplayColor);
-        Assert.Equal(overDraftAmount, result.OverdraftAmount);
+        Assert.Equal(overDraftAmount, result.OverdraftLimit);
 
         Assert.False(result.IsCredit);
     }
@@ -153,7 +174,7 @@ public class CheckingAccountTests : BaseAccountTests
 
         var previousValue = _testClass.Balance;
 
-        _testClass.ApplyTransactionAmount(value, TransactionTypes.Keys.DEPOSIT);
+        _testClass.AddTransactionAmount(value, TransactionEnums.TransactionKeys.DEPOSIT);
 
         // Assert
         Assert.Equal(previousValue + value, _testClass.Balance);
@@ -169,7 +190,7 @@ public class CheckingAccountTests : BaseAccountTests
 
         var previousValue = _testClass.Balance;
 
-        _testClass.ApplyTransactionAmount(value, TransactionTypes.Keys.PURCHASE);
+        _testClass.AddTransactionAmount(value, TransactionEnums.TransactionKeys.PURCHASE);
 
         // Assert
         Assert.Equal(previousValue - value, _testClass.Balance);
@@ -186,7 +207,7 @@ public class CheckingAccountTests : BaseAccountTests
 
         var previousValue = _testClass.Balance;
 
-        _testClass.UndoTransactionAmount(value, TransactionTypes.Keys.DEPOSIT);
+        _testClass.RemoveTransactionAmount(value, TransactionEnums.TransactionKeys.DEPOSIT);
 
         // Assert
         Assert.Equal(previousValue - value, _testClass.Balance);
@@ -202,7 +223,7 @@ public class CheckingAccountTests : BaseAccountTests
 
         var previousValue = _testClass.Balance;
 
-        _testClass.UndoTransactionAmount(value, TransactionTypes.Keys.PURCHASE);
+        _testClass.RemoveTransactionAmount(value, TransactionEnums.TransactionKeys.PURCHASE);
 
         // Assert
         Assert.Equal(previousValue + value, _testClass.Balance);
@@ -215,7 +236,8 @@ public class CheckingAccountTests : BaseAccountTests
     [Fact]
     public void CannotCall_ApplyTransactionAmount_WithNegativeAmount()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => _testClass.ApplyTransactionAmount(NewMoney(-1), TransactionTypes.Keys.DEPOSIT));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            _testClass.AddTransactionAmount(NewMoney(-1), TransactionEnums.TransactionKeys.DEPOSIT));
     }
 
     /// <summary>
@@ -224,7 +246,8 @@ public class CheckingAccountTests : BaseAccountTests
     [Fact]
     public void CannotCall_UndoTransactionAmount_WithNegativeAmount()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => _testClass.UndoTransactionAmount(NewMoney(-1), TransactionTypes.Keys.DEPOSIT));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            _testClass.RemoveTransactionAmount(NewMoney(-1), TransactionEnums.TransactionKeys.DEPOSIT));
     }
 
     /// <summary>
@@ -235,7 +258,8 @@ public class CheckingAccountTests : BaseAccountTests
     {
         _testClass.Delete();
 
-        Assert.Throws<InvalidOperationException>(() => _testClass.ApplyTransactionAmount(new Money(1), TransactionTypes.Keys.DEPOSIT));
+        Assert.Throws<InvalidOperationException>(() =>
+            _testClass.AddTransactionAmount(new Money(1), TransactionEnums.TransactionKeys.DEPOSIT));
     }
 
     /// <summary>
@@ -246,7 +270,8 @@ public class CheckingAccountTests : BaseAccountTests
     {
         _testClass.Delete();
 
-        Assert.Throws<InvalidOperationException>(() => _testClass.ApplyTransactionAmount(new Money(1), TransactionTypes.Keys.PURCHASE));
+        Assert.Throws<InvalidOperationException>(() =>
+            _testClass.AddTransactionAmount(new Money(1), TransactionEnums.TransactionKeys.PURCHASE));
     }
 
 
@@ -258,7 +283,8 @@ public class CheckingAccountTests : BaseAccountTests
     {
         _testClass.Delete();
 
-        Assert.Throws<InvalidOperationException>(() => _testClass.UndoTransactionAmount(new Money(1), TransactionTypes.Keys.PURCHASE));
+        Assert.Throws<InvalidOperationException>(() =>
+            _testClass.RemoveTransactionAmount(new Money(1), TransactionEnums.TransactionKeys.PURCHASE));
     }
 
     /// <summary>
@@ -269,37 +295,9 @@ public class CheckingAccountTests : BaseAccountTests
     {
         _testClass.Delete();
 
-        Assert.Throws<InvalidOperationException>(() => _testClass.UndoTransactionAmount(new Money(1), TransactionTypes.Keys.DEPOSIT));
-    }
-
-
-    /// <summary>
-    /// Cannot perform action when Account is deleted
-    /// </summary>
-    [Fact]
-    public void CanCall_UpdateBalance()
-    {
-        // Arrange
-        var previousValue = _testClass.Balance;
-
-        var expectedValue = NewMoney(45674);
-
-        // Act
-        _testClass.UpdateBalance(expectedValue);
-
-        // Assert
-        Assert.Equal(expectedValue, _testClass.Balance);
-    }
-
-    /// <summary>
-    /// Cannot perform action when Account is deleted
-    /// </summary>
-    [Fact]
-    public void CannotCall_UpdatedBalance_When_IsDeleted()
-    {
-        _testClass.Delete();
-
-        Assert.Throws<InvalidOperationException>(() => _testClass.UpdateBalance(new Money(1)));
+        Assert.Throws<InvalidOperationException>(() =>
+            _testClass.RemoveTransactionAmount(new Money(1),
+                TransactionEnums.TransactionKeys.DEPOSIT));
     }
 
     [Fact]
@@ -311,13 +309,14 @@ public class CheckingAccountTests : BaseAccountTests
         _testClass.Close(dateClosed);
 
         // Assert
-        Assert.NotNull(_testClass.DateClosed);
-        Assert.Equal(dateClosed, _testClass.DateClosed);
+        Assert.NotNull(_testClass.ClosedDate);
+        Assert.Equal(dateClosed, _testClass.ClosedDate);
 
         Assert.True(_testClass.IsClosed);
 
         Assert.NotNull(_testClass.DateUpdated);
-        Assert.Equal(DateTime.Now.ToUniversalTime(), _testClass.DateUpdated.Value, new TimeSpan(0, 0, 0, 10));
+        Assert.Equal(DateTime.Now.ToUniversalTime(),
+            _testClass.DateUpdated.Value, new TimeSpan(0, 0, 0, 10));
     }
 
     [Fact]
@@ -331,12 +330,13 @@ public class CheckingAccountTests : BaseAccountTests
         Assert.True(_testClass.IsClosed);
 
         // Act
-        _testClass.ReOpen();
+        _testClass.Open();
 
         // Assert
-        Assert.Null(_testClass.DateClosed);
+        Assert.Null(_testClass.ClosedDate);
         Assert.False(_testClass.IsClosed);
-        Assert.Equal(DateTime.Now.ToUniversalTime(), _testClass.DateUpdated.Value, new TimeSpan(0, 0, 0, 10));
+        Assert.Equal(DateTime.Now.ToUniversalTime(),
+            _testClass.DateUpdated.Value, new TimeSpan(0, 0, 0, 10));
     }
 
     [Fact]
@@ -353,11 +353,13 @@ public class CheckingAccountTests : BaseAccountTests
         _testClass.Delete();
 
         Assert.NotNull(_testClass.DateDeleted);
-        Assert.Equal(DateTime.Now.ToUniversalTime(), _testClass.DateDeleted.Value, new TimeSpan(0, 0, 0, 10));
+        Assert.Equal(DateTime.Now.ToUniversalTime(),
+            _testClass.DateDeleted.Value, new TimeSpan(0, 0, 0, 10));
 
         Assert.True(_testClass.IsDeleted);
 
         Assert.NotNull(_testClass.DateUpdated);
-        Assert.Equal(DateTime.Now.ToUniversalTime(), _testClass.DateUpdated.Value, new TimeSpan(0, 0, 0, 10));
+        Assert.Equal(DateTime.Now.ToUniversalTime(),
+            _testClass.DateUpdated.Value, new TimeSpan(0, 0, 0, 10));
     }
 }

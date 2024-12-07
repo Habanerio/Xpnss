@@ -2,7 +2,6 @@ using System.Net;
 using Carter;
 using Habanerio.Xpnss.Accounts.Application.Queries.GetAccount;
 using Habanerio.Xpnss.Accounts.Domain.Interfaces;
-using Habanerio.Xpnss.Apis.App.AppApis.Models;
 using Habanerio.Xpnss.Application.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,8 +22,8 @@ public class GetAccountEndpoint : BaseEndpoint
                     {
                         return await HandleAsync(userId, accountId, service, cancellationToken);
                     })
-                .Produces<ApiResponse<AccountDto>>((int)HttpStatusCode.OK)
-                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
+                .Produces<AccountDto>()
+                .Produces<string>((int)HttpStatusCode.BadRequest)
                 .Produces((int)HttpStatusCode.NotFound)
                 .WithDisplayName("Get Account")
                 .WithName("GetAccount")
@@ -57,8 +56,6 @@ public class GetAccountEndpoint : BaseEndpoint
         if (result.ValueOrDefault is null)
             return Results.NotFound();
 
-        var response = ApiResponse<AccountDto>.Ok(result.Value);
-
-        return Results.Ok(response);
+        return Results.Ok(result.Value);
     }
 }

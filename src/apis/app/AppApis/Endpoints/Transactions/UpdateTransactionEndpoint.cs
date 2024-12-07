@@ -28,7 +28,7 @@
 //                        return await HandleAsync(userId, transactionId, command, transactionsService, payerPayeesService, cancellationToken);
 //                    })
 //                .Produces<ApiResponse<TransactionDto>>((int)HttpStatusCode.OK)
-//                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
+//                .Produces<string>((int)HttpStatusCode.BadRequest)
 //                .Produces((int)HttpStatusCode.NotFound)
 //                .WithDisplayName("Update Transaction")
 //                .WithName("UpdateTransaction")

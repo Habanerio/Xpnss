@@ -67,7 +67,7 @@ public class UserProfilesRepository(
     {
         if (!ObjectId.TryParse(userId, out var userObjectId) ||
             userObjectId.Equals(ObjectId.Empty))
-            return Result.Fail<UserProfile?>($"{userId} cannot be null or emails");
+            return Result.Fail<UserProfile?>($"{userId} cannot be null or empty");
 
         var userProfileDocument = await FirstOrDefaultDocumentAsync(a =>
                 a.Id.Equals(userObjectId),
@@ -94,7 +94,7 @@ public class UserProfilesRepository(
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(email))
-            return Result.Fail<UserProfile?>($"{email} cannot be null or emails");
+            return Result.Fail<UserProfile?>($"{email} cannot be null or empty");
 
         var userProfileDocument = await FirstOrDefaultDocumentAsync(a =>
                 a.Email.Equals(email),
@@ -126,7 +126,7 @@ public class UserProfilesRepository(
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(extUserId))
-            return Result.Fail<UserProfile?>($"{extUserId} cannot be null or emails");
+            return Result.Fail<UserProfile?>($"{extUserId} cannot be null or empty");
 
         var userProfileDocument = await FirstOrDefaultDocumentAsync(a =>
                 a.ExtUserId.Equals(extUserId),

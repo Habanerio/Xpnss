@@ -1,6 +1,7 @@
 using FluentResults;
 using FluentValidation;
 using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Domain.Types;
 using Habanerio.Xpnss.Infrastructure.IntegrationEvents.UserProfiles;
 using Habanerio.Xpnss.UserProfiles.Domain.Entities;
 using Habanerio.Xpnss.UserProfiles.Domain.Interfaces;
@@ -13,7 +14,8 @@ public sealed record CreateUserProfileCommand(
     string Email,
     string FirstName,
     string LastName,
-    string ExtUserId) :
+    string ExtUserId,
+    CurrencyEnums.CurrencyKeys DefaultCurrency) :
     IUserProfilesCommand<Result<UserProfileDto>>;
 
 public class CreateUserProfileCommandHandler(
@@ -65,7 +67,7 @@ public class CreateUserProfileCommandHandler(
         var lastName = request.LastName.Trim();
         var email = request.Email.Trim();
 
-        var userProfile = UserProfile.New(extUserId, firstName, lastName, email);
+        var userProfile = UserProfile.New(extUserId, firstName, lastName, email, request.DefaultCurrency);
 
         var result = await _repository.AddAsync(userProfile, cancellationToken);
 

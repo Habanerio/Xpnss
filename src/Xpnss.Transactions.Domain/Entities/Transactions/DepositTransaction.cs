@@ -3,7 +3,8 @@ using Habanerio.Xpnss.Domain.ValueObjects;
 
 namespace Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 
-public class DepositTransaction : TransactionBase
+public class DepositTransaction :
+    CreditTransaction
 {
     protected DepositTransaction(
         UserId userId,
@@ -12,16 +13,18 @@ public class DepositTransaction : TransactionBase
         string description,
         PayerPayeeId payerPayeeId,
         DateTime transactionDate,
-        IEnumerable<string>? tags) :
+        IEnumerable<string>? tags = null,
+        string extTransactionId = "") :
         base(
             userId,
             accountId,
-            TransactionTypes.Keys.DEPOSIT,
+            TransactionEnums.TransactionKeys.DEPOSIT,
             payerPayeeId,
             amount,
             description,
             transactionDate,
-            tags)
+            tags,
+            extTransactionId)
     { }
 
     protected DepositTransaction(
@@ -33,6 +36,7 @@ public class DepositTransaction : TransactionBase
         PayerPayeeId payerPayeeId,
         DateTime transactionDate,
         IEnumerable<string>? tags,
+        string extTransactionId,
         DateTime dateCreated,
         DateTime? dateUpdated = null,
         DateTime? dateDeleted = null) :
@@ -40,12 +44,13 @@ public class DepositTransaction : TransactionBase
             id,
             userId,
             accountId,
-            TransactionTypes.Keys.DEPOSIT,
+            TransactionEnums.TransactionKeys.DEPOSIT,
             payerPayeeId,
             amount,
             description,
             transactionDate,
             tags,
+            extTransactionId,
             dateCreated,
             dateUpdated,
             dateDeleted)
@@ -60,6 +65,7 @@ public class DepositTransaction : TransactionBase
         PayerPayeeId payerPayeeId,
         DateTime transactionDate,
         IEnumerable<string>? tags,
+        string extTransactionId,
         DateTime dateCreated,
         DateTime? dateUpdated = null,
         DateTime? dateDeleted = null)
@@ -73,6 +79,7 @@ public class DepositTransaction : TransactionBase
             payerPayeeId,
             transactionDate,
             tags,
+            extTransactionId,
             dateCreated,
             dateUpdated,
             dateDeleted);
@@ -85,7 +92,8 @@ public class DepositTransaction : TransactionBase
         string description,
         PayerPayeeId payerPayeeId,
         DateTime transactionDate,
-        IEnumerable<string>? tags)
+        IEnumerable<string>? tags = null,
+        string extTransactionId = "")
     {
         return new DepositTransaction(
             userId,
@@ -94,6 +102,7 @@ public class DepositTransaction : TransactionBase
             description,
             payerPayeeId,
             transactionDate,
-            tags);
+            tags,
+            extTransactionId);
     }
 }

@@ -29,7 +29,7 @@
 //                        return await HandleAsync(userId, request, userTimeZone, transactionsService, payerPayeesService, cancellationToken);
 //                    })
 //                .Produces<ApiResponse<IEnumerable<TransactionDto>>>((int)HttpStatusCode.OK)
-//                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
+//                .Produces<string>((int)HttpStatusCode.BadRequest)
 //                .Produces((int)HttpStatusCode.NotFound)
 //                .WithDisplayName("Import Transactions")
 //                .WithName("ImportTransactions")

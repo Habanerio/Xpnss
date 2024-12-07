@@ -4,6 +4,9 @@ namespace Habanerio.Xpnss.Infrastructure.IntegrationEvents.Transactions;
 
 /// <summary>
 /// Lets other parts of the system know that a transaction has been created.
+/// Used in:
+/// - Habanerio.Xpnss.MonthlyTotals.Infrastructure.IntegrationEvents.EventHandlers.TransactionCreatedIntegrationEventHandler
+/// - Habanerio.Xpnss.Accounts.Infrastructure.IntegrationEvents.EventHandlers.TransactionCreatedIntegrationEventHandler
 /// </summary>
 public sealed record TransactionCreatedIntegrationEvent : IntegrationEvent
 {
@@ -17,7 +20,7 @@ public sealed record TransactionCreatedIntegrationEvent : IntegrationEvent
 
     public string TransactionId { get; }
 
-    public TransactionTypes.Keys TransactionType { get; }
+    public TransactionEnums.TransactionKeys TransactionType { get; }
 
     public decimal Amount { get; }
 
@@ -29,7 +32,7 @@ public sealed record TransactionCreatedIntegrationEvent : IntegrationEvent
         string accountId,
         string categoryId,
         string payerPayeeId,
-        TransactionTypes.Keys transactionType,
+        TransactionEnums.TransactionKeys transactionType,
         decimal amount,
         DateTime dateOfTransaction)
     {

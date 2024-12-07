@@ -20,6 +20,11 @@ public interface IPayerPayeesRepository
         IEnumerable<ObjectId> payerPayeeIds,
         CancellationToken cancellationToken = default);
 
+    Task<Result<PayerPayee?>> GetByNameAsync(
+        string userId,
+        string name,
+        CancellationToken cancellation = default);
+
     Task<Result<IEnumerable<PayerPayee>>> ListAsync(
         string userId,
         CancellationToken cancellationToken = default);

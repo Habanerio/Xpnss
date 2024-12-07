@@ -1,5 +1,7 @@
 using Habanerio.Core.Dbs.MongoDb;
 using Habanerio.Core.Dbs.MongoDb.Attributes;
+using Habanerio.Xpnss.Domain.Types;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Habanerio.Xpnss.UserProfiles.Infrastructure.Data.Documents;
@@ -18,6 +20,10 @@ public class UserProfileDocument : MongoDocument
 
     [BsonElement("email")]
     public string Email { get; set; }
+
+    [BsonElement("default_currency")]
+    [BsonRepresentation(BsonType.String)]
+    public CurrencyEnums.CurrencyKeys DefaultCurrency { get; set; }
 
     [BsonElement("is_deleted")]
     public bool IsDeleted { get; set; }

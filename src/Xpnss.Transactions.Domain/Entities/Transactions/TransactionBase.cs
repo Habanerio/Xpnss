@@ -22,6 +22,10 @@ public class TransactionBase : AggregateRoot<TransactionId>
 
     public string Description { get; }
 
+    public string ExtTransactionId { get; }
+
+    public bool IsCredit { get; private set; }
+
     /// <summary>
     /// The id of the person, company, or account that is paying or receiving the money.
     /// Optional
@@ -48,7 +52,7 @@ public class TransactionBase : AggregateRoot<TransactionId>
         }
     }
 
-    public TransactionTypes.Keys TransactionType { get; }
+    public TransactionEnums.TransactionKeys TransactionType { get; }
 
     /// <summary>
     /// For NEW (non-existing) Transactions.
@@ -57,24 +61,33 @@ public class TransactionBase : AggregateRoot<TransactionId>
     protected TransactionBase(
         UserId userId,
         AccountId accountId,
-        TransactionTypes.Keys transactionType,
+        TransactionEnums.TransactionKeys transactionType,
+        bool isCredit,
         PayerPayeeId payerPayeeId,
         Money amount,
         string description,
         DateTime transactionDate,
-        IEnumerable<string>? tags) : this(
-            TransactionId.Empty,
+        IEnumerable<string>? tags = null,
+        string extTransactionId = "") :
+        this(
+            TransactionId.New,
             userId,
             accountId,
             transactionType,
+            isCredit,
             payerPayeeId,
             amount,
             description,
             transactionDate,
             tags,
-            DateTime.UtcNow)
+            extTransactionId,
+            DateTime.UtcNow,
+            null,
+            null)
     {
         IsTransient = true;
+
+        IsCredit = isCredit;
 
         // AddDomainEvent(new TransactionCreatedDomainEvent(Id));
     }
@@ -86,21 +99,25 @@ public class TransactionBase : AggregateRoot<TransactionId>
         TransactionId id,
         UserId userId,
         AccountId accountId,
-        TransactionTypes.Keys transactionType,
+        TransactionEnums.TransactionKeys transactionType,
+        bool isCredit,
         PayerPayeeId payerPayeeId,
         Money amount,
         string description,
         DateTime transactionDate,
         IEnumerable<string>? tags,
+        string extTransactionId,
         DateTime dateCreated,
-        DateTime? dateUpdated = null,
-        DateTime? dateDeleted = null) : base(id)
+        DateTime? dateUpdated,
+        DateTime? dateDeleted) : base(id)
     {
         Id = id;
         UserId = userId;
         AccountId = accountId;
         TransactionType = transactionType;
+        IsCredit = isCredit;
         Description = description;
+        ExtTransactionId = extTransactionId;
         PayerPayeeId = payerPayeeId;
         TotalAmount = amount;
         TransactionDate = transactionDate.Date;

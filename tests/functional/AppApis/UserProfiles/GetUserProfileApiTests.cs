@@ -1,6 +1,5 @@
 using System.Net;
 using System.Text.Json;
-using Habanerio.Xpnss.Apis.App.AppApis.Models;
 using Habanerio.Xpnss.Application.DTOs;
 using Microsoft.AspNetCore.Mvc.Testing;
 using MongoDB.Bson;
@@ -32,15 +31,14 @@ public class GetUserProfileApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
         Assert.True(response.IsSuccessStatusCode);
 
         var content = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonSerializer.Deserialize<ApiResponse<UserProfileDto>>(
+        var apiResponse = JsonSerializer.Deserialize<UserProfileDto>(
             content,
             JsonSerializationOptions);
 
         // Assert
         Assert.NotNull(apiResponse);
-        Assert.True(apiResponse.IsSuccess);
 
-        var actualDto = Assert.IsType<UserProfileDto>(apiResponse.Data);
+        var actualDto = Assert.IsType<UserProfileDto>(apiResponse);
 
         Assert.NotNull(actualDto);
         Assert.Equal(userId.ToString(), actualDto.Id);

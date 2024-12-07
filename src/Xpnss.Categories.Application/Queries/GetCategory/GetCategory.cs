@@ -38,7 +38,7 @@ public class GetCategoryHandler(ICategoriesRepository repository) :
         var categoryDto = Mappers.ApplicationMapper.Map(categoryDocument);
 
         if (categoryDto is null)
-            return Result.Fail("Failed to map CategoryDocument to CategoryDto");
+            throw new InvalidCastException("Failed to map CategoryDocument to CategoryDto");
 
         return Result.Ok<CategoryDto?>(categoryDto);
     }

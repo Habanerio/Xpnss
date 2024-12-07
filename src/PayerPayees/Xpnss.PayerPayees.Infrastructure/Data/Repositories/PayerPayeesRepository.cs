@@ -31,14 +31,14 @@ public class PayerPayeesRepository(
         var payerPayeeDoc = InfrastructureMapper.Map(payerPayee);
 
         if (payerPayeeDoc is null)
-            return Result.Fail("Failed to map PayerPayee to PayerPayeeDocument");
+            throw new InvalidCastException("Failed to map PayerPayee to PayerPayeeDocument");
 
         await AddDocumentAsync(payerPayeeDoc, cancellationToken);
 
         var newPayerPayee = InfrastructureMapper.Map(payerPayeeDoc);
 
         if (newPayerPayee is null)
-            return Result.Fail("Failed to map PayerPayeeDocument to PayerPayee");
+            throw new InvalidCastException("Failed to map PayerPayeeDocument to PayerPayee");
 
         //HandleDomainEvents(payerPayee);
 
@@ -69,7 +69,7 @@ public class PayerPayeesRepository(
         var payerPayee = InfrastructureMapper.Map(payerPayeeDoc);
 
         if (payerPayee is null)
-            return Result.Fail("Failed to map MerchantDocument to Merchant");
+            throw new InvalidCastException("Failed to map MerchantDocument to Merchant");
 
         return Result.Ok<PayerPayee?>(payerPayee);
     }
@@ -95,6 +95,36 @@ public class PayerPayeesRepository(
         var payerPayees = InfrastructureMapper.Map(docs);
 
         return Result.Ok(payerPayees);
+    }
+
+    public async Task<Result<PayerPayee?>> GetByNameAsync(
+        string userId,
+        string name,
+        CancellationToken cancellation = default)
+    {
+        if (!ObjectId.TryParse(userId, out var userObjectId) ||
+            userObjectId.Equals(ObjectId.Empty))
+            throw new ArgumentException("The User's Id is invalid", nameof(userId));
+        //return Result.Fail($"Invalid UserId: `{userId}`");
+
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("The PayerPayee's name cannot be null or empty", nameof(name));
+        //return Result.Fail($"{nameof(name)} cannot be null or whitespace");
+
+        var payerPayeeDoc = await FirstOrDefaultDocumentAsync(a =>
+                a.UserId.Equals(userObjectId) &&
+                a.Name.Equals(name),
+            cancellation);
+
+        if (payerPayeeDoc is null)
+            return Result.Ok<PayerPayee?>(default);
+
+        var dto = InfrastructureMapper.Map(payerPayeeDoc);
+
+        if (dto is null)
+            throw new InvalidCastException("Failed to map PayerPayeeDocument to PayerPayee");
+
+        return Result.Ok<PayerPayee?>(dto);
     }
 
     public async Task<Result<IEnumerable<PayerPayee>>> ListAsync(

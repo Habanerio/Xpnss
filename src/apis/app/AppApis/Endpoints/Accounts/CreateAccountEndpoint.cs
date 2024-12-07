@@ -3,8 +3,10 @@ using Carter;
 using FluentValidation;
 using Habanerio.Xpnss.Accounts.Application.Commands.CreateAccount;
 using Habanerio.Xpnss.Accounts.Domain.Interfaces;
-using Habanerio.Xpnss.Apis.App.AppApis.Models;
 using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Application.Requests;
+using Habanerio.Xpnss.UserProfiles.Application.Queries;
+using Habanerio.Xpnss.UserProfiles.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Accounts;
@@ -21,15 +23,16 @@ public class CreateAccountEndpoint : BaseEndpoint
             app.MapPost("/api/v1/users/{userId}/accounts",
                     async (
                         [FromRoute] string userId,
-                        [FromBody] CreateAccountCommand command,
+                        [FromBody] CreateAccountRequest request,
                         [FromServices] IAccountsService service,
+                        [FromServices] IUserProfilesService userProfilesService,
                         CancellationToken cancellationToken) =>
                     {
-                        return await HandleAsync(userId, command, service, cancellationToken);
+                        return await HandleAsync(userId, request, service, userProfilesService, cancellationToken);
                     })
-                .Produces<AccountDto>((int)HttpStatusCode.OK)
-                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
-                .WithDisplayName("NewId Account")
+                .Produces<AccountDto>()
+                .Produces<string>((int)HttpStatusCode.BadRequest)
+                .WithDisplayName("Create New Account")
                 .WithName("CreateAccount")
                 .WithTags("Accounts")
                 .WithOpenApi();
@@ -38,40 +41,53 @@ public class CreateAccountEndpoint : BaseEndpoint
 
     public static async Task<IResult> HandleAsync(
         string userId,
-        CreateAccountCommand command,
+        CreateAccountRequest request,
         IAccountsService service,
+        IUserProfilesService userProfilesService,
         CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(service);
+        ArgumentNullException.ThrowIfNull(userProfilesService);
 
         if (string.IsNullOrWhiteSpace(userId))
             return BadRequestWithErrors("User Id is required");
 
+        var getUserCommand = new GetUserProfileByIdQuery(userId);
+
+        var userResult = await userProfilesService.QueryAsync(getUserCommand, cancellationToken);
+
+        if (userResult.IsFailed)
+            return BadRequestWithErrors(userResult.Errors);
+
+        if (userResult.Value is null)
+            return Results.Unauthorized();
+
+        request = request with { UserId = userId };
+
         var validator = new Validator();
-        var validationResult = await validator.ValidateAsync(command, cancellationToken);
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
             return BadRequestWithErrors(validationResult.Errors);
+
+        var command = new CreateAccountCommand(userId, request);
 
         var result = await service.CommandAsync(command, cancellationToken);
 
         if (result.IsFailed)
             return BadRequestWithErrors(result.Errors);
 
-        var response = ApiResponse<AccountDto>.Ok(result.Value);
-
-        return Results.Ok(response);
+        return Results.Ok(result.Value);
     }
 
-    public sealed class Validator : AbstractValidator<CreateAccountCommand>
+    public sealed class Validator : AbstractValidator<CreateAccountRequest>
     {
         public Validator()
         {
             RuleFor(x => x).NotNull();
             RuleFor(x => x.UserId).NotEmpty();
             RuleFor(x => x.Name).NotEmpty();
-            RuleFor(x => x.AccountType).NotEmpty();
             RuleFor(x => x.CreditLimit).GreaterThanOrEqualTo(0);
             RuleFor(x => x.InterestRate).GreaterThanOrEqualTo(0)
                 .LessThanOrEqualTo(100);

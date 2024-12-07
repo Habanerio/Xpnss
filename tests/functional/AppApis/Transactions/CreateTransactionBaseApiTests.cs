@@ -2,10 +2,10 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Habanerio.Xpnss.Accounts.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.Apis.App.AppApis;
-using Habanerio.Xpnss.Apis.App.AppApis.Models;
 using Habanerio.Xpnss.Application.DTOs;
 using Habanerio.Xpnss.Application.Requests;
 using Habanerio.Xpnss.Domain.Types;
+using Habanerio.Xpnss.MonthlyTotals.Infrastructure.Data.Documents;
 using Microsoft.AspNetCore.Mvc.Testing;
 using MongoDB.Bson;
 
@@ -20,137 +20,244 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
     /// </summary>
     /// <param name="testUserId">THe ObjectId of the User who is requesting the Transaction</param>
     /// <param name="originalAccountDoc"></param>
-    /// <param name="createTransactionRequest"></param>
+    /// <param name="originalRequest"></param>
     /// <param name="transactionType">The type of Transaction that the Asserts should be testing</param>
     /// <returns></returns>
     protected async Task AssertTransactionAsync(
         ObjectId testUserId,
         AccountDocument? originalAccountDoc,
-        CreateTransactionRequest createTransactionRequest,
-        TransactionTypes.Keys transactionType)
+        CreateTransactionRequest originalRequest,
+        TransactionEnums.TransactionKeys transactionType)
     {
+        Assert.NotNull(originalRequest);
+
+        Assert.True(
+            (!string.IsNullOrWhiteSpace(originalRequest.AccountId) && originalAccountDoc is not null) ||
+            (string.IsNullOrWhiteSpace(originalRequest.AccountId) && originalAccountDoc is null));
+
         var originalMonthlyTotalDocs = (await GetMonthlyTotalsAsync(
             testUserId,
-            createTransactionRequest.TransactionDate.Year,
-            createTransactionRequest.TransactionDate.Month)).ToList();
+            originalRequest.TransactionDate.Year,
+            originalRequest.TransactionDate.Month)).ToList();
 
         TransactionDto actualTransactionDto;
 
-        CreateDepositTransactionRequest? createDepositTransactionRequest = null;
-        CreatePurchaseTransactionRequest? createPurchaseTransactionRequest = null;
-
-        DepositTransactionDto? actualDepositTransactionDto = null;
-        PurchaseTransactionDto? actualPurchaseTransactionDto = null;
-
-        switch (transactionType)
+        if (transactionType is TransactionEnums.TransactionKeys.DEPOSIT)
         {
-            case TransactionTypes.Keys.DEPOSIT:
-                createDepositTransactionRequest = createTransactionRequest as CreateDepositTransactionRequest;
+            var createDepositTransactionRequest = originalRequest as CreateDepositTransactionRequest ??
+                throw new InvalidOperationException(nameof(originalRequest));
 
-                Assert.NotNull(createDepositTransactionRequest);
+            Assert.NotNull(createDepositTransactionRequest);
 
-                actualTransactionDto = await GetDepositTransaction(testUserId, createDepositTransactionRequest);
+            actualTransactionDto =
+                await GetCreateTransactionFromApi<CreateDepositTransactionRequest, DepositTransactionDto>
+                    (testUserId, createDepositTransactionRequest);
 
-                actualDepositTransactionDto = actualTransactionDto as DepositTransactionDto;
+            await AssertTransactionResultDtoAsync(
+                testUserId,
+                createDepositTransactionRequest,
+                originalAccountDoc,
+                originalMonthlyTotalDocs,
+                actualTransactionDto);
+        }
+        else if (transactionType is TransactionEnums.TransactionKeys.PURCHASE)
+        {
+            var createPurchaseTransactionRequest = originalRequest as CreatePurchaseTransactionRequest ??
+                throw new InvalidOperationException(nameof(originalRequest));
 
-                Assert.NotNull(actualDepositTransactionDto);
+            Assert.NotNull(createPurchaseTransactionRequest);
 
-                break;
-            case TransactionTypes.Keys.PURCHASE:
-                createPurchaseTransactionRequest = createTransactionRequest as CreatePurchaseTransactionRequest;
+            actualTransactionDto =
+                await GetCreateTransactionFromApi<CreatePurchaseTransactionRequest, PurchaseTransactionDto>
+                    (testUserId, createPurchaseTransactionRequest);
 
-                Assert.NotNull(createPurchaseTransactionRequest);
+            await AssertTransactionResultDtoAsync(
+                testUserId,
+                createPurchaseTransactionRequest,
+                originalAccountDoc,
+                originalMonthlyTotalDocs,
+                actualTransactionDto);
 
-                actualTransactionDto = await GetPurchaseTransaction(testUserId, createPurchaseTransactionRequest);
-
-                actualPurchaseTransactionDto = actualTransactionDto as PurchaseTransactionDto;
-
-                Assert.NotNull(actualTransactionDto);
-
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(transactionType), transactionType, null);
+            Assert.NotNull(actualTransactionDto);
+        }
+        else
+        {
+            Assert.Fail($"'{transactionType}' is an unknown type");
         }
 
-        // Check that the Account Document's Balance has been updated after the request was made
-        AccountDocument? updatedAccountDoc = originalAccountDoc != null ?
-            await AccountDocumentsRepository.FirstOrDefaultDocumentAsync(a =>
-            a.Id == originalAccountDoc.Id && a.UserId == testUserId) :
-            null;
+        //// Check that the Account Document's Balance has been updated after the request was made
+        //AccountDocument? updatedAccountDoc =
+        //    await AccountDocumentsRepository.FirstOrDefaultDocumentAsync(a =>
+        //    a.Id == originalAccountDoc.Id && a.UserId == testUserId);
+
+        //var updatedMonthlyTotalDocs = (await GetMonthlyTotalsAsync(
+        //    testUserId,
+        //    originalRequest.TransactionDate.Year,
+        //    originalRequest.TransactionDate.Month)).ToList();
+
+        //Assert.NotNull(actualTransactionDto);
+        //Assert.True(!actualTransactionDto.Id.Equals(ObjectId.Empty.ToString()));
+        //Assert.Equal(originalRequest.UserId, actualTransactionDto.UserId);
+
+        //Assert.Equal(originalRequest.Description, actualTransactionDto.Description);
+
+        //// If a Debit Request, then dto.IsCredit should be false
+        //Assert.True(actualDepositTransactionDto is null || !actualDepositTransactionDto.IsCredit);
+
+        //// If a Credit Request, then dto.IsCredit should be true
+        //Assert.True(actualPurchaseTransactionDto is null || actualPurchaseTransactionDto.IsCredit);
+
+        //Assert.Equal(originalRequest.TransactionDate.Date, actualTransactionDto.TransactionDate.Date);
+
+        //Assert.Equal(transactionType, actualTransactionDto.TransactionType);
+
+        //AssertPayerPayee(originalRequest, actualTransactionDto);
+
+        //if (actualPurchaseTransactionDto is not null)
+        //{
+        //    Assert.NotNull(actualPurchaseTransactionDto);
+
+        //    Assert.Equal(createPurchaseTransactionRequest.Items.Count, actualPurchaseTransactionDto.Items.Count);
+
+
+        //    Assert.Equal(createPurchaseTransactionRequest.Items.Sum(i =>
+        //        i.Amount), actualPurchaseTransactionDto.TotalAmount);
+
+        //    // New transaction, Total Owing should be the same as Total Amount
+        //    Assert.Equal(createPurchaseTransactionRequest.Items.Sum(i =>
+        //        i.Amount), actualPurchaseTransactionDto.TotalOwing);
+
+        //    // New transaction, there should be no payments
+        //    Assert.Equal(0, actualPurchaseTransactionDto.TotalPaid);
+
+        //    foreach (var item in createPurchaseTransactionRequest.Items)
+        //    {
+        //        var actualTransactionItem = actualPurchaseTransactionDto.Items.Find(i =>
+        //            i.CategoryId == item.CategoryId &&
+        //            i.Description == item.Description &&
+        //            i.Amount == item.Amount);
+
+        //        Assert.NotNull(actualTransactionItem);
+        //    }
+        //}
+
+        //AssertAccount(testUserId, originalAccountDoc, updatedAccountDoc, actualTransactionDto);
+
+        //// Monthly Totals
+        //Assert.NotNull(updatedMonthlyTotalDocs);
+        //Assert.NotEmpty(updatedMonthlyTotalDocs);
+
+        //var originalAccountMonthlyTotalDoc = originalMonthlyTotalDocs.Find(t =>
+        //    t.Year == originalRequest.TransactionDate.Year &&
+        //    t.Month == originalRequest.TransactionDate.Month);
+
+        //if (originalAccountMonthlyTotalDoc is not null)
+        //{
+        //    var updatedAccountMonthlyTotalDoc = updatedMonthlyTotalDocs.Find(t =>
+        //        t.Year == originalRequest.TransactionDate.Year &&
+        //        t.Month == originalRequest.TransactionDate.Month);
+
+        //    Assert.NotNull(updatedAccountMonthlyTotalDoc);
+
+        //    // TODO: Finish this ...
+        //}
+
+        ////if (actualPurchaseTransactionDto is not null)
+        ////{
+        ////    var monthlyTotalDoc = updatedMonthlyTotalDocs.Find(t =>
+        ////        t.Year == originalRequest.TransactionDate.Year &&
+        ////        t.Month == originalRequest.TransactionDate.Month);
+        ////}
+
+        ////Assert.NotEmpty(actualAccount.MonthlyTotals);
+
+        ////Assert.NotNull(actualAccount.MonthlyTotals.Find(t =>
+        ////    t.Year == transactionDate.Year && t.Month == transactionDate.Month));
+    }
+
+    private async Task AssertTransactionResultDtoAsync<TRequest, TDto>(
+        ObjectId testUserId,
+        TRequest createTransactionRequest,
+        AccountDocument? originalAccountDoc,
+        List<MonthlyTotalDocument>? originalMonthlyTotalDocs,
+        TDto actualTransactionDto)
+        where TRequest : CreateTransactionRequest where TDto : TransactionDto
+    {
+        Assert.NotNull(actualTransactionDto);
+
+        // If there was an original Account Document, then there should be an updated Account Document.
+        // If there was an original Account Document, and there is NO updated Account Document, then throw an exception.
+        // Else, then there should be no updated Account Document (null).
+        var updatedAccountDoc = (
+            originalAccountDoc is not null ?
+                (await AccountDocumentsRepository.FirstOrDefaultDocumentAsync(a =>
+                    a.Id == originalAccountDoc.Id && a.UserId == testUserId
+                ) ?? throw new InvalidOperationException("Could not find the updatedAccountDoc"))
+            : null);
 
         var updatedMonthlyTotalDocs = (await GetMonthlyTotalsAsync(
             testUserId,
             createTransactionRequest.TransactionDate.Year,
             createTransactionRequest.TransactionDate.Month)).ToList();
 
-        Assert.NotNull(actualTransactionDto);
-        Assert.True(!actualTransactionDto.Id.Equals(ObjectId.Empty.ToString()));
         Assert.Equal(createTransactionRequest.UserId, actualTransactionDto.UserId);
-
+        Assert.Equal(createTransactionRequest.AccountId, actualTransactionDto.AccountId);
         Assert.Equal(createTransactionRequest.Description, actualTransactionDto.Description);
+        Assert.Equal(createTransactionRequest.ExtTransactionId, actualTransactionDto.ExtTransactionId);
+        Assert.Equal(createTransactionRequest.IsCredit, actualTransactionDto.IsCredit);
+        Assert.Equal(createTransactionRequest.TransactionDate.Date, actualTransactionDto.TransactionDate);
+        Assert.Equal(createTransactionRequest.Tags, actualTransactionDto.Tags);
+        Assert.Equal(createTransactionRequest.TotalAmount, actualTransactionDto.TotalAmount);
+        Assert.Equal(createTransactionRequest.TransactionType, actualTransactionDto.TransactionType);
 
-        // If a Debit Request, then dto.IsCredit should be false
-        Assert.True(actualDepositTransactionDto is null || !actualDepositTransactionDto.IsCredit);
+        AssertAccount(testUserId,
+            createTransactionRequest,
+            originalAccountDoc,
+            updatedAccountDoc,
+            actualTransactionDto);
 
-        // If a Credit Request, then dto.IsCredit should be true
-        Assert.True(actualPurchaseTransactionDto is null || actualPurchaseTransactionDto.IsCredit);
-
-        Assert.Equal(createTransactionRequest.TransactionDate.Date, actualTransactionDto.TransactionDate.Date);
-
-        Assert.Equal(transactionType.ToString(), actualTransactionDto.TransactionType);
-
-        AssertPayerPayee(createTransactionRequest, actualTransactionDto);
-
-        if (actualPurchaseTransactionDto is not null && createPurchaseTransactionRequest is not null)
+        if (createTransactionRequest is
+                CreateDepositTransactionRequest depositRequest &&
+            actualTransactionDto is
+                DepositTransactionDto depositDto)
         {
-            Assert.NotNull(actualPurchaseTransactionDto);
-
-            Assert.Equal(createPurchaseTransactionRequest.Items.Count, actualPurchaseTransactionDto.Items.Count);
-
-
-            Assert.Equal(createPurchaseTransactionRequest.Items.Sum(i =>
-                i.Amount), actualPurchaseTransactionDto.TotalAmount);
-
-            // New transaction, Total Owing should be the same as Total Amount
-            Assert.Equal(createPurchaseTransactionRequest.Items.Sum(i =>
-                i.Amount), actualPurchaseTransactionDto.TotalOwing);
-
-            // New transaction, there should be no payments
-            Assert.Equal(0, actualPurchaseTransactionDto.TotalPaid);
-
-            foreach (var item in createPurchaseTransactionRequest.Items)
-            {
-                var actualTransactionItem = actualPurchaseTransactionDto.Items.Find(i =>
-                    i.CategoryId == item.CategoryId &&
-                    i.Description == item.Description &&
-                    i.Amount == item.Amount);
-
-                Assert.NotNull(actualTransactionItem);
-            }
+            AssertDepositTransaction(depositRequest, depositDto);
+        }
+        else if (createTransactionRequest is
+                     CreatePurchaseTransactionRequest purchaseRequest &&
+                 actualTransactionDto is
+                     PurchaseTransactionDto purchaseDto)
+        {
+            AssertPurchaseTransaction(purchaseRequest, purchaseDto);
+        }
+        else
+        {
+            Assert.Fail(
+                $"{nameof(createTransactionRequest)}: " +
+                $"'{createTransactionRequest.GetType()}' OR " +
+                $"{nameof(actualTransactionDto)}: " +
+                $"'{actualTransactionDto}' is of an unknown Type");
         }
 
-        AssertAccount(testUserId, originalAccountDoc, updatedAccountDoc, actualTransactionDto);
+        AssertPayerPayee(createTransactionRequest, actualTransactionDto);
 
         // Monthly Totals
         Assert.NotNull(updatedMonthlyTotalDocs);
         Assert.NotEmpty(updatedMonthlyTotalDocs);
 
-        if (originalAccountDoc is not null)
+        var originalAccountMonthlyTotalDoc = originalMonthlyTotalDocs.Find(t =>
+            t.Year == createTransactionRequest.TransactionDate.Year &&
+            t.Month == createTransactionRequest.TransactionDate.Month);
+
+        if (originalAccountMonthlyTotalDoc is not null)
         {
-            var originalAccountMonthlyTotalDoc = originalMonthlyTotalDocs.Find(t =>
+            var updatedAccountMonthlyTotalDoc = updatedMonthlyTotalDocs.Find(t =>
                 t.Year == createTransactionRequest.TransactionDate.Year &&
                 t.Month == createTransactionRequest.TransactionDate.Month);
 
-            if (originalAccountMonthlyTotalDoc is not null)
-            {
-                var updatedAccountMonthlyTotalDoc = updatedMonthlyTotalDocs.Find(t =>
-                    t.Year == createTransactionRequest.TransactionDate.Year &&
-                    t.Month == createTransactionRequest.TransactionDate.Month);
+            Assert.NotNull(updatedAccountMonthlyTotalDoc);
 
-                Assert.NotNull(updatedAccountMonthlyTotalDoc);
-
-                // TODO: Finish this ...
-            }
+            // TODO: Finish this ...
         }
 
         //if (actualPurchaseTransactionDto is not null)
@@ -166,33 +273,85 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
         //    t.Year == transactionDate.Year && t.Month == transactionDate.Month));
     }
 
+
     protected static void AssertAccount(
         ObjectId testUserId,
+        CreateTransactionRequest transactionRequest,
         AccountDocument? originalAccountDoc,
         AccountDocument? updatedAccountDoc,
         TransactionDto actualTransactionDto)
     {
-        var transactionType = TransactionTypes.ToTransactionType(actualTransactionDto.TransactionType);
+        var transactionType = actualTransactionDto.TransactionType;
 
-        // If an account was expected to be used, then verify that the AccountId matches the request
-        // If no account was expected to be used, then verify that the AccountId is null
-        if (originalAccountDoc is null)
+        // If an accountBase was expected to be used, then verify that the ExtAcctId matches the request
+        // If no accountBase was expected to be used, then verify that the ExtAcctId is null
+        if (string.IsNullOrWhiteSpace(transactionRequest.AccountId) &&
+            originalAccountDoc is null)
         {
             Assert.True(string.IsNullOrWhiteSpace(actualTransactionDto.AccountId));
         }
-        else
+        else if (!string.IsNullOrWhiteSpace(transactionRequest.AccountId) &&
+                originalAccountDoc is not null)
         {
             var previousAccountBalance = originalAccountDoc.Balance;
 
             Assert.True(!string.IsNullOrWhiteSpace(actualTransactionDto.AccountId));
             Assert.Equal(originalAccountDoc.Id.ToString(), actualTransactionDto.AccountId);
 
-
-
-            if (TransactionTypes.DoesBalanceIncrease(originalAccountDoc.AccountType, transactionType))
-                Assert.Equal(previousAccountBalance + actualTransactionDto.TotalAmount, updatedAccountDoc!.Balance);
+            if (TransactionEnums.DoesBalanceIncrease(originalAccountDoc.IsCredit, transactionType))
+                Assert.Equal(previousAccountBalance + actualTransactionDto.TotalAmount,
+                    updatedAccountDoc!.Balance);
             else
-                Assert.Equal(previousAccountBalance - actualTransactionDto.TotalAmount, updatedAccountDoc!.Balance);
+                Assert.Equal(previousAccountBalance - actualTransactionDto.TotalAmount,
+                    updatedAccountDoc!.Balance);
+        }
+        else
+        {
+            Assert.Fail($"Not sure how we got here:" +
+                        $"{Environment.NewLine} {nameof(transactionRequest.AccountId)}'s value = '{transactionRequest.AccountId}'" +
+                        $"{Environment.NewLine} {nameof(originalAccountDoc)} is null = {originalAccountDoc is null}");
+        }
+    }
+
+    protected static void AssertDepositTransaction(
+        CreateDepositTransactionRequest transactionRequest,
+        DepositTransactionDto? transactionDto)
+    {
+        Assert.NotNull(transactionDto);
+        Assert.Equal(transactionRequest.TransactionDate, transactionDto.TransactionDate);
+        Assert.Equal(transactionRequest.TotalAmount, transactionDto.TotalAmount);
+    }
+
+    protected static void AssertPurchaseTransaction(
+        CreatePurchaseTransactionRequest transactionRequest,
+        PurchaseTransactionDto? transactionDto)
+    {
+        Assert.NotNull(transactionDto);
+        Assert.Equal(transactionRequest.TransactionDate, transactionDto.TransactionDate);
+        Assert.Equal(transactionRequest.TotalAmount, transactionDto.TotalAmount);
+
+        Assert.Equal(transactionRequest.Items.Count, transactionRequest.Items.Count);
+
+        Assert.Equal(transactionRequest.Items.Sum(i =>
+            i.Amount), transactionDto.TotalAmount);
+
+        // New transaction, Total Owing should be the same as Total Amount
+        Assert.Equal(transactionRequest.Items.Sum(i =>
+            i.Amount), transactionDto.TotalOwing);
+
+        // New transaction, there should be no payments
+        Assert.False(transactionDto.IsPaid);
+        Assert.Null(transactionDto.PaidDate);
+        Assert.Equal(0, transactionDto.TotalPaid);
+
+        foreach (var item in transactionRequest.Items)
+        {
+            var actualTransactionItem = transactionDto.Items.Find(i =>
+                i.CategoryId == item.CategoryId &&
+                i.Description == item.Description &&
+                i.Amount == item.Amount);
+
+            Assert.NotNull(actualTransactionItem);
         }
     }
 
@@ -205,7 +364,9 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
         CreateTransactionRequest createTransactionRequest,
         TransactionDto actualTransactionDto)
     {
-        // If the request has a PayerPayee Id OR a Name, then it must return a PayerPayee Id (whether existing or new)
+
+        // If the request has a PayerPayee Id OR a Name,
+        // then it must return a PayerPayee Id (whether existing or new)
         if (!string.IsNullOrWhiteSpace(createTransactionRequest.PayerPayee.Id) ||
             !string.IsNullOrWhiteSpace(createTransactionRequest.PayerPayee.Name))
         {
@@ -243,64 +404,32 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
 
 
     /// <summary>
-    /// Calls the Create Deposit Transaction endpoint and returns the dto
+    /// Calls the Create Transaction endpoint and returns a TransactionDto
     /// </summary>
     /// <param name="userId">The Id of the User to create the Transaction for</param>
-    /// <param name="createDepositTransactionRequest">The Deposit Request to send to the endpoint</param>
+    /// <param name="createTransactionRequest">The Request to send to the endpoint</param>
     /// <returns>TransactionDto</returns>
-    private async Task<TransactionDto> GetDepositTransaction(
+    private async Task<TDto> GetCreateTransactionFromApi<TRequest, TDto>(
         ObjectId userId,
-        CreateDepositTransactionRequest createDepositTransactionRequest)
+        TRequest createTransactionRequest) where TDto : TransactionDto where TRequest : CreateTransactionRequest
     {
         // Act
         var createTransactionResponse = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_TRANSACTIONS_CREATE_DEPOSIT_TRANSACTION
+            ENDPOINTS_TRANSACTIONS_CREATE_TRANSACTION
                 .Replace("{userId}", userId.ToString()),
-            createDepositTransactionRequest);
+            createTransactionRequest);
 
         var transactionContent = await createTransactionResponse.Content.ReadAsStringAsync();
 
         if (!createTransactionResponse.IsSuccessStatusCode)
             Assert.Fail(transactionContent);
 
-        var transactionApiResponse = JsonSerializer.Deserialize<ApiResponse<DepositTransactionDto>>(
+        var transactionApiResponse = JsonSerializer.Deserialize<TDto>(
             transactionContent, JsonSerializationOptions);
 
         // Assert
         Assert.NotNull(transactionApiResponse);
-        Assert.True(transactionApiResponse.IsSuccess);
 
-        return Assert.IsAssignableFrom<DepositTransactionDto>(transactionApiResponse.Data);
-    }
-
-    /// <summary>
-    /// Calls the Create Purchase Transaction endpoint and returns the dto
-    /// </summary>
-    /// <param name="userId">The Id of the User to create the Transaction for</param>
-    /// <param name="createPurchaseTransactionRequest">The Purchase Request to send to the endpoint</param>
-    /// <returns>PurchaseTransactionDto</returns>
-    private async Task<TransactionDto> GetPurchaseTransaction(
-        ObjectId userId,
-        CreatePurchaseTransactionRequest createPurchaseTransactionRequest)
-    {
-        // Act
-        var createTransactionResponse = await HttpClient.PostAsJsonAsync(
-            ENDPOINTS_TRANSACTIONS_CREATE_PURCHASE_TRANSACTION
-                .Replace("{userId}", userId.ToString()),
-            createPurchaseTransactionRequest);
-
-        var transactionContent = await createTransactionResponse.Content.ReadAsStringAsync();
-
-        if (!createTransactionResponse.IsSuccessStatusCode)
-            Assert.Fail(transactionContent);
-
-        var transactionApiResponse = JsonSerializer.Deserialize<ApiResponse<PurchaseTransactionDto>>(
-            transactionContent, JsonSerializationOptions);
-
-        // Assert
-        Assert.NotNull(transactionApiResponse);
-        Assert.True(transactionApiResponse.IsSuccess);
-
-        return Assert.IsAssignableFrom<PurchaseTransactionDto>(transactionApiResponse.Data);
+        return Assert.IsAssignableFrom<TDto>(transactionApiResponse);
     }
 }

@@ -11,7 +11,7 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.0" />
-      <PackageReference Include="SonarAnalyzer.CSharp" Version="9.32.0.97167">
+      <PackageReference Include="SonarAnalyzer.CSharp" Version="10.3.0.106239">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
@@ -21,6 +21,12 @@
       <ProjectReference Include="..\Xpnss.Accounts.Domain\Xpnss.Accounts.Domain.csproj" />
       <ProjectReference Include="..\Xpnss.Accounts.Infrastructure\Xpnss.Accounts.Infrastructure.csproj" />
       <ProjectReference Include="..\Xpnss.Application\Xpnss.Application.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Microsoft.AspNetCore.Http.Extensions">
+        <HintPath>C:\Program Files\dotnet\shared\Microsoft.AspNetCore.App\8.0.2\Microsoft.AspNetCore.Http.Extensions.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

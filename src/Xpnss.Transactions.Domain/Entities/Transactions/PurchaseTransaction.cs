@@ -3,7 +3,8 @@ using Habanerio.Xpnss.Domain.ValueObjects;
 
 namespace Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 
-public class PurchaseTransaction : TransactionBase
+public class PurchaseTransaction :
+    DebitTransaction
 {
     private readonly List<TransactionItem> _items;
     private readonly List<TransactionPaymentItem> _payments;
@@ -46,18 +47,22 @@ public class PurchaseTransaction : TransactionBase
         PayerPayeeId payerPayeeId,
         List<TransactionItem> items,
         DateTime transactionDate,
-        IEnumerable<string>? tags)
+        IEnumerable<string>? tags = null,
+        string extTransactionId = "")
         : base(
             userId,
             accountId,
-            TransactionTypes.Keys.PURCHASE,
+            TransactionEnums.TransactionKeys.PURCHASE,
             payerPayeeId,
             new Money(items.Sum(i => i.Amount)),
             description,
             transactionDate,
-            tags)
+            tags,
+            extTransactionId)
     {
-        _items = items.ToList();
+        _items = items.Any() ? items.ToList() :
+            throw new ArgumentException($"Purchase Transaction must have at least one Item");
+
         _payments = [];
     }
 
@@ -75,6 +80,7 @@ public class PurchaseTransaction : TransactionBase
         List<TransactionPaymentItem> payments,
         DateTime transactionDate,
         IEnumerable<string>? tags,
+        string extTransactionId,
         DateTime dateCreated,
         DateTime? dateUpdated = null,
         DateTime? dateDeleted = null)
@@ -82,12 +88,13 @@ public class PurchaseTransaction : TransactionBase
             id,
             userId,
             accountId,
-            TransactionTypes.Keys.PURCHASE,
+            TransactionEnums.TransactionKeys.PURCHASE,
             payerPayeeId,
             new Money(items.Sum(i => i.Amount)),
             description,
             transactionDate,
             tags,
+            extTransactionId,
             dateCreated,
             dateUpdated,
             dateDeleted)
@@ -108,6 +115,7 @@ public class PurchaseTransaction : TransactionBase
         IEnumerable<TransactionPaymentItem> payments,
         DateTime transactionDate,
         List<string>? tags,
+        string extTransactionId,
         DateTime dateCreated,
         DateTime? dateUpdated = null,
         DateTime? dateDeleted = null)
@@ -122,6 +130,7 @@ public class PurchaseTransaction : TransactionBase
             payments.ToList(),
             transactionDate,
             tags,
+            extTransactionId,
             dateCreated,
             dateUpdated,
             dateDeleted);
@@ -151,7 +160,7 @@ public class PurchaseTransaction : TransactionBase
             tags);
     }
 
-    public void AddItem(Money amount, CategoryId categoryId, string description)
+    public void AddItem(Money amount, CategoryId categoryId, SubCategoryId subCategoryId, string description)
     {
         if (Items.Count >= MAX_ITEMS_PER_TRANSACTION)
             throw new InvalidOperationException($"Cannot add more than {MAX_ITEMS_PER_TRANSACTION} items to a transaction.");
@@ -159,7 +168,7 @@ public class PurchaseTransaction : TransactionBase
         if (IsDeleted)
             throw new InvalidOperationException("Cannot add items to a deleted transaction.");
 
-        _items.Add(TransactionItem.New(amount, categoryId, description));
+        _items.Add(TransactionItem.New(amount, categoryId, subCategoryId, description));
 
         // AddDomainEvent(new TransactionUpdatedDomainEvent(Id, TotalAmount, TotalOwing, TotalPaid));
 
@@ -219,7 +228,7 @@ public class PurchaseTransaction : TransactionBase
 //            id,
 //            userId,
 //            accountId,
-//            TransactionTypes.Keys.BALANCE_TRANSFER,
+//            TransactionEnums.AccountEnums.CurrencyKeys.BALANCE_TRANSFER,
 //            description,
 //            accountTransferredToId,
 //            transactionItems,

@@ -17,17 +17,26 @@ public class TransactionDocument : MongoDocument
 
     [BsonElement("transaction_type")]
     [BsonRepresentation(BsonType.String)]
-    public TransactionTypes.Keys TransactionType { get; set; }
+    public TransactionEnums.TransactionKeys TransactionType { get; set; }
 
 
     [BsonElement("description")]
     public string Description { get; set; }
 
+    [BsonElement("ext_transaction_id")]
+    public string ExtTransactionId { get; set; }
+
     [BsonElement("is_deleted")]
     public bool IsDeleted { get; set; }
 
+    [BsonElement("is_paid")]
+    public bool IsPaid => PaidDate.HasValue;
+
     [BsonElement("items")]
     public List<TransactionDocumentItem> Items { get; set; }
+
+    [BsonElement("payerpayee_id")]
+    public ObjectId? PayerPayeeId { get; set; }
 
     [BsonElement("payments")]
     public List<TransactionDocumentPayment> Payments { get; set; }
@@ -45,12 +54,13 @@ public class TransactionDocument : MongoDocument
     public decimal TotalPaid { get; set; }
 
     [BsonElement("transaction_date")]
-    [BsonDateTimeOptions(DateOnly = true, Kind = DateTimeKind.Utc)]
+    [BsonDateTimeOptions(DateOnly = true)]
     public DateTime TransactionDate { get; set; }
 
-    [BsonElement("date_paid")]
-    [BsonDateTimeOptions(DateOnly = true, Kind = DateTimeKind.Utc)]
-    public DateTime? DatePaid { get; set; }
+    [BsonElement("paid_date")]
+    [BsonDateTimeOptions(DateOnly = true)]
+    public DateTime? PaidDate { get; set; }
+
 
     [BsonElement("date_created")]
     [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
@@ -74,13 +84,9 @@ public class TransactionDocument : MongoDocument
 
 public class DepositTransactionDocument : TransactionDocument
 {
-    // Can Mongo store nullable ObjectIds?
-    [BsonElement("payerpayee_id")]
-    public ObjectId? PayerPayeeId { get; set; }
-
     public DepositTransactionDocument()
     {
-        TransactionType = TransactionTypes.Keys.DEPOSIT;
+        TransactionType = TransactionEnums.TransactionKeys.DEPOSIT;
     }
 }
 
@@ -89,35 +95,9 @@ public class DepositTransactionDocument : TransactionDocument
 /// </summary>
 public class PurchaseTransactionDocument : TransactionDocument
 {
-    // Can Mongo store nullable ObjectIds?
-    [BsonElement("payerpayee_id")]
-    public ObjectId? PayerPayeeId { get; set; }
-
     public PurchaseTransactionDocument()
     {
-        TransactionType = TransactionTypes.Keys.PURCHASE;
-    }
-}
-
-/// <summary>
-/// For when the Account makes a payment to another account
-/// </summary>
-public class PaymentTransactionDocument : TransactionDocument
-{
-    [BsonElement("payerpayee_id")]
-    public string PayerPayeeId { get; set; } = "";
-
-    public PaymentTransactionDocument()
-    {
-        TransactionType = TransactionTypes.Keys.PAYMENT;
-    }
-}
-
-public class TransferTransactionDocument : TransactionDocument
-{
-    public TransferTransactionDocument()
-    {
-        TransactionType = TransactionTypes.Keys.TRANSFER;
+        TransactionType = TransactionEnums.TransactionKeys.PURCHASE;
     }
 }
 
@@ -133,22 +113,43 @@ public sealed record TransactionDocumentItem
     [BsonElement("category_id")]
     public ObjectId? CategoryId { get; set; }
 
+    [BsonElement("sub_category_id")]
+    public ObjectId? SubCategoryId { get; set; }
+
     [BsonElement("description")]
     public string Description { get; init; }
 
-    public TransactionDocumentItem(ObjectId id, decimal amount, ObjectId? categoryId, string description)
+    [BsonElement("is_paid")]
+    public bool IsPaid => PaidDate.HasValue;
+
+    [BsonElement("paid_date")]
+    [BsonDateTimeOptions(DateOnly = true)]
+    public DateTime? PaidDate { get; set; }
+
+    public TransactionDocumentItem(
+        ObjectId id,
+        decimal amount,
+        ObjectId? categoryId,
+        ObjectId? subCategoryId,
+        string description)
     {
         Id = id;
         Amount = amount;
         Description = description;
         CategoryId = categoryId;
+        SubCategoryId = subCategoryId;
     }
 
-    public static TransactionDocumentItem New(decimal amount, string description, string categoryId = "")
+    public static TransactionDocumentItem New(
+        decimal amount,
+        string description,
+        string categoryId = "",
+        string subCategoryId = "")
     {
         ObjectId? categoryObjectId = !string.IsNullOrEmpty(categoryId) ? ObjectId.Parse(categoryId) : null;
+        ObjectId? subCategoryObjectId = !string.IsNullOrEmpty(subCategoryId) ? ObjectId.Parse(subCategoryId) : null;
 
-        return new TransactionDocumentItem(ObjectId.GenerateNewId(), amount, categoryObjectId, description);
+        return new TransactionDocumentItem(ObjectId.GenerateNewId(), amount, categoryObjectId, subCategoryObjectId, description);
     }
 }
 

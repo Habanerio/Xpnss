@@ -1,7 +1,8 @@
 using System.Net;
 using Carter;
-using Habanerio.Xpnss.Apis.App.AppApis.Models;
+using Habanerio.Xpnss.Accounts.Domain.Interfaces;
 using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Application.Requests;
 using Habanerio.Xpnss.PayerPayees.Domain.Interfaces;
 using Habanerio.Xpnss.Transactions.Application.Queries.GetTransactions;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
@@ -19,17 +20,25 @@ public sealed class GetTransactionsEndpoint : BaseEndpoint
                     async (
                         HttpRequest httpRequest,
                         [FromRoute] string userId,
-                        [FromBody] GetTransactionsQuery request,
+                        [FromBody] GetTransactionsRequest request,
+                        [FromServices] IAccountsService accountsService,
                         [FromServices] ITransactionsService transactionsService,
                         [FromServices] IPayerPayeesService payerPayeesService,
                         CancellationToken cancellationToken) =>
                     {
                         var userTimeZone = httpRequest.Headers["X-User-Timezone"].FirstOrDefault() ?? string.Empty;
 
-                        return await HandleAsync(userId, request, userTimeZone, transactionsService, payerPayeesService, cancellationToken);
+                        return await HandleAsync(
+                            userId,
+                            request,
+                            userTimeZone,
+                            accountsService,
+                            transactionsService,
+                            payerPayeesService,
+                            cancellationToken);
                     })
-                .Produces<ApiResponse<IEnumerable<TransactionDto>>>((int)HttpStatusCode.OK)
-                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
+                .Produces<IEnumerable<TransactionDto>>((int)HttpStatusCode.OK)
+                .Produces<string>((int)HttpStatusCode.BadRequest)
                 .Produces((int)HttpStatusCode.NotFound)
                 .WithDisplayName("Get User Transactions")
                 .WithName("GetUserTransactions")
@@ -40,8 +49,9 @@ public sealed class GetTransactionsEndpoint : BaseEndpoint
 
     public static async Task<IResult> HandleAsync(
         string userId,
-        GetTransactionsQuery query,
+        GetTransactionsRequest request,
         string userTimeZone,
+        IAccountsService accountsService,
         ITransactionsService transactionsService,
         IPayerPayeesService payerPayeesService,
         CancellationToken cancellationToken = default)
@@ -52,6 +62,8 @@ public sealed class GetTransactionsEndpoint : BaseEndpoint
         if (string.IsNullOrWhiteSpace(userId))
             return Results.BadRequest("User Id is required");
 
+        var query = new GetTransactionsQuery(request);
+
         var result = await transactionsService.QueryAsync(query, cancellationToken);
 
         if (result.IsFailed)
@@ -60,8 +72,6 @@ public sealed class GetTransactionsEndpoint : BaseEndpoint
         if (result.ValueOrDefault is null)
             return Results.NotFound();
 
-        var response = ApiResponse<IEnumerable<TransactionDto>>.Ok(result.Value);
-
-        return Results.Ok(response);
+        return Results.Ok(result.Value);
     }
 }
