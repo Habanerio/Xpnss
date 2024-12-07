@@ -6,11 +6,6 @@ namespace Habanerio.Xpnss.Transactions.Infrastructure.Data;
 
 public class TransactionsDbContext : XpnssDbContext
 {
-    //public TransactionsDbContext(IOptions<MongoDbSettings> options) : base(options)
-    //{
-    //    Configure();
-    //}
-
     public TransactionsDbContext(IMongoDatabase mongoDb) : base(mongoDb)
     {
         Configure();

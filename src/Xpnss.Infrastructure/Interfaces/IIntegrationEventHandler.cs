@@ -20,9 +20,7 @@
 ////    INotificationHandler<TIntegrationEvent>
 ////    where TIntegrationEvent : IIntegrationEvent
 ////{ }
-///
-/// 
-using Habanerio.Xpnss.Infrastructure.IntegrationEvents;
+
 using Habanerio.Xpnss.Infrastructure.Interfaces;
 using MediatR;
 

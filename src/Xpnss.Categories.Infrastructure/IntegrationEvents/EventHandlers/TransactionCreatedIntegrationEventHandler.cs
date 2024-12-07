@@ -1,10 +1,10 @@
-//TODO: Need to know if it's a credit or debit transaction. Don't have that without querying for the account first.
+////TODO: Need to know if it's a credit or debit transaction. Don't have that without querying for the account first.
 
 //using Habanerio.Xpnss.Categories.Domain.Interfaces;
 //using Habanerio.Xpnss.Domain.Types;
 //using Habanerio.Xpnss.Domain.ValueObjects;
-//using Habanerio.Xpnss.Infrastructure.IntegrationEvents;
 //using Habanerio.Xpnss.Infrastructure.IntegrationEvents.Transactions;
+//using Habanerio.Xpnss.MonthlyTotals.Domain.Interfaces;
 //using Microsoft.Extensions.Logging;
 
 //namespace Habanerio.Xpnss.Categories.Infrastructure.IntegrationEvents;
@@ -18,7 +18,7 @@
 ///// <param name="logger"></param>
 //public class TransactionCreatedIntegrationEventHandler(
 //    ICategoriesRepository categoriesRepository,
-//    ICategoryMonthlyTotalsRepository categoryMonthlyTotalsRepository,
+//    IMonthlyTotalsRepository categoryMonthlyTotalsRepository,
 //    ILogger<TransactionCreatedIntegrationEventHandler> logger) :
 //    IIntegrationEventHandler<TransactionCreatedIntegrationEvent>
 //{
@@ -57,7 +57,7 @@
 //        TransactionCreatedIntegrationEvent @event,
 //        CancellationToken cancellationToken = default)
 //    {
-//        var isCreditTransaction = TransactionTypes.DoesBalanceIncrease(account.AccountType, @event.TransactionType);
+//        var isCreditTransaction = TransactionEnums.DoesBalanceIncrease(account.AccountType, @event.TransactionType);
 
 //        var monthlyTotalResult = await _categoryMonthlyTotalsRepository
 //            .GetAsync(

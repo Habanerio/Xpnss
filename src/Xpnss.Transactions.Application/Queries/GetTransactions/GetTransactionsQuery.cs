@@ -1,35 +1,71 @@
-using System.Text.Json.Serialization;
 using FluentResults;
+using FluentValidation;
 using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Application.Requests;
+using Habanerio.Xpnss.Transactions.Application.Mappers;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
+using MediatR;
 
 namespace Habanerio.Xpnss.Transactions.Application.Queries.GetTransactions;
 
-public class GetTransactionsQuery : ITransactionsQuery<Result<IEnumerable<TransactionDto>>>
+public sealed record GetTransactionsQuery(GetTransactionsRequest Request) :
+    ITransactionsQuery<Result<IEnumerable<TransactionDto>>>;
+
+public class GetTransactionsHandler(ITransactionsRepository repository) :
+    IRequestHandler<GetTransactionsQuery, Result<IEnumerable<TransactionDto>>>
 {
-    public string UserId { get; set; }
+    private readonly ITransactionsRepository _repository = repository ??
+        throw new ArgumentNullException(nameof(repository));
 
-    public string AccountId { get; set; }
-
-    public DateTime? FromDate { get; set; }
-
-    public DateTime? ToDate { get; set; }
-
-    public string TimeZone { get; set; }
-
-    [JsonConstructor]
-    public GetTransactionsQuery(string userId, string accountId, DateTime? fromDate, DateTime? toDate, string timeZone = "")
+    public async Task<Result<IEnumerable<TransactionDto>>> Handle(
+        GetTransactionsQuery query,
+        CancellationToken cancellationToken)
     {
-        UserId = userId;
-        AccountId = accountId;
-        FromDate = fromDate;
-        ToDate = toDate;
-        TimeZone = timeZone;
+        var validator = new Validator();
+
+        var validationResult = await validator.ValidateAsync(query, cancellationToken);
+
+        if (!validationResult.IsValid)
+            return Result.Fail(validationResult.Errors[0].ErrorMessage);
+
+        var request = query.Request;
+
+        if (request.FromDate is null
+            || request.FromDate?.Date.ToUniversalTime() > (request.ToDate ?? DateTime.UtcNow))
+            request.FromDate = DateTime.UtcNow.AddDays(-30);
+
+        if (request.ToDate is null
+            || request.ToDate?.Date.ToUniversalTime() > DateTime.UtcNow)
+            request.ToDate = DateTime.UtcNow;
+
+        var docsResult = await _repository.FindAsync(
+            request.UserId,
+            request.AccountId,
+            request.FromDate,
+            request.ToDate,
+            request.TimeZone,
+            cancellationToken);
+
+        if (docsResult.IsFailed)
+            return Result.Fail(docsResult.Errors);
+
+        if (!docsResult.Value.Any())
+            return Result.Ok(Enumerable.Empty<TransactionDto>());
+
+        var dtos = ApplicationMapper.Map(docsResult.Value);
+
+        return Result.Ok(dtos);
     }
 
-    public GetTransactionsQuery(string userId, string accountId)
+    public class Validator : AbstractValidator<GetTransactionsQuery>
     {
-        UserId = userId;
-        AccountId = accountId;
+        public Validator()
+        {
+            RuleFor(x => x.Request.UserId).NotEmpty();
+            RuleFor(x => x.Request.FromDate)
+                .LessThanOrEqualTo(DateTime.UtcNow);
+            RuleFor(x => x.Request.ToDate)
+                .GreaterThanOrEqualTo(x => x.Request.FromDate);
+        }
     }
 }

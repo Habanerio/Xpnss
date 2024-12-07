@@ -1,7 +1,6 @@
 using System.Net;
 using Carter;
 using FluentValidation;
-using Habanerio.Xpnss.Apis.App.AppApis.Models;
 using Habanerio.Xpnss.Application.DTOs;
 using Habanerio.Xpnss.Categories.Application.Commands;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
@@ -24,9 +23,9 @@ public class CreateCategoryEndpoint : BaseEndpoint
                 {
                     return await HandleAsync(userId, command, service, cancellationToken);
                 })
-                .Produces<ApiResponse<CategoryDto>>((int)HttpStatusCode.OK)
-                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
-                .WithDisplayName("NewId Category")
+                .Produces<CategoryDto>((int)HttpStatusCode.OK)
+                .Produces<string>((int)HttpStatusCode.BadRequest)
+                .WithDisplayName("Create New Category")
                 .WithName("CreateCategory")
                 .WithTags("Categories")
                 .WithOpenApi();
@@ -56,9 +55,7 @@ public class CreateCategoryEndpoint : BaseEndpoint
         if (result.IsFailed)
             return BadRequestWithErrors(result.Errors);
 
-        var response = ApiResponse<CategoryDto>.Ok(result.Value);
-
-        return Results.Ok(response);
+        return Results.Ok(result.Value);
     }
 
     public class Validator : AbstractValidator<CreateCategoryCommand>

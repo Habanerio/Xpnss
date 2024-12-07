@@ -8,7 +8,7 @@ using MediatR;
 namespace Habanerio.Xpnss.PayerPayees.Application.Queries.GetPayerPayee;
 
 public class GetPayerPayeeQueryHandler(IPayerPayeesRepository repository) :
-    IRequestHandler<GetPayerPayeeQuery, Result<PayerPayeeDto>>
+    IRequestHandler<GetPayerPayeeQuery, Result<PayerPayeeDto?>>
 {
     private readonly IPayerPayeesRepository _repository = repository ??
         throw new ArgumentNullException(nameof(repository));
@@ -29,12 +29,12 @@ public class GetPayerPayeeQueryHandler(IPayerPayeesRepository repository) :
         if (result.ValueOrDefault is null)
             return Result.Ok<PayerPayeeDto?>(default);
 
-        var dto = ApplicationMapper.Map(result.Value);
+        var payerPayeeDto = ApplicationMapper.Map(result.Value);
 
-        if (dto is null)
-            return Result.Fail("Failed to map PayerPayeeDocument to PayerPayeeDto");
+        if (payerPayeeDto is null)
+            throw new InvalidCastException("Failed to map PayerPayeeDocument to PayerPayeeDto");
 
-        return Result.Ok<PayerPayeeDto?>(dto);
+        return Result.Ok<PayerPayeeDto?>(payerPayeeDto);
     }
 
     public class Validator : AbstractValidator<GetPayerPayeeQuery>

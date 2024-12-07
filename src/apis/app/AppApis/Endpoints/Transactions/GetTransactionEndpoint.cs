@@ -1,6 +1,5 @@
 using System.Net;
 using Carter;
-using Habanerio.Xpnss.Apis.App.AppApis.Models;
 using Habanerio.Xpnss.Application.DTOs;
 using Habanerio.Xpnss.PayerPayees.Domain.Interfaces;
 using Habanerio.Xpnss.Transactions.Application.Queries.GetTransaction;
@@ -28,8 +27,8 @@ public sealed class GetTransactionEndpoint : BaseEndpoint
 
                         return await HandleAsync(userId, transactionId, userTimeZone, transactionsService, payerPayeesService, cancellationToken);
                     })
-                .Produces<ApiResponse<IEnumerable<TransactionDto>>>((int)HttpStatusCode.OK)
-                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
+                .Produces<IEnumerable<TransactionDto>>((int)HttpStatusCode.OK)
+                .Produces<string>((int)HttpStatusCode.BadRequest)
                 .Produces((int)HttpStatusCode.NotFound)
                 .WithDisplayName("Get User Transaction")
                 .WithName("GetUserTransaction")
@@ -62,8 +61,6 @@ public sealed class GetTransactionEndpoint : BaseEndpoint
         if (result.ValueOrDefault is null)
             return Results.NotFound();
 
-        var response = ApiResponse<TransactionDto>.Ok(result.Value);
-
-        return Results.Ok(response);
+        return Results.Ok(result.Value);
     }
 }

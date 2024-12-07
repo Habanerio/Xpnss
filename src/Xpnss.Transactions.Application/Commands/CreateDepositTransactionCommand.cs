@@ -3,7 +3,6 @@ using FluentValidation;
 using Habanerio.Xpnss.Application.DTOs;
 using Habanerio.Xpnss.Application.Requests;
 using Habanerio.Xpnss.Domain.ValueObjects;
-using Habanerio.Xpnss.Infrastructure.IntegrationEvents.Transactions;
 using Habanerio.Xpnss.Transactions.Application.Mappers;
 using Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
@@ -11,21 +10,20 @@ using MediatR;
 
 namespace Habanerio.Xpnss.Transactions.Application.Commands;
 
-public sealed record CreateDepositTransactionCommand(
-    string UserId,
-    CreateDepositTransactionRequest Request) :
+public sealed record CreateDepositTransactionCommand(CreateDepositTransactionRequest Request) :
     ITransactionsCommand<Result<DepositTransactionDto>>;
 
+/// <summary>
+/// Handles the creation of a Deposit transaction
+/// </summary>
+/// <param name="repository"></param>
 public sealed class CreateDepositTransactionCommandHandler(
-    ITransactionsRepository repository,
-    IMediator mediator) : IRequestHandler<CreateDepositTransactionCommand,
+    ITransactionsRepository repository) :
+    IRequestHandler<CreateDepositTransactionCommand,
     Result<DepositTransactionDto>>
 {
     private readonly ITransactionsRepository _repository = repository ??
         throw new ArgumentNullException(nameof(repository));
-
-    private readonly IMediator _mediator = mediator ??
-        throw new ArgumentNullException(nameof(mediator));
 
     public async Task<Result<DepositTransactionDto>> Handle(
         CreateDepositTransactionCommand command,
@@ -41,7 +39,7 @@ public sealed class CreateDepositTransactionCommandHandler(
         var transactionRequest = command.Request;
 
         var transactionDoc = DepositTransaction.New(
-            new UserId(command.UserId),
+            new UserId(transactionRequest.UserId),
             new AccountId(transactionRequest.AccountId),
             new Money(transactionRequest.TotalAmount),
             transactionRequest.Description,
@@ -51,26 +49,11 @@ public sealed class CreateDepositTransactionCommandHandler(
 
         var result = await _repository.AddAsync(transactionDoc, cancellationToken);
 
-        if (result.IsFailed)
+        if (result.IsFailed || result.ValueOrDefault is null)
             return Result.Fail(result.Errors?[0].Message ?? "Could not save the Deposit Transaction");
 
-        var transaction = result.Value;
-
         if (ApplicationMapper.Map(result.Value) is not DepositTransactionDto depositTransactionDto)
-            return Result.Fail("Failed to map DepositTransaction to DepositTransactionDto");
-
-        var transactionCreatedIntegrationEvent = new TransactionCreatedIntegrationEvent(
-            depositTransactionDto.Id,
-            depositTransactionDto.UserId,
-            depositTransactionDto.AccountId,
-            string.Empty,
-            depositTransactionDto.PayerPayeeId,
-            transaction.TransactionType,
-            depositTransactionDto.TotalAmount,
-            // Use transactionRequest.TransactionDate and not transaction.TransactionDate (as it's Utc) ??
-            transactionRequest.TransactionDate);
-
-        await _mediator.Publish(transactionCreatedIntegrationEvent, cancellationToken);
+            throw new InvalidCastException("Failed to map DepositTransaction to DepositTransactionDto");
 
         return depositTransactionDto;
     }
@@ -79,7 +62,7 @@ public sealed class CreateDepositTransactionCommandHandler(
     {
         public Validator()
         {
-            RuleFor(x => x.UserId).NotEmpty();
+            RuleFor(x => x.Request.UserId).NotEmpty();
             RuleFor(x => x.Request.AccountId).NotEmpty();
             RuleFor(x => x.Request.TransactionDate).NotEmpty();
             RuleFor(x => x.Request.TransactionType).NotNull();

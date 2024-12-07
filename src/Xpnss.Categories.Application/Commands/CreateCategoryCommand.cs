@@ -91,6 +91,7 @@ public class CreateCategoryCommandHandler(
 
         // Make sure that all Categories for this user are in order with no gaps
         var newSortOrder = 1;
+
         foreach (var allCategory in allCategories)
         {
             allCategory.SortOrder = newSortOrder;
@@ -104,7 +105,7 @@ public class CreateCategoryCommandHandler(
             c.Id.Equals(result.Value.Id)));
 
         if (categoryDto is null)
-            return Result.Fail("Failed to map CategoryDocument to CategoryDto");
+            throw new InvalidCastException("Failed to map CategoryDocument to CategoryDto");
 
         return categoryDto;
     }

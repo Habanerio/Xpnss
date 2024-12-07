@@ -14,7 +14,7 @@ public class GetAccountQueryHandler(IAccountsRepository repository) :
     IRequestHandler<GetAccountQuery, Result<AccountDto>>
 {
     private readonly IAccountsRepository _repository = repository ??
-                                                       throw new ArgumentNullException(nameof(repository));
+        throw new ArgumentNullException(nameof(repository));
 
     public async Task<Result<AccountDto>> Handle(GetAccountQuery query, CancellationToken cancellationToken)
     {
@@ -33,7 +33,7 @@ public class GetAccountQueryHandler(IAccountsRepository repository) :
         var dto = ApplicationMapper.Map(docResult.Value);
 
         if (dto is null)
-            return Result.Fail("Failed to map AccountDocument to AccountDto");
+            throw new InvalidCastException("Failed to map AccountDocument to AccountDto");
 
         return Result.Ok(dto);
     }

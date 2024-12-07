@@ -15,7 +15,7 @@ public sealed record TransactionUpdatedIntegrationEvent : IntegrationEvent
 
     public string TransactionId { get; }
 
-    public TransactionTypes.Keys TransactionType { get; }
+    public TransactionEnums.TransactionKeys TransactionType { get; }
 
     public decimal NewAmount { get; }
 
@@ -32,7 +32,7 @@ public sealed record TransactionUpdatedIntegrationEvent : IntegrationEvent
         string userId,
         string accountId,
         string payerPayeeId,
-        TransactionTypes.Keys transactionType,
+        TransactionEnums.TransactionKeys transactionType,
         decimal oldAMount,
         decimal newAmount,
         DateTime dateOfTransaction)

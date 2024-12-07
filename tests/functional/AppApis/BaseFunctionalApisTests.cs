@@ -16,7 +16,7 @@ using MongoDB.Driver;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis;
 
-public class BaseFunctionalApisTests
+public class BaseFunctionalApisTests : IDisposable
 {
     protected const string API_VERSION = "v1";
 
@@ -39,11 +39,11 @@ public class BaseFunctionalApisTests
     protected const string ENDPOINTS_CATEGORIES_GET_CATEGORY = "/api/v1/users/{userId}/categories/{categoryId}";
     protected const string ENDPOINTS_CATEGORIES_GET_CATEGORIES = "/api/v1/users/{userId}/categories";
 
-    protected const string ENDPOINTS_SETUP_SETUP = "/api/v1/setup";
+    protected const string ENDPOINTS_REGISTER = "/api/v1/register";
 
-    protected const string ENDPOINTS_TRANSACTIONS_CREATE_PURCHASE_TRANSACTION = "/api/v1/users/{userId}/transactions/purchase";
-
-    protected const string ENDPOINTS_TRANSACTIONS_CREATE_DEPOSIT_TRANSACTION = "/api/v1/users/{userId}/transactions/deposit";
+    protected const string ENDPOINTS_TRANSACTIONS_CREATE_TRANSACTION = "/api/v1/users/{userId}/transactions";
+    protected const string ENDPOINTS_TRANSACTIONS_GET_TRANSACTION = "";
+    protected const string ENDPOINTS_TRANSACTIONS_GET_TRANSACTIONS = "/api/v1/users/{userId}/transactions/search";
 
     protected const string ENDPOINTS_USER_PROFILES_GET_USER_PROFILE = "/api/v1/users/{userId}";
 
@@ -55,6 +55,9 @@ public class BaseFunctionalApisTests
     protected readonly UserProfilesRepository UserProfileDocumentsRepository;
 
     protected readonly JsonSerializerOptions JsonSerializationOptions = new() { PropertyNameCaseInsensitive = true };
+
+    private IMongoClient _mongoClient;
+    private IMongoDatabase _mongoDb;
 
     protected static Random RandomGenerator => new();
 
@@ -70,18 +73,18 @@ public class BaseFunctionalApisTests
         Config.GetSection("XpnssMongoDBSettings").Bind(mongoDbSettings);
         var options = Options.Create(mongoDbSettings);
 
-        var mongoClient = new MongoClient(options.Value.ConnectionString);
-        var mongoDb = mongoClient.GetDatabase(options.Value.DatabaseName);
+        _mongoClient = new MongoClient(options.Value.ConnectionString);
+        _mongoDb = _mongoClient.GetDatabase(options.Value.DatabaseName);
 
         var monthlyTotalsLogger = new LoggerFactory().CreateLogger<MonthlyTotalsRepository>();
         var userProfilesRepositoryLogger = new LoggerFactory().CreateLogger<UserProfilesRepository>();
 
-        AccountDocumentsRepository = new AccountsRepository(mongoDb);
-        CategoryDocumentsRepository = new CategoriesRepository(mongoDb);
-        MonthlyTotalDocumentsRepository = new MonthlyTotalsRepository(mongoDb, monthlyTotalsLogger);
-        PayerPayeeDocumentsRepository = new PayerPayeesRepository(mongoDb);
-        TransactionDocumentsRepository = new TransactionsRepository(mongoDb);
-        UserProfileDocumentsRepository = new UserProfilesRepository(mongoDb, userProfilesRepositoryLogger);
+        AccountDocumentsRepository = new AccountsRepository(_mongoDb);
+        CategoryDocumentsRepository = new CategoriesRepository(_mongoDb);
+        MonthlyTotalDocumentsRepository = new MonthlyTotalsRepository(_mongoDb, monthlyTotalsLogger);
+        PayerPayeeDocumentsRepository = new PayerPayeesRepository(_mongoDb);
+        TransactionDocumentsRepository = new TransactionsRepository(_mongoDb);
+        UserProfileDocumentsRepository = new UserProfilesRepository(_mongoDb, userProfilesRepositoryLogger);
 
         //TODO: Add Api Key
         //Config = AppConfigSettingsManager.GetConfigs();
@@ -109,8 +112,14 @@ public class BaseFunctionalApisTests
 
     protected async Task<ObjectId> GetTestUserObjectIdAsync()
     {
-        var user = await UserProfileDocumentsRepository.FirstOrDefaultDocumentAsync(u => u.Email.Equals(TEST_USER_EMAIL));
+        var user = await UserProfileDocumentsRepository
+            .FirstOrDefaultDocumentAsync(u => u.Email.Equals(TEST_USER_EMAIL));
 
         return user?.Id ?? ObjectId.Empty;
+    }
+
+    public void Dispose()
+    {
+        _mongoClient.Dispose();
     }
 }

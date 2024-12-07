@@ -1,28 +1,55 @@
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using Habanerio.Xpnss.Domain.Types;
 
 namespace Habanerio.Xpnss.Application.Requests;
 
-public abstract record CreateTransactionRequest
+public record CreateTransactionRequest
 {
-    public string UserId { get; init; } = string.Empty;
+    private DateTime _transactionDate;
 
-    public string AccountId { get; init; } = string.Empty;
+    [Required]
+    public string UserId { get; set; } = string.Empty;
 
-    public string Description { get; init; } = string.Empty;
+    [Required]
+    public string AccountId { get; set; } = string.Empty;
 
-    public bool IsCredit { get; init; } = false;
+    public string Description { get; set; } = string.Empty;
 
-    public PayerPayeeRequest PayerPayee { get; init; } = new();
+    public string ExtTransactionId { get; set; } = "";
 
-    public List<string> Tags { get; init; } = new();
+    public bool? IsCredit { get; set; } = false;
 
-    public virtual decimal TotalAmount { get; init; }
+    public PayerPayeeRequest PayerPayee { get; set; } = new();
 
-    public DateTime TransactionDate { get; init; }
+    public List<string> Tags { get; set; } = [];
 
-    public TransactionTypes.Keys TransactionType { get; private set; }
+    [Required]
+    public virtual decimal TotalAmount { get; set; }
 
-    protected CreateTransactionRequest(bool isCredit, TransactionTypes.Keys transactionType)
+    public DateTime TransactionDate
+    {
+        get
+        {
+            return _transactionDate.Date;
+        }
+        set
+        {
+            _transactionDate = value.Date;
+        }
+    }
+
+    [Required]
+    [JsonPropertyName("TransactionType")]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public TransactionEnums.TransactionKeys TransactionType { get; set; }
+
+
+
+    [JsonConstructor]
+    public CreateTransactionRequest() { }
+
+    protected CreateTransactionRequest(bool? isCredit, TransactionEnums.TransactionKeys transactionType)
     {
         IsCredit = isCredit;
         TransactionType = transactionType;
@@ -34,46 +61,56 @@ public abstract record CreateTransactionRequest
 public abstract record CreateCreditTransactionRequest :
     CreateTransactionRequest
 {
-    protected CreateCreditTransactionRequest(TransactionTypes.Keys transactionType) :
+    protected CreateCreditTransactionRequest(TransactionEnums.TransactionKeys transactionType) :
         base(true, transactionType)
     { }
 }
 
 /// <summary>
-/// Represents when the user deposits money into their account from an external source (eg: Income, Gift, etc)
+/// Represents when the user deposits money into their account from an external source
+/// (eg: Income, Gift, etc)
 /// </summary>
-public sealed record CreateDepositTransactionRequest() :
-    CreateCreditTransactionRequest(TransactionTypes.Keys.DEPOSIT)
+public sealed record CreateDepositTransactionRequest :
+    CreateCreditTransactionRequest
 {
+    [JsonConstructor]
+    public CreateDepositTransactionRequest() :
+        base(TransactionEnums.TransactionKeys.DEPOSIT)
+    { }
 
-}
-
-
-public sealed record CreatePaymentTransactionRequest() :
-    CreateDebitTransactionRequest(TransactionTypes.Keys.PAYMENT)
-{
-
+    public CreateDepositTransactionRequest(
+        string accountId,
+        decimal amount,
+        string description,
+        DateTime transactionDate,
+        List<string>? tags = null,
+        string extTransactionId = "") :
+        base(TransactionEnums.TransactionKeys.DEPOSIT)
+    {
+        AccountId = accountId;
+        TotalAmount = amount;
+        Description = description;
+        ExtTransactionId = extTransactionId;
+        Tags = tags ?? [];
+        TransactionDate = transactionDate;
+    }
 }
 
 /// <summary>
 /// For refunds where there is no purchase transaction to refund against
 /// </summary>
-public sealed record CreateRefundTransactionRequest() :
-    CreateCreditTransactionRequest(TransactionTypes.Keys.REFUND)
-{
-    public string CategoryId { get; init; } = "";
-}
+public sealed record CreateRefundTransactionRequest(string CategoryId) :
+    CreateCreditTransactionRequest(TransactionEnums.TransactionKeys.REFUND_REIMBURSEMENT)
+{ }
 
 /// <summary>
 /// For refunds where there is a purchase transaction to refund against
 /// </summary>
-public sealed record CreateRefundPurchaseTransactionRequest() :
-    CreateCreditTransactionRequest(TransactionTypes.Keys.REFUND)
-{
-    public string PurchaseTransactionId { get; init; } = "";
-
-    public List<PurchaseTransactionItemRequest> Items { get; init; } = [];
-}
+public sealed record CreateRefundPurchaseTransactionRequest(
+    string PurchaseTransactionId,
+    List<PurchaseTransactionItemRequest> Items) :
+    CreateCreditTransactionRequest(TransactionEnums.TransactionKeys.REFUND_REIMBURSEMENT)
+{ }
 
 #endregion // Credit Transactions
 
@@ -82,84 +119,85 @@ public sealed record CreateRefundPurchaseTransactionRequest() :
 public abstract record CreateDebitTransactionRequest :
     CreateTransactionRequest
 {
-    protected CreateDebitTransactionRequest(TransactionTypes.Keys transactionType) :
+    protected CreateDebitTransactionRequest(TransactionEnums.TransactionKeys transactionType) :
         base(false, transactionType)
     { }
 }
 
-public sealed record CreatePurchaseTransactionRequest() :
-    CreateDebitTransactionRequest(TransactionTypes.Keys.PURCHASE)
+public sealed record CreatePurchaseTransactionRequest :
+    CreateDebitTransactionRequest
 {
-    public bool IsPaid => PaidDate.HasValue;
-
-    public List<PurchaseTransactionItemRequest> Items { get; init; } = [];
-
-    public DateTime? PaidDate { get; init; }
-
-    /// <summary>
-    /// The Id of the underlying account that the purchase was made with.
-    /// </summary>
-    public string PaidWithAccountId { get; set; } = "";
+    public List<PurchaseTransactionItemRequest> Items { get; set; } = [];
 
     public override decimal TotalAmount => Items.Sum(i => i.Amount);
 
-    public decimal TotalOwing => TotalAmount - TotalPaid;
+    [JsonConstructor]
+    public CreatePurchaseTransactionRequest() :
+        base(TransactionEnums.TransactionKeys.PURCHASE)
+    { }
 
-    public decimal TotalPaid { get; init; }
+    public CreatePurchaseTransactionRequest(
+        string accountId,
+        PayerPayeeRequest payee,
+        string description,
+        DateTime transactionDate,
+        List<PurchaseTransactionItemRequest> items,
+        List<string>? tags = null,
+        string extTransactionId = "") :
+        base(TransactionEnums.TransactionKeys.PURCHASE)
+    {
+        AccountId = accountId;
+        PayerPayee = payee;
+        Description = description;
+        TransactionDate = transactionDate;
+        Items = items;
+        Tags = tags ?? [];
+        ExtTransactionId = extTransactionId;
+    }
 }
 
 /// <summary>
 /// Usually for when then money is taken out as Cash
 /// </summary>
-public sealed record CreateWithdrawalTransactionRequest() : CreateDebitTransactionRequest(TransactionTypes.Keys.WITHDRAWAL)
+public sealed record CreateWithdrawalTransactionRequest :
+    CreateDebitTransactionRequest
 {
-    /// <summary>
-    /// The Id of the underlying account that the withdrawal was made FROM.
-    /// </summary>
-    public string WithdrewFromAccountId { get; set; } = "";
+    [JsonConstructor]
+    public CreateWithdrawalTransactionRequest() :
+        base(TransactionEnums.TransactionKeys.WITHDRAWAL)
+    { }
 
-    /// <summary>
-    /// The Id of the underlying account that the withdrawal was made TO.
-    /// </summary>
-    public string WithdrewToAccountId { get; set; } = "";
+    public CreateWithdrawalTransactionRequest(
+        string accountId,
+        decimal amount,
+        PayerPayeeRequest payee,
+        string description,
+        DateTime transactionDate,
+        List<string>? tags = null,
+        string extTransactionId = "") :
+        base(TransactionEnums.TransactionKeys.WITHDRAWAL)
+    {
+        AccountId = accountId;
+        TotalAmount = amount;
+        Description = description;
+        ExtTransactionId = extTransactionId;
+        PayerPayee = payee;
+        Tags = tags ?? [];
+        TransactionDate = transactionDate;
+        TransactionType = TransactionEnums.TransactionKeys.WITHDRAWAL;
+    }
 }
 
 #endregion // Debit Transactions
 
-/// <summary>
-/// For when the balance transfer has a cost to it, such as transferring the balance from one account to another
-/// </summary>
-public sealed record CreateBalanceTransferRequest() :
-    CreateTransactionRequest(true, TransactionTypes.Keys.BALANCE_TRANSFER)
-{
-    public string FromAccountId { get; init; } = "";
-
-    public string ToAccountId { get; init; } = "";
-
-    public decimal TransferFee { get; init; }
-
-    public decimal TransferInterestRate { get; init; }
-
-    public DateTime TransferToDate { get; init; } = DateTime.MaxValue;
-}
-
-/// <summary>
-/// For when the Account makes a payment to another account such as Checking to Savings
-/// </summary>
-public sealed record CreateTransferTransactionRequest() :
-    CreateCreditTransactionRequest(TransactionTypes.Keys.TRANSFER)
-{
-    public string FromAccountId { get; set; } = "";
-
-    public string ToAccountId { get; set; } = "";
-}
-
-
+// 
 public sealed record PurchaseTransactionItemRequest
 {
-    public string CategoryId { get; init; } = "";
+    public decimal Amount { get; set; }
 
-    public string Description { get; init; } = "";
+    public string CategoryId { get; set; } = "";
 
-    public decimal Amount { get; init; }
+    public string SubCategoryId { get; set; } = "";
+
+    public string Description { get; set; } = "";
 }

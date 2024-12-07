@@ -4,10 +4,10 @@ namespace Habanerio.Xpnss.Domain.ValueObjects;
 
 public record SubCategoryId : CategoryId
 {
-    public SubCategoryId(ObjectId id) : base(id)
+    public SubCategoryId(ObjectId? id) : base(id)
     { }
 
-    public SubCategoryId(string id) : base(id)
+    public SubCategoryId(string? id) : base(id)
     { }
 
     public new static SubCategoryId New => new(ObjectId.GenerateNewId());

@@ -1,45 +1,73 @@
+using System.Text.Json.Serialization;
+using Habanerio.Xpnss.Domain.Types;
+
 namespace Habanerio.Xpnss.Application.DTOs;
 
 public sealed record AccountDto
 {
+    #region - Common Properties -
+
     public string Id { get; set; }
 
     public string UserId { get; set; }
 
-    public string AccountType { get; set; }
+    public AccountEnums.AccountKeys AccountType { get; set; } =
+        AccountEnums.AccountKeys.UNKNOWN;
+
+    public BankAccountEnums.BankAccountKeys BankAccountType { get; set; } =
+        BankAccountEnums.BankAccountKeys.NA;
+
+    public LoanAccountEnums.LoanAccountKeys LoanAccountType { get; set; } =
+        LoanAccountEnums.LoanAccountKeys.NA;
 
     public string Name { get; set; }
 
     public decimal Balance { get; set; }
 
-    public decimal CreditLimit { get; set; }
+    public DateTime? ClosedDate { get; set; }
 
-    public string Description { get; set; }
+    public string Description { get; set; } = "";
 
-    public string DisplayColor { get; set; }
-
-    public decimal InterestRate { get; set; }
+    public string DisplayColor { get; set; } = "";
 
     public bool IsCredit { get; set; }
 
-    public bool IsClosed => DateClosed.HasValue;
+    #endregion
+
+    #region - Bank Account Properties -
+
+    public string ExtAcctId { get; set; } = "";
+
+    public string InstitutionName { get; set; } = "";
+
+    #endregion
+
+
+    public decimal CreditLimit { get; set; }
+
+    public decimal InterestRate { get; set; }
+
+    public decimal OverdraftLimit { get; set; }
+
+
+    public bool IsClosed => ClosedDate.HasValue;
 
     public bool IsDeleted => DateDeleted.HasValue;
 
+    public bool IsOverLimit { get; set; }
+
+
     public IEnumerable<MonthlyTotalDto> MonthlyTotals { get; set; } = [];
 
-    public decimal OverdraftAmount { get; set; }
 
     public DateTime DateCreated { get; set; }
 
     public DateTime? DateUpdated { get; set; }
 
-    public DateTime? DateClosed { get; set; }
-
     public DateTime? DateDeleted { get; set; }
 
-    // Needed for deserialization in the API.
-    //public AccountDto() { }
+    [JsonConstructor]
+    public AccountDto() { }
 }
 
 public sealed record AccountItemDto
@@ -63,7 +91,7 @@ public sealed record AccountItemDto
 public sealed record CashAccountDto : AccountDto
 {
     [JsonConstructor]
-    public CashAccountDto() : base(AccountTypes.Keys.Cash, false) { }
+    public CashAccountDto() : base(AccountEnums.CurrencyKeys.Cash, false) { }
 
     public CashAccountDto(
         string id,
@@ -75,7 +103,7 @@ public sealed record CashAccountDto : AccountDto
         DateTime dateCreated,
         DateTime? dateUpdated = null,
         DateTime? dateDeleted = null) :
-        base(id, userId, AccountTypes.Keys.Cash, name, description, balance, displayColor, false, dateCreated, dateUpdated, dateDeleted)
+        base(id, userId, AccountEnums.CurrencyKeys.Cash, name, description, balance, displayColor, false, dateCreated, dateUpdated, dateDeleted)
     { }
 
     public static CashAccountDto NewId(
@@ -96,12 +124,12 @@ public sealed record CashAccountDto : AccountDto
 public sealed record CheckingAccountDto :
     AccountDto//, IHasOverdraftAmount
 {
-    public decimal OverdraftAmount { get; set; }
+    public decimal OverdraftLimit { get; set; }
 
     //public bool IsOverdrafted { get; set; }
 
     [JsonConstructor]
-    public CheckingAccountDto() : base(AccountTypes.Keys.Checking, false) { }
+    public CheckingAccountDto() : base(AccountEnums.CurrencyKeys.Checking, false) { }
 
     public CheckingAccountDto(
         string id,
@@ -114,9 +142,9 @@ public sealed record CheckingAccountDto :
         DateTime dateCreated,
         DateTime? dateUpdated = null,
         DateTime? dateDeleted = null) :
-        base(id, userId, AccountTypes.Keys.Checking, name, description, balance, displayColor, false, dateCreated, dateUpdated, dateDeleted)
+        base(id, userId, AccountEnums.CurrencyKeys.Checking, name, description, balance, displayColor, false, dateCreated, dateUpdated, dateDeleted)
     {
-        OverdraftAmount = overDraftAmount;
+        OverdraftLimit = overDraftAmount;
     }
 
     public static CheckingAccountDto NewId(
@@ -131,7 +159,7 @@ public sealed record CheckingAccountDto :
 
         NewId(accountDto, userId, name, description, balance, displayColor);
 
-        accountDto.OverdraftAmount = overDraftAmount;
+        accountDto.OverdraftLimit = overDraftAmount;
 
         return accountDto;
     }
@@ -142,7 +170,7 @@ public sealed record SavingsAccountDto : AccountDto//, IHasInterestRate
     public decimal InterestRate { get; set; }
 
     [JsonConstructor]
-    public SavingsAccountDto() : base(AccountTypes.Keys.Savings, false) { }
+    public SavingsAccountDto() : base(AccountEnums.CurrencyKeys.Savings, false) { }
 
     public SavingsAccountDto(
         string id,
@@ -155,7 +183,7 @@ public sealed record SavingsAccountDto : AccountDto//, IHasInterestRate
         DateTime dateCreated,
         DateTime? dateUpdated = null,
         DateTime? dateDeleted = null) :
-        base(id, userId, AccountTypes.Keys.Savings, name, description, balance, displayColor, false, dateCreated, dateUpdated, dateDeleted)
+        base(id, userId, AccountEnums.CurrencyKeys.Savings, name, description, balance, displayColor, false, dateCreated, dateUpdated, dateDeleted)
     {
         InterestRate = interestRate;
     }
@@ -184,12 +212,12 @@ public abstract record CreditAccountDto : AccountDto//, IHasCreditLimit, IHasInt
 
     public decimal InterestRate { get; set; }
 
-    protected CreditAccountDto(AccountTypes.Keys accountTypes) : base(accountTypes, true) { }
+    protected CreditAccountDto(AccountEnums accountTypes) : base(accountTypes, true) { }
 
     protected CreditAccountDto(
         string id,
         string userId,
-        AccountTypes accountTypes,
+        AccountEnums accountTypes,
         string name,
         string description,
         decimal balance,
@@ -227,7 +255,7 @@ public abstract record CreditAccountDto : AccountDto//, IHasCreditLimit, IHasInt
 public record CreditCardAccountDto : CreditAccountDto
 {
     [JsonConstructor]
-    public CreditCardAccountDto() : base(AccountTypes.CreditCard) { }
+    public CreditCardAccountDto() : base(AccountEnums.CurrencyKeys.CreditCard) { }
 
     public CreditCardAccountDto(string id,
         string userId,
@@ -240,7 +268,7 @@ public record CreditCardAccountDto : CreditAccountDto
         DateTime dateCreated,
         DateTime? dateUpdated = null,
         DateTime? dateDeleted = null) :
-        base(id, userId, AccountTypes.CreditCard, name, description, balance, creditLimit, interestRate, displayColor, dateCreated, dateUpdated, dateDeleted)
+        base(id, userId, AccountEnums.CurrencyKeys.CreditCard, name, description, balance, creditLimit, interestRate, displayColor, dateCreated, dateUpdated, dateDeleted)
     { }
 
     public static CreditCardAccountDto NewId(
@@ -263,7 +291,7 @@ public record CreditCardAccountDto : CreditAccountDto
 public record LineOfCreditAccountDto : CreditAccountDto
 {
     [JsonConstructor]
-    public LineOfCreditAccountDto() : base(AccountTypes.LineOfCredit) { }
+    public LineOfCreditAccountDto() : base(AccountEnums.CurrencyKeys.LineOfCredit) { }
 
     public LineOfCreditAccountDto(
         string id,
@@ -277,7 +305,7 @@ public record LineOfCreditAccountDto : CreditAccountDto
         DateTime dateCreated,
         DateTime? dateUpdated = null,
         DateTime? dateDeleted = null) :
-        base(id, userId, AccountTypes.LineOfCredit, name, description, balance, creditLimit, interestRate, displayColor, dateCreated, dateUpdated, dateDeleted)
+        base(id, userId, AccountEnums.CurrencyKeys.LineOfCredit, name, description, balance, creditLimit, interestRate, displayColor, dateCreated, dateUpdated, dateDeleted)
     { }
 
     public static LineOfCreditAccountDto NewId(

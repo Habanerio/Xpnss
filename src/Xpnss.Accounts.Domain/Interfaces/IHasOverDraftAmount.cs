@@ -10,7 +10,7 @@ public interface IHasOverdraftAmount
     /// <summary>
     /// The overdraft creditLimit.
     /// </summary>
-    Money OverdraftAmount { get; }
+    Money OverdraftLimit { get; }
 
     /// <summary>
     /// Indicates if the Account is over the overdraft limit.

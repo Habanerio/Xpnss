@@ -18,8 +18,6 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var userId = "0daaed002341a792c1d85f57";
-
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Logging.ClearProviders();

@@ -8,7 +8,7 @@ namespace Habanerio.Xpnss.Tests.Functional.AppApis.Transactions;
 public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> factory) :
     CreateTransactionBaseApiTests(factory)
 {
-    private const TransactionTypes.Keys TRANSACTION_TYPE = TransactionTypes.Keys.DEPOSIT;
+    private const TransactionEnums.TransactionKeys TRANSACTION_TYPE = TransactionEnums.TransactionKeys.DEPOSIT;
 
     /// <summary>
     /// Tests that a Transaction can be created with an existing PayerPayee
@@ -87,7 +87,7 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
         var existingAccount = await AccountDocumentsRepository
             .FirstOrDefaultDocumentAsync(a =>
                 a.UserId == testUserId &&
-                (AccountTypes.CreditAccountTypes.Contains(a.AccountType)));
+                a.AccountType == AccountEnums.AccountKeys.CREDITCARD);
 
         if (existingAccount is null)
             Assert.Fail("Need to add accounts before running this test");
@@ -145,7 +145,7 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
         var existingAccount = await AccountDocumentsRepository
             .FirstOrDefaultDocumentAsync(a =>
                 a.UserId == testUserId &&
-                (AccountTypes.DebitAccountTypes.Contains(a.AccountType)));
+                a.AccountType == AccountEnums.AccountKeys.CASH);
 
         if (existingAccount is null)
             Assert.Fail("Need to add accounts before running this test");
@@ -306,7 +306,7 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
     //    Assert.NotNull(actualTransactionDto);
     //    Assert.True(!actualTransactionDto.Id.Equals(ObjectId.Empty.ToString()));
     //    Assert.Equal(createTransactionRequest.UserId, actualTransactionDto.UserId);
-    //    Assert.Equal(createTransactionRequest.AccountId, actualTransactionDto.AccountId);
+    //    Assert.Equal(createTransactionRequest.ExtAcctId, actualTransactionDto.ExtAcctId);
     //    Assert.Equal(createTransactionRequest.TransactionDate.Date, actualTransactionDto.TransactionDate.Date);
     //    Assert.Equal(TRANSACTION_TYPE.ToString(), actualTransactionDto.TransactionType);
 
@@ -339,24 +339,24 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
 
 
     //    //// DEPOSIT + CREDIT CARD = Balance (owed) Decreases (GOOD Thing)
-    //    //if (TransactionTypes.IsCreditTransaction(TRANSACTION_TYPE) && AccountTypes.IsCreditAccount(existingAccountDoc.AccountType))
+    //    //if (TransactionEnums.IsCreditTransaction(TRANSACTION_TYPE) && AccountEnums.CurrencyKeys.IsCreditAccount(existingAccountDoc.AccountType))
     //    //    Assert.Equal(previousAccountBalance - createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
 
     //    //// PURCHASE + CHECKING = Balance Decreases (BAD Thing)
-    //    //if (!TransactionTypes.IsCreditTransaction(TRANSACTION_TYPE) && !AccountTypes.IsCreditAccount(existingAccountDoc.AccountType))
+    //    //if (!TransactionEnums.IsCreditTransaction(TRANSACTION_TYPE) && !AccountEnums.CurrencyKeys.IsCreditAccount(existingAccountDoc.AccountType))
     //    //    Assert.Equal(previousAccountBalance - createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
 
 
     //    //// PURCHASE + CREDIT CARD = Balance (owed) Increases (BAD Thing)
-    //    //if (!TransactionTypes.IsCreditTransaction(TRANSACTION_TYPE) && AccountTypes.IsCreditAccount(existingAccountDoc.AccountType))
+    //    //if (!TransactionEnums.IsCreditTransaction(TRANSACTION_TYPE) && AccountEnums.CurrencyKeys.IsCreditAccount(existingAccountDoc.AccountType))
     //    //    Assert.Equal(previousAccountBalance + createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
 
     //    //// DEPOSIT + CHECKING = Balance Increases (GOOD Thing)
-    //    //if (TransactionTypes.IsCreditTransaction(TRANSACTION_TYPE) && !AccountTypes.IsCreditAccount(existingAccountDoc.AccountType))
+    //    //if (TransactionEnums.IsCreditTransaction(TRANSACTION_TYPE) && !AccountEnums.CurrencyKeys.IsCreditAccount(existingAccountDoc.AccountType))
     //    //    Assert.Equal(previousAccountBalance + createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
 
 
-    //    var doesBalanceIncrease = TransactionTypes.DoesBalanceIncrease(existingAccountDoc.AccountType, TRANSACTION_TYPE);
+    //    var doesBalanceIncrease = TransactionEnums.DoesBalanceIncrease(existingAccountDoc.AccountType, TRANSACTION_TYPE);
 
     //    if (doesBalanceIncrease)
     //        Assert.Equal(previousAccountBalance + createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);

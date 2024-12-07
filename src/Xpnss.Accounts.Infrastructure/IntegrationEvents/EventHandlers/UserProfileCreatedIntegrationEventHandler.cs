@@ -1,4 +1,5 @@
 using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts;
+using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts.CashAccounts;
 using Habanerio.Xpnss.Accounts.Domain.Interfaces;
 using Habanerio.Xpnss.Domain.ValueObjects;
 using Habanerio.Xpnss.Infrastructure.IntegrationEvents.UserProfiles;
@@ -7,7 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace Habanerio.Xpnss.Accounts.Infrastructure.IntegrationEvents.EventHandlers;
 
 /// <summary>
-/// Handles when the user's profile is created and creates the default account(s) for them.
+/// Handles when the user's profile is created and creates the default accountBase(s) for them.
 /// </summary>
 public class UserProfileCreatedIntegrationEventHandler(
     IAccountsRepository repository,
@@ -31,19 +32,13 @@ public class UserProfileCreatedIntegrationEventHandler(
         if (doesUserHaveAccountsResult.Value.Any())
             return;
 
-        var accounts = new List<BaseAccount>
+        var accounts = new List<AbstractAccountBase>
         {
             CashAccount.New(
                 new UserId(userId),
                 new AccountName("Wallet"),
                 "Wallet Account",
-                "#E3FCD9"),
-
-            //CheckingAccount.New(
-            //    new UserId(userId),
-            //    new AccountName("Checking"),
-            //    "Checking Account",
-            //    "#ea7d33", Money.Zero),
+                "#E3FCD9")
         };
 
         foreach (var account in accounts)
@@ -58,7 +53,7 @@ public class UserProfileCreatedIntegrationEventHandler(
             catch (Exception e)
             {
                 _logger.LogError(e, "{EventId}: An error occurred while trying to create Account " +
-                                    "'{Id}' for User '{UserId}'", @event.Id, account.Id, userId);
+                    "'{Id}' for User '{UserId}'", @event.Id, account.Id, userId);
 
                 throw;
             }

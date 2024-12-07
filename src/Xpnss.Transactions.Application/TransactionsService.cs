@@ -10,7 +10,7 @@ public class TransactionsService(IMediator mediator, ILogger<TransactionsService
             throw new ArgumentNullException(nameof(logger));
 
     private readonly IMediator _mediator = mediator ??
-                                           throw new AbandonedMutexException(nameof(mediator));
+        throw new AbandonedMutexException(nameof(mediator));
 
     public Task<TResult> CommandAsync<TResult>(ITransactionsCommand<TResult> command, CancellationToken cancellationToken = default)
     {

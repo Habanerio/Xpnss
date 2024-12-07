@@ -3,6 +3,7 @@ using Habanerio.Core.Dbs.MongoDb;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using Habanerio.Xpnss.Transactions.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.Transactions.Infrastructure.Data.Repositories;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson.Serialization;
 
@@ -12,6 +13,15 @@ public static class TransactionsSetup
 {
     public static IServiceCollection AddTransactionsModule(this IServiceCollection services)
     {
+        //CreateTransactionRequestsJsonConverter
+        services.Configure<JsonOptions>(opt =>
+        {
+            opt.SerializerOptions.PropertyNameCaseInsensitive = true;
+
+            opt.SerializerOptions.Converters.Add(new CreateTransactionRequestsJsonConverter());
+            opt.SerializerOptions.Converters.Add(new TransactionDtoJsonConverter());
+        });
+
         // Microsoft.Extensions.Options.ConfigurationExtensions
         services.AddOptions<MongoDbSettings>()
             .BindConfiguration("XpnssMongoDBSettings");
@@ -20,8 +30,6 @@ public static class TransactionsSetup
         services.AddScoped<ITransactionsService, TransactionsService>();
 
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
-
-        //services.AddScoped<IRequestHandler<TransactionCreatedDomainEvent>, TransactionCreatedDomainEventHandler>();
 
         BsonClassMap.RegisterClassMap<TransactionDocument>(cm =>
         {
@@ -35,8 +43,6 @@ public static class TransactionsSetup
 
         BsonClassMap.RegisterClassMap<PurchaseTransactionDocument>();
         BsonClassMap.RegisterClassMap<DepositTransactionDocument>();
-        BsonClassMap.RegisterClassMap<PaymentTransactionDocument>();
-        BsonClassMap.RegisterClassMap<TransferTransactionDocument>();
 
         return services;
     }

@@ -13,16 +13,20 @@ namespace Habanerio.Xpnss.Accounts.Infrastructure.Data.Repositories;
 /// Responsible for managing the persistence of Account Documents.
 /// </summary>
 public sealed class AccountsRepository(IMongoDatabase mongoDb) :
-    //XpnssDbRepository<AccountDocument>(new AccountsDbContext(mongoDb)),
     MongoDbRepository<AccountDocument>(new AccountsDbContext(mongoDb)),
     IAccountsRepository
 {
-    public async Task<Result<BaseAccount>> AddAsync(
-        BaseAccount account,
+    public async Task<Result<AbstractAccountBase>> AddAsync(
+        AbstractAccountBase account,
         CancellationToken cancellationToken = default)
     {
         if (account is null)
-            return Result.Fail("Account cannot be null");
+            return Result.Fail("Cannot Update a null Account");
+
+        if (!ObjectId.TryParse(account.UserId, out var userObjectId) ||
+            userObjectId.Equals(ObjectId.Empty))
+            return Result.Fail($"Invalid UserId: `{account.UserId}`");
+        //throw new InvalidOperationException($"Add Account: UserId is ({account.UserId}) is invalid");
 
         try
         {
@@ -34,7 +38,7 @@ public sealed class AccountsRepository(IMongoDatabase mongoDb) :
             await AddDocumentAsync(accountDoc, cancellationToken);
 
             // Do this so we can update the State of the Account
-            var newAccount = InfrastructureMapper.Map(accountDoc, true);
+            var newAccount = InfrastructureMapper.Map(accountDoc);
 
             if (newAccount is null)
                 return Result.Fail("Could not map the Account");
@@ -49,7 +53,7 @@ public sealed class AccountsRepository(IMongoDatabase mongoDb) :
         }
     }
 
-    public async Task<Result<BaseAccount?>> GetAsync(
+    public async Task<Result<AbstractAccountBase?>> GetAsync(
         string userId,
         string accountId,
         CancellationToken cancellationToken = default)
@@ -60,7 +64,7 @@ public sealed class AccountsRepository(IMongoDatabase mongoDb) :
 
         if (!ObjectId.TryParse(accountId, out var accountObjectId) ||
             accountObjectId.Equals(ObjectId.Empty))
-            return Result.Fail($"Invalid AccountId: `{accountId}`");
+            return Result.Fail($"Invalid ExtAcctId: `{accountId}`");
 
         var accountDocument = await FirstOrDefaultDocumentAsync(a =>
                 a.UserId.Equals(userObjectId) &&
@@ -68,20 +72,20 @@ public sealed class AccountsRepository(IMongoDatabase mongoDb) :
                                 cancellationToken);
 
         if (accountDocument is null)
-            return Result.Ok<BaseAccount?>(null);
+            return Result.Ok<AbstractAccountBase?>(null);
 
-        var account = InfrastructureMapper.Map(accountDocument, true);
+        var account = InfrastructureMapper.Map(accountDocument);
 
         if (account is null)
-            return Result.Fail("Failed to map AccountDocument to Account");
+            throw new InvalidCastException("Failed to map AccountDocument to Account");
 
-        return Result.Ok<BaseAccount?>(account);
+        return Result.Ok<AbstractAccountBase?>(account);
     }
 
     public async Task<Result<TType?>> GetAsync<TType>(
         string userId,
         string accountId,
-        CancellationToken cancellationToken = default) where TType : BaseAccount
+        CancellationToken cancellationToken = default) where TType : AbstractAccountBase
     {
         var result = await GetAsync(userId, accountId, cancellationToken);
 
@@ -94,34 +98,7 @@ public sealed class AccountsRepository(IMongoDatabase mongoDb) :
         return Result.Ok((TType?)result.Value);
     }
 
-    //public async Task<Result<ReadOnlyCollection<AdjustmentHistories>>> GetAdjustmentHistoryAsync(
-    //    string userId,
-    //    string accountId,
-    //    string timeZone,
-    //    CancellationToken cancellationToken = default)
-    //{
-    //    if (string.IsNullOrWhiteSpace(userId))
-    //        return Result.Fail("UserId cannot be null or empty");
-
-    //    if (!ObjectId.TryParse(accountId, out var accountObjectId) ||
-    //        accountObjectId.Equals(ObjectId.NewId))
-    //        return Result.Fail($"Invalid AccountId: `{accountId}`");
-
-    //    var doc = await FirstOrDefaultDocumentAsync(a =>
-    //            a.Id.Equals(accountObjectId) &&
-    //            a.UserId.Equals(userId) /*&& !a.IsClosed*/,
-    //        cancellationToken);
-
-    //    if (doc is null)
-    //        return Result.Fail($"BaseAccount not found for AccountId: `{accountId}` " +
-    //                           $"and UserId: `{userId}`");
-
-    //    var changes = doc.AdjustmentHistories.AsEnumerable();
-
-    //    return Result.Ok(changes.ToList().AsReadOnly());
-    //}
-
-    public async Task<Result<IEnumerable<BaseAccount>>> ListAsync(
+    public async Task<Result<IEnumerable<AbstractAccountBase>>> ListAsync(
         string userId,
         CancellationToken cancellationToken = default)
     {
@@ -133,38 +110,42 @@ public sealed class AccountsRepository(IMongoDatabase mongoDb) :
             a.UserId == userObjectId, cancellationToken))?.ToList() ?? [];
 
         if (!docs.Any())
-            return Result.Ok(Enumerable.Empty<BaseAccount>());
+            return Result.Ok(Enumerable.Empty<AbstractAccountBase>());
 
         var accounts = InfrastructureMapper.Map(docs);
 
         return Result.Ok(accounts);
 
         // Projection
-        //var matchBuilder = Builders<AccountDocument>.Filter;
-        //var match = matchBuilder.Eq(a => a.UserId, userId);
+        /*
+        var matchBuilder = Builders<AccountDocument>.Filter;
+        var match = matchBuilder.Eq(a => a.UserId, userId);
 
-        //var projectionBuilder = Builders<AccountDocument>.Projection;
-        //var projection = projectionBuilder.Exclude(a => a.AdjustmentHistories).Exclude(a => a.MonthlyTotals);
+        var projectionBuilder = Builders<AccountDocument>.Projection;
+        var projection = projectionBuilder.Exclude(a => a.AdjustmentHistories).Exclude(a => a.MonthlyTotals);
 
-        //var pipeline = new EmptyPipelineDefinition<AccountDocument>()
-        //    .Match(match)
-        //    .Project(projection);
+        var pipeline = new EmptyPipelineDefinition<AccountDocument>()
+            .Match(match)
+            .Project(projection);
 
-        //var bsonDocs = (await Collection.Aggregate().Match(match).Project(projection).ToListAsync(cancellationToken)) ?? [];
+        var bsonDocs = (await Collection.Aggregate().Match(match).Project(projection).ToListAsync(cancellationToken)) ?? [];
 
-        //if (!bsonDocs.Any())
-        //    return Result.Ok(Enumerable.EmptyId<BaseAccount>());
+        if (!bsonDocs.Any())
+            return Result.Ok(Enumerable.EmptyId<BaseAccount>());
 
-        //var docs = bsonDocs.Select(bsonDoc => BsonSerializer.Deserialize<AccountDocument>(bsonDoc));
+        var docs = bsonDocs.Select(bsonDoc => BsonSerializer.Deserialize<AccountDocument>(bsonDoc));
 
-        //var accounts = InfrastructureMapper.Map(docs);
+        var accounts = InfrastructureMapper.Map(docs);
 
-        //return Result.Ok(accounts);
+        return Result.Ok(accounts);
+        */
     }
 
-    public async Task<Result> UpdateAsync(BaseAccount updatedAccount, CancellationToken cancellationToken = default)
+    public async Task<Result> UpdateAsync(
+        AbstractAccountBase updatedAccountBase,
+        CancellationToken cancellationToken = default)
     {
-        var accountDoc = InfrastructureMapper.Map(updatedAccount);
+        var accountDoc = InfrastructureMapper.Map(updatedAccountBase);
 
         if (accountDoc is null)
             return Result.Fail("Could not map the Account to its Document");

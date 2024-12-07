@@ -3,7 +3,6 @@ using Carter;
 using FluentValidation;
 using Habanerio.Xpnss.Accounts.Application.Commands.UpdateAccountDetails;
 using Habanerio.Xpnss.Accounts.Domain.Interfaces;
-using Habanerio.Xpnss.Apis.App.AppApis.Models;
 using Habanerio.Xpnss.Application.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,8 +27,8 @@ public class UpdateAccountDetailsEndpoint : BaseEndpoint
                     {
                         return await HandleAsync(userId, accountId, command, service, cancellationToken);
                     })
-                .Produces<ApiResponse<AccountDto>>((int)HttpStatusCode.OK)
-                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
+                .Produces<AccountDto>((int)HttpStatusCode.OK)
+                .Produces<string>((int)HttpStatusCode.BadRequest)
                 .Produces((int)HttpStatusCode.NotFound)
                 .WithDisplayName("Update Account Details")
                 .WithName("UpdateAccountDetails")
@@ -64,9 +63,7 @@ public class UpdateAccountDetailsEndpoint : BaseEndpoint
         if (result.IsFailed)
             return BadRequestWithErrors(result.Errors);
 
-        var response = new ApiResponse<AccountDto>(result.Value);
-
-        return Results.Ok(response);
+        return Results.Ok(result.Value);
     }
 
     public sealed class Validator : AbstractValidator<UpdateAccountDetailsCommand>

@@ -9,7 +9,7 @@ namespace Habanerio.Xpnss.Tests.Functional.AppApis.Transactions;
 public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> factory) :
     CreateTransactionBaseApiTests(factory)
 {
-    private const TransactionTypes.Keys TRANSACTION_TYPE = TransactionTypes.Keys.PURCHASE;
+    private const TransactionEnums.TransactionKeys TRANSACTION_TYPE = TransactionEnums.TransactionKeys.PURCHASE;
 
     /// <summary>
     /// Tests that a Transaction can be created with an existing PayerPayee
@@ -101,7 +101,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
         var existingAccount = await AccountDocumentsRepository
             .FirstOrDefaultDocumentAsync(a =>
                 a.UserId == testUserId &&
-                (AccountTypes.CreditAccountTypes.Contains(a.AccountType)));
+                a.AccountType == AccountEnums.AccountKeys.CREDITCARD);
 
         if (existingAccount is null)
             Assert.Fail("Need to add accounts before running this test");
@@ -177,7 +177,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
         var existingAccount = await AccountDocumentsRepository
             .FirstOrDefaultDocumentAsync(a =>
                 a.UserId == testUserId &&
-                (AccountTypes.DebitAccountTypes.Contains(a.AccountType)));
+                a.AccountType == AccountEnums.AccountKeys.CASH);
 
         if (existingAccount is null)
             Assert.Fail("Need to add accounts before running this test");

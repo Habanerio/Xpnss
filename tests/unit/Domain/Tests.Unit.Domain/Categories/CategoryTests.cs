@@ -1,300 +1,366 @@
-//using AutoFixture;
-//using AutoFixture.AutoMoq;
-//using Habanerio.Xpnss.Categories.Domain.Entities;
-//using Habanerio.Xpnss.Domain.ValueObjects;
+using System.Collections.ObjectModel;
+using AutoFixture;
+using Habanerio.Xpnss.Categories.Domain.Entities;
+using Habanerio.Xpnss.Domain.ValueObjects;
+using MongoDB.Bson;
 
-//namespace Habanerio.Xpnss.Tests.Unit.Domain.Categories;
+namespace Habanerio.Xpnss.Tests.Unit.Domain.Categories;
 
-//public class CategoryTests
-//{
-//    private readonly Category _testClass;
-//    private IFixture _fixture;
+public class CategoryTests : TestsBase
+{
+    private readonly Category _testClass;
 
-//    public CategoryTests()
-//    {
-//        _fixture = new Fixture().Customize(new AutoMoqCustomization());
-//        _testClass = _fixture.Create<Category>();
-//    }
+    public CategoryTests()
+    {
+        var id = AutoFixture.Create<CategoryId>();
+        var userId = AutoFixture.Create<UserId>();
+        var name = AutoFixture.Create<CategoryName>();
+        var description = AutoFixture.Create<string>();
+        var sortOrder = AutoFixture.Create<int>();
+        var subCategories = new List<SubCategory>
+        {
+            AutoFixture.Create<SubCategory>(),
+            AutoFixture.Create<SubCategory>(),
+            AutoFixture.Create<SubCategory>(),
+            AutoFixture.Create<SubCategory>(),
+            AutoFixture.Create<SubCategory>()
+        };
+        var dateCreated = AutoFixture.Create<DateTime>();
+        var dateUpdated = AutoFixture.Create<DateTime?>();
+        var dateDeleted = AutoFixture.Create<DateTime?>();
 
-//    [Fact]
-//    public void CanCall_Load()
-//    {
-//        // Arrange
-//        var id = _fixture.Create<CategoryId>();
-//        var userId = _fixture.Create<UserId>();
-//        var name = _fixture.Create<CategoryName>();
-//        var description = _fixture.Create<string>();
-//        var sortOrder = _fixture.Create<int>();
-//        var parentId = _fixture.Create<CategoryId>();
-//        var subCategories = _fixture.Create<IEnumerable<Category>>();
-//        var dateCreated = _fixture.Create<DateTime>();
-//        var dateUpdated = _fixture.Create<DateTime?>();
-//        var dateDeleted = _fixture.Create<DateTime?>();
+        _testClass = Category.Load(
+            id,
+            userId,
+            name,
+            description,
+            sortOrder,
+            subCategories,
+            dateCreated,
+            dateUpdated,
+            dateDeleted);
+    }
 
-//        // Act
-//        var result = Category.Load(id, userId, name, description, sortOrder, parentId, subCategories, dateCreated, dateUpdated, dateDeleted);
+    [Fact]
+    public void CanCall_Load()
+    {
+        // Arrange
+        var id = AutoFixture.Create<CategoryId>();
+        var userId = AutoFixture.Create<UserId>();
+        var name = AutoFixture.Create<CategoryName>();
+        var description = AutoFixture.Create<string>();
+        var sortOrder = AutoFixture.Create<int>();
+        var subCategories = new List<SubCategory>
+        {
+            AutoFixture.Create<SubCategory>(),
+            AutoFixture.Create<SubCategory>(),
+            AutoFixture.Create<SubCategory>(),
+            AutoFixture.Create<SubCategory>(),
+            AutoFixture.Create<SubCategory>()
+        };
+        var dateCreated = AutoFixture.Create<DateTime>();
+        var dateUpdated = AutoFixture.Create<DateTime?>();
+        var dateDeleted = AutoFixture.Create<DateTime?>();
 
-//        // Assert
-//        throw new NotImplementedException("Create or modify test");
-//    }
+        // Act
+        var result = Category.Load(
+            id,
+            userId,
+            name,
+            description,
+            sortOrder,
+            subCategories,
+            dateCreated,
+            dateUpdated,
+            dateDeleted);
 
-//    [Fact]
-//    public void CannotCall_Load_WithNull_Id()
-//    {
-//        Assert.Throws<ArgumentNullException>(() =>
-//            Category.Load(default(CategoryId), _fixture.Create<UserId>(), _fixture.Create<CategoryName>(), _fixture.Create<string>(), _fixture.Create<int>(), _fixture.Create<CategoryId>(), _fixture.Create<IEnumerable<Category>>(), _fixture.Create<DateTime>(), _fixture.Create<DateTime?>(), _fixture.Create<DateTime?>()));
-//    }
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<Category>(result);
+        Assert.Equal(id, result.Id);
+        Assert.Equal(userId, result.UserId);
+        Assert.Equal(name, result.Name);
+        Assert.Equal(description, result.Description);
+        Assert.Equal(sortOrder, result.SortOrder);
+        Assert.Equal(subCategories, result.SubCategories);
+        Assert.Equal(dateCreated, result.DateCreated);
+        Assert.Equal(dateUpdated, result.DateUpdated);
+        Assert.Equal(dateDeleted, result.DateDeleted);
+    }
 
-//    [Fact]
-//    public void CannotCall_Load_WithNull_UserId()
-//    {
-//        Assert.Throws<ArgumentNullException>(() =>
-//            Category.Load(_fixture.Create<CategoryId>(), default(UserId), _fixture.Create<CategoryName>(), _fixture.Create<string>(), _fixture.Create<int>(), _fixture.Create<CategoryId>(), _fixture.Create<IEnumerable<Category>>(), _fixture.Create<DateTime>(), _fixture.Create<DateTime?>(), _fixture.Create<DateTime?>()));
-//    }
+    [Fact]
+    public void CannotCall_Load_WithNull_Id()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            Category.Load(
+                null,
+                AutoFixture.Create<UserId>(),
+                AutoFixture.Create<CategoryName>(),
+                AutoFixture.Create<string>(),
+                AutoFixture.Create<int>(),
+                AutoFixture.Create<IEnumerable<SubCategory>>(),
+                AutoFixture.Create<DateTime>(),
+                AutoFixture.Create<DateTime?>(),
+                AutoFixture.Create<DateTime?>()));
 
-//    [Fact]
-//    public void CannotCall_Load_WithNull_ParentId()
-//    {
-//        Assert.Throws<ArgumentNullException>(() =>
-//            Category.Load(_fixture.Create<CategoryId>(), _fixture.Create<UserId>(), _fixture.Create<CategoryName>(), _fixture.Create<string>(), _fixture.Create<int>(), default(CategoryId), _fixture.Create<IEnumerable<Category>>(), _fixture.Create<DateTime>(), _fixture.Create<DateTime?>(), _fixture.Create<DateTime?>()));
-//    }
+        Assert.Throws<ArgumentNullException>(() =>
+            Category.Load(
+                default(CategoryId),
+                AutoFixture.Create<UserId>(),
+                AutoFixture.Create<CategoryName>(),
+                AutoFixture.Create<string>(),
+                AutoFixture.Create<int>(),
+                AutoFixture.Create<IEnumerable<SubCategory>>(),
+                AutoFixture.Create<DateTime>(),
+                AutoFixture.Create<DateTime?>(),
+                AutoFixture.Create<DateTime?>()));
 
-//    [Fact]
-//    public void CannotCall_Load_WithNull_SubCategories()
-//    {
-//        Assert.Throws<ArgumentNullException>(() =>
-//            Category.Load(_fixture.Create<CategoryId>(), _fixture.Create<UserId>(), _fixture.Create<CategoryName>(), _fixture.Create<string>(), _fixture.Create<int>(), _fixture.Create<CategoryId>(), default(IEnumerable<Category>), _fixture.Create<DateTime>(), _fixture.Create<DateTime?>(), _fixture.Create<DateTime?>()));
-//    }
+        Assert.Throws<ArgumentException>(() =>
+            Category.Load(
+                new CategoryId(ObjectId.Empty),
+                AutoFixture.Create<UserId>(),
+                AutoFixture.Create<CategoryName>(),
+                AutoFixture.Create<string>(),
+                AutoFixture.Create<int>(),
+                AutoFixture.Create<IEnumerable<SubCategory>>(),
+                AutoFixture.Create<DateTime>(),
+                AutoFixture.Create<DateTime?>(),
+                AutoFixture.Create<DateTime?>()));
 
-//    [Theory]
-//    [InlineData(null)]
-//    [InlineData("")]
-//    [InlineData("   ")]
-//    public void CannotCall_Load_WithInvalid_Description(string value)
-//    {
-//        Assert.Throws<ArgumentNullException>(() =>
-//            Category.Load(_fixture.Create<CategoryId>(), _fixture.Create<UserId>(), _fixture.Create<CategoryName>(), value, _fixture.Create<int>(), _fixture.Create<CategoryId>(), _fixture.Create<IEnumerable<Category>>(), _fixture.Create<DateTime>(), _fixture.Create<DateTime?>(), _fixture.Create<DateTime?>()));
-//    }
+        Assert.Throws<ArgumentException>(() =>
+            Category.Load(
+                new CategoryId(string.Empty),
+                AutoFixture.Create<UserId>(),
+                AutoFixture.Create<CategoryName>(),
+                AutoFixture.Create<string>(),
+                AutoFixture.Create<int>(),
+                AutoFixture.Create<IEnumerable<SubCategory>>(),
+                AutoFixture.Create<DateTime>(),
+                AutoFixture.Create<DateTime?>(),
+                AutoFixture.Create<DateTime?>()));
+    }
 
-//    [Fact]
-//    public void Load_PerformsMapping()
-//    {
-//        // Arrange
-//        var id = _fixture.Create<CategoryId>();
-//        var userId = _fixture.Create<UserId>();
-//        var name = _fixture.Create<CategoryName>();
-//        var description = _fixture.Create<string>();
-//        var sortOrder = _fixture.Create<int>();
-//        var parentId = _fixture.Create<CategoryId>();
-//        var subCategories = _fixture.Create<IEnumerable<Category>>();
-//        var dateCreated = _fixture.Create<DateTime>();
-//        var dateUpdated = _fixture.Create<DateTime?>();
-//        var dateDeleted = _fixture.Create<DateTime?>();
+    [Fact]
+    public void CannotCall_Load_WithNull_UserId()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            Category.Load(
+                AutoFixture.Create<CategoryId>(),
+                default(UserId),
+                AutoFixture.Create<CategoryName>(),
+                AutoFixture.Create<string>(),
+                AutoFixture.Create<int>(),
+                AutoFixture.Create<IEnumerable<SubCategory>>(),
+                AutoFixture.Create<DateTime>(),
+                AutoFixture.Create<DateTime?>(),
+                AutoFixture.Create<DateTime?>()));
+    }
 
-//        // Act
-//        var result = Category.Load(id, userId, name, description, sortOrder, parentId, subCategories, dateCreated, dateUpdated, dateDeleted);
+    [Fact]
+    public void CannotCall_Load_WithNull_SubCategories()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            Category.Load(
+                AutoFixture.Create<CategoryId>(),
+                AutoFixture.Create<UserId>(),
+                AutoFixture.Create<CategoryName>(),
+                AutoFixture.Create<string>(),
+                AutoFixture.Create<int>(),
+                default(IEnumerable<SubCategory>),
+                AutoFixture.Create<DateTime>(),
+                AutoFixture.Create<DateTime?>(),
+                AutoFixture.Create<DateTime?>()));
+    }
 
-//        // Assert
-//        Assert.Same(userId, result.UserId);
-//        Assert.Equal(name, result.Name);
-//        Assert.Same(description, result.Description);
-//        Assert.Equal(sortOrder, result.SortOrder);
-//        Assert.Same(parentId, result.ParentId);
-//        Assert.Same(subCategories, result.SubCategories);
-//    }
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void CannotCall_Load_WithInvalid_Description(string value)
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            Category.Load(
+                AutoFixture.Create<CategoryId>(),
+                AutoFixture.Create<UserId>(),
+                AutoFixture.Create<CategoryName>(),
+                value,
+                AutoFixture.Create<int>(),
+                AutoFixture.Create<IEnumerable<SubCategory>>(),
+                AutoFixture.Create<DateTime>(),
+                AutoFixture.Create<DateTime?>(),
+                AutoFixture.Create<DateTime?>()));
+    }
 
-//    [Fact]
-//    public void CanCall_New()
-//    {
-//        // Arrange
-//        var userId = _fixture.Create<UserId>();
-//        var name = _fixture.Create<CategoryName>();
-//        var description = _fixture.Create<string>();
-//        var parentId = _fixture.Create<CategoryId>();
-//        var sortOrder = _fixture.Create<int>();
 
-//        // Act
-//        var result = Category.New(userId, name, description, parentId, sortOrder);
+    [Fact]
+    public void CanCall_New()
+    {
+        // Arrange
+        var userId = AutoFixture.Create<UserId>();
+        var name = AutoFixture.Create<CategoryName>();
+        var description = AutoFixture.Create<string>();
+        var sortOrder = AutoFixture.Create<int>();
 
-//        // Assert
-//        throw new NotImplementedException("Create or modify test");
-//    }
+        // Act
+        var result = Category.New(userId, name, description, sortOrder);
 
-//    [Fact]
-//    public void CannotCall_New_WithNull_UserId()
-//    {
-//        Assert.Throws<ArgumentNullException>(() =>
-//            Category.New(default(UserId), _fixture.Create<CategoryName>(), _fixture.Create<string>(), _fixture.Create<CategoryId>(), _fixture.Create<int>()));
-//    }
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<Category>(result);
+        Assert.Equal(userId, result.UserId);
+        Assert.Equal(name, result.Name);
+        Assert.Equal(description, result.Description);
+        Assert.Empty(result.SubCategories);
+    }
 
-//    [Fact]
-//    public void CannotCall_New_WithNull_ParentId()
-//    {
-//        Assert.Throws<ArgumentNullException>(() =>
-//            Category.New(_fixture.Create<UserId>(), _fixture.Create<CategoryName>(), _fixture.Create<string>(), default(CategoryId), _fixture.Create<int>()));
-//    }
+    [Fact]
+    public void CannotCall_New_WithNull_UserId()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            Category.New(
+                default(UserId),
+                AutoFixture.Create<CategoryName>(),
+                AutoFixture.Create<string>(),
+                AutoFixture.Create<int>()));
+    }
 
-//    [Theory]
-//    [InlineData(null)]
-//    [InlineData("")]
-//    [InlineData("   ")]
-//    public void CannotCall_New_WithInvalid_Description(string value)
-//    {
-//        Assert.Throws<ArgumentNullException>(() =>
-//            Category.New(_fixture.Create<UserId>(), _fixture.Create<CategoryName>(), value, _fixture.Create<CategoryId>(), _fixture.Create<int>()));
-//    }
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void CannotCall_New_WithInvalid_Description(string value)
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            Category.New(
+                AutoFixture.Create<UserId>(),
+                AutoFixture.Create<CategoryName>(),
+                value,
+                AutoFixture.Create<int>()));
+    }
 
-//    [Fact]
-//    public void New_PerformsMapping()
-//    {
-//        // Arrange
-//        var userId = _fixture.Create<UserId>();
-//        var name = _fixture.Create<CategoryName>();
-//        var description = _fixture.Create<string>();
-//        var parentId = _fixture.Create<CategoryId>();
-//        var sortOrder = _fixture.Create<int>();
 
-//        // Act
-//        var result = Category.New(userId, name, description, parentId, sortOrder);
+    [Fact]
+    public void CanCall_AddSubCategory()
+    {
+        // Arrange
+        var subCatName = AutoFixture.Create<CategoryName>();
+        var description = AutoFixture.Create<string>();
+        var sortOrder = AutoFixture.Create<int>();
 
-//        // Assert
-//        Assert.Same(userId, result.UserId);
-//        Assert.Equal(name, result.Name);
-//        Assert.Same(description, result.Description);
-//        Assert.Same(parentId, result.ParentId);
-//        Assert.Equal(sortOrder, result.SortOrder);
-//    }
+        // Act
+        _testClass.AddSubCategory(subCatName, description, sortOrder);
 
-//    [Fact]
-//    public void CanCall_AddSubCategory()
-//    {
-//        // Arrange
-//        var name = _fixture.Create<CategoryName>();
-//        var description = _fixture.Create<string>();
-//        var sortOrder = _fixture.Create<int>();
+        // Assert
+        var actual = _testClass.SubCategories.FirstOrDefault(c => c.Name.Equals(subCatName));
+    }
 
-//        // Act
-//        var result = _testClass.AddSubCategory(name, description, sortOrder);
+    [Fact]
+    public void CanCall_Delete()
+    {
+        // Act
+        _testClass.Delete();
 
-//        // Assert
-//        throw new NotImplementedException("Create or modify test");
-//    }
+        // Assert
+        Assert.True(_testClass.IsDeleted);
+        Assert.NotNull(_testClass.DateDeleted);
+    }
 
-//    [Theory]
-//    [InlineData(null)]
-//    [InlineData("")]
-//    [InlineData("   ")]
-//    public void CannotCall_AddSubCategory_WithInvalid_Description(string value)
-//    {
-//        Assert.Throws<ArgumentNullException>(() => _testClass.AddSubCategory(_fixture.Create<CategoryName>(), value, _fixture.Create<int>()));
-//    }
+    [Fact]
+    public void CanCall_Update()
+    {
+        // Arrange
+        var id = AutoFixture.Create<CategoryId>();
+        var userId = AutoFixture.Create<UserId>();
+        var name = AutoFixture.Create<CategoryName>();
+        var description = AutoFixture.Create<string>();
+        var sortOrder = AutoFixture.Create<int>();
+        var subCategories = new List<SubCategory>
+        {
+            AutoFixture.Create<SubCategory>(),
+            AutoFixture.Create<SubCategory>(),
+            AutoFixture.Create<SubCategory>(),
+            AutoFixture.Create<SubCategory>(),
+        };
 
-//    [Fact]
-//    public void AddSubCategory_PerformsMapping()
-//    {
-//        // Arrange
-//        var name = _fixture.Create<CategoryName>();
-//        var description = _fixture.Create<string>();
-//        var sortOrder = _fixture.Create<int>();
+        var dateCreated = AutoFixture.Create<DateTime>();
+        DateTime? dateUpdated = null;
+        DateTime? dateDeleted = null;
 
-//        // Act
-//        var result = _testClass.AddSubCategory(name, description, sortOrder);
+        // Act
+        var actualClass = Category.Load(
+            id,
+            userId,
+            name,
+            description,
+            sortOrder,
+            subCategories,
+            dateCreated,
+            dateUpdated,
+            dateDeleted);
 
-//        // Assert
-//        Assert.Equal(name, result.Name);
-//        Assert.Same(description, result.Description);
-//        Assert.Equal(sortOrder, result.SortOrder);
-//    }
+        // Arrange
+        var expectedName = AutoFixture.Create<CategoryName>();
+        var expectedDescription = AutoFixture.Create<string>();
+        var updatedSortOrder = 3534;
 
-//    [Fact]
-//    public void CanCall_Delete()
-//    {
-//        // Act
-//        _testClass.Delete();
+        // Act
+        actualClass.Update(expectedName, expectedDescription, updatedSortOrder);
 
-//        // Assert
-//        throw new NotImplementedException("Create or modify test");
-//    }
+        // Assert
+        Assert.Equal(expectedName, actualClass.Name);
+        Assert.Equal(expectedDescription, actualClass.Description);
+        Assert.Equal(updatedSortOrder, actualClass.SortOrder);
+    }
 
-//    [Fact]
-//    public void CanCall_Update()
-//    {
-//        // Arrange
-//        var name = _fixture.Create<CategoryName>();
-//        var description = _fixture.Create<string>();
-//        var sortOrder = _fixture.Create<int>();
+    [Fact]
+    public void CanGet_UserId()
+    {
+        // Assert
+        Assert.IsType<UserId>(_testClass.UserId);
 
-//        // Act
-//        _testClass.Update(name, description, sortOrder);
+        Assert.False(string.IsNullOrWhiteSpace(_testClass.UserId));
+    }
 
-//        // Assert
-//        throw new NotImplementedException("Create or modify test");
-//    }
+    [Fact]
+    public void CanGet_Name()
+    {
+        // Assert
+        Assert.IsType<CategoryName>(_testClass.Name);
 
-//    [Theory]
-//    [InlineData(null)]
-//    [InlineData("")]
-//    [InlineData("   ")]
-//    public void CannotCall_Update_WithInvalid_Description(string value)
-//    {
-//        Assert.Throws<ArgumentNullException>(() => _testClass.Update(_fixture.Create<CategoryName>(), value, _fixture.Create<int>()));
-//    }
+        Assert.False(string.IsNullOrWhiteSpace(_testClass.Name));
+    }
 
-//    [Fact]
-//    public void CanGet_UserId()
-//    {
-//        // Assert
-//        Assert.IsType<UserId>(_testClass.UserId);
+    [Fact]
+    public void CanGet_Description()
+    {
+        // Assert
+        Assert.IsType<string>(_testClass.Description);
 
-//        throw new NotImplementedException("Create or modify test");
-//    }
+        Assert.False(string.IsNullOrWhiteSpace(_testClass.Description));
+    }
 
-//    [Fact]
-//    public void CanGet_Name()
-//    {
-//        // Assert
-//        Assert.IsType<CategoryName>(_testClass.Name);
+    [Fact]
+    public void CanSet_And_Get_SortOrder()
+    {
+        // Assert
+        Assert.True(_testClass.SortOrder > 0);
+    }
 
-//        throw new NotImplementedException("Create or modify test");
-//    }
+    [Fact]
+    public void CanGet_SubCategories()
+    {
+        // Assert
+        Assert.IsType<ReadOnlyCollection<SubCategory>>(_testClass.SubCategories);
 
-//    [Fact]
-//    public void CanGet_Description()
-//    {
-//        // Assert
-//        Assert.IsType<string>(_testClass.Description);
+        Assert.Equal(5, _testClass.SubCategories.Count);
 
-//        throw new NotImplementedException("Create or modify test");
-//    }
+        var expectedSortOrder = 1;
 
-//    [Fact]
-//    public void CanSet_And_Get_SortOrder()
-//    {
-//        // Arrange
-//        var testValue = _fixture.Create<int>();
+        foreach (var subCategory in _testClass.SubCategories)
+        {
+            Assert.Equal(expectedSortOrder, subCategory.SortOrder);
 
-//        // Act
-//        _testClass.SortOrder = testValue;
-
-//        // Assert
-//        Assert.Equal(testValue, _testClass.SortOrder);
-//    }
-
-//    [Fact]
-//    public void CanGet_ParentId()
-//    {
-//        // Assert
-//        Assert.IsType<CategoryId>(_testClass.ParentId);
-
-//        throw new NotImplementedException("Create or modify test");
-//    }
-
-//    [Fact]
-//    public void CanGet_SubCategories()
-//    {
-//        // Assert
-//        Assert.IsType<IReadOnlyCollection<Category>>(_testClass.SubCategories);
-
-//        throw new NotImplementedException("Create or modify test");
-//    }
-//}
+            expectedSortOrder++;
+        }
+    }
+}

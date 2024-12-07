@@ -13,6 +13,8 @@ public record TransactionDto
 
     public string Description { get; set; } = "";
 
+    public string ExtTransactionId { get; set; } = "";
+
     public bool IsCredit { get; protected set; }
 
     public string? PayerPayeeId { get; set; } = "";
@@ -25,31 +27,19 @@ public record TransactionDto
 
     public DateTime TransactionDate { get; set; }
 
-    public string TransactionType { get; protected set; }
-
-    private TransactionDto() { }
+    [JsonPropertyName("TransactionType")]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public TransactionEnums.TransactionKeys TransactionType { get; set; }
 
     [JsonConstructor]
-    public TransactionDto(
-        string id,
-        string userId,
-        string accountId,
-        string description,
-        DateTime transactionDate)
-    {
-        Id = id;
-        UserId = userId;
-        AccountId = accountId;
-        Description = description;
-        TransactionDate = transactionDate;
-    }
+    public TransactionDto() { }
 
     protected TransactionDto(
         bool isCredit,
-        TransactionTypes.Keys transactionType)
+        TransactionEnums.TransactionKeys transactionType)
     {
         IsCredit = isCredit;
-        TransactionType = transactionType.ToString();
+        TransactionType = transactionType;
     }
 }
 
@@ -60,24 +50,37 @@ public record TransactionDto
 /// </summary>
 public abstract record CreditTransactionDto : TransactionDto
 {
-    protected CreditTransactionDto(TransactionTypes.Keys transactionType) :
+    protected CreditTransactionDto(TransactionEnums.TransactionKeys transactionType) :
         base(true, transactionType)
     { }
 }
 
 /// <summary>
-/// A payment towards money owed
+/// A transaction that adds money to an account,
+/// such as cash to a checking account.
 /// </summary>
-public sealed record CreditPaymentTransactionDto() :
-    CreditTransactionDto(TransactionTypes.Keys.PAYMENT)
+public sealed record DepositTransactionDto() :
+    CreditTransactionDto(TransactionEnums.TransactionKeys.DEPOSIT)
 {
-    public string PaymentFromAccountId { get; set; } = "";
+    //public string CategoryId { get; set; } = "";
+}
 
-    public string PaymentToAccountId { get; set; } = "";
+#endregion
+
+#region - Debit Transactions -
+
+/// <summary>
+/// A Debit Transaction ("DR") is a transaction that adds money to an account.
+/// </summary>
+public abstract record DebitTransactionDto : TransactionDto
+{
+    protected DebitTransactionDto(TransactionEnums.TransactionKeys transactionType) :
+        base(false, transactionType)
+    { }
 }
 
 public sealed record PurchaseTransactionDto() :
-    CreditTransactionDto(TransactionTypes.Keys.PURCHASE)
+    DebitTransactionDto(TransactionEnums.TransactionKeys.PURCHASE)
 {
     public bool IsPaid => PaidDate.HasValue;
 
@@ -97,7 +100,7 @@ public sealed record PurchaseTransactionDto() :
 /// such as a withdrawal from a checking account.
 /// </summary>
 public sealed record WithdrawalTransactionDto() :
-    CreditTransactionDto(TransactionTypes.Keys.WITHDRAWAL)
+    CreditTransactionDto(TransactionEnums.TransactionKeys.WITHDRAWAL)
 {
     /// <summary>
     /// The Id of the underlying account that the withdrawal was made FROM.
@@ -108,30 +111,6 @@ public sealed record WithdrawalTransactionDto() :
     /// The Id of the underlying account that the withdrawal was made TO.
     /// </summary>
     public string WithdrewToAccountId { get; set; } = "";
-}
-
-#endregion
-
-#region - Debit Transactions -
-
-/// <summary>
-/// A Debit Transaction ("DR") is a transaction that adds money to an account.
-/// </summary>
-public abstract record DebitTransactionDto : TransactionDto
-{
-    protected DebitTransactionDto(TransactionTypes.Keys transactionType) :
-        base(false, transactionType)
-    { }
-}
-
-/// <summary>
-/// A transaction that adds money to an account,
-/// such as cash to a checking account.
-/// </summary>
-public sealed record DepositTransactionDto() :
-    DebitTransactionDto(TransactionTypes.Keys.DEPOSIT)
-{
-    //public string CategoryId { get; set; } = "";
 }
 
 #endregion

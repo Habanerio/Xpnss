@@ -109,7 +109,7 @@
 //        BaseAccount account,
 //        CancellationToken cancellationToken = default)
 //    {
-//        var isCreditTransaction = TransactionTypes.DoesBalanceIncrease(account.AccountType, @event.TransactionType);
+//        var isCreditTransaction = TransactionEnums.DoesBalanceIncrease(account.AccountType, @event.TransactionType);
 
 //        var monthlyTotalResult = await _accountMonthlyTotalsRepository
 //            .GetAsync(

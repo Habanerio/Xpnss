@@ -15,7 +15,8 @@ public class Category : AggregateRoot<CategoryId>
 
     public int SortOrder { get; set; }
 
-    public IReadOnlyCollection<SubCategory> SubCategories => _subCategories.AsReadOnly();
+    public IReadOnlyCollection<SubCategory> SubCategories => _subCategories
+        .OrderBy(c => c.SortOrder).ToList().AsReadOnly();
 
 
     private Category(
@@ -35,6 +36,7 @@ public class Category : AggregateRoot<CategoryId>
     {
         IsTransient = true;
 
+        ResortSubCategories();
         // Add `CategoryCreated` Domain Event
     }
 
@@ -49,6 +51,18 @@ public class Category : AggregateRoot<CategoryId>
         DateTime? dateUpdated = null,
         DateTime? dateDeleted = null) : base(id)
     {
+        if (id is null)
+            throw new ArgumentNullException(nameof(id), $"{nameof(id)} cannot be null or whitespace.");
+
+        if (string.IsNullOrWhiteSpace(id) || id.Equals(CategoryId.Empty))
+            throw new ArgumentException($"{nameof(id)} cannot be null or whitespace.", nameof(id));
+
+        if (userId is null || id.Equals(UserId.Empty))
+            throw new ArgumentNullException(nameof(userId), $"{nameof(userId)} cannot be null or whitespace.");
+
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException($"{nameof(name)} cannot be null or whitespace.", nameof(name));
+
         Id = id;
         UserId = userId;
         Name = name;
@@ -59,6 +73,8 @@ public class Category : AggregateRoot<CategoryId>
         DateDeleted = dateDeleted;
 
         _subCategories = [.. subCategories];
+
+        ResortSubCategories();
     }
 
     public static Category Load(
@@ -110,6 +126,9 @@ public class Category : AggregateRoot<CategoryId>
 
     public void Update(CategoryName name, string description, int sortOrder)
     {
+        if (IsDeleted)
+            throw new InvalidOperationException("Cannot update a deleted Category.");
+
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException($"{nameof(name)} cannot be null or whitespace.", nameof(name));
 
@@ -149,17 +168,7 @@ public class Category : AggregateRoot<CategoryId>
 
         _subCategories.Add(newSubCategory);
 
-        // Reorder the SubCategories
-        var idx = 1;
-
-        foreach (var subCategory2 in _subCategories
-                     .OrderBy(c => c.SortOrder)
-                     .ThenBy(c => c.Name.Value))
-        {
-            subCategory2.SortOrder = idx;
-
-            idx++;
-        }
+        ResortSubCategories();
 
         // Add `SubCategoryCreated` Domain Event ?
     }
@@ -189,6 +198,23 @@ public class Category : AggregateRoot<CategoryId>
         }
 
         // Add `SubCategoryDeleted` Domain Event
+    }
+
+    private void ResortSubCategories()
+    {
+        // Reorder the SubCategories
+        var idx = 1;
+
+        var sortedCategories = _subCategories.OrderBy(c => c.SortOrder)
+            .ThenBy(c => c.Name.Value)
+            .ToList();
+
+        foreach (var subCategory in sortedCategories)
+        {
+            subCategory.SortOrder = idx;
+
+            idx++;
+        }
     }
 }
 

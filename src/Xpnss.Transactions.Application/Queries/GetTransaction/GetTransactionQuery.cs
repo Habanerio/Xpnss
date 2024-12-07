@@ -52,7 +52,7 @@ public sealed class GetTransactionHandler(ITransactionsRepository repository) :
         var dto = ApplicationMapper.Map(docsResult.Value);
 
         if (dto is null)
-            return Result.Fail("Failed to map Transaction to TransactionDto");
+            throw new InvalidCastException("Failed to map Transaction to TransactionDto");
 
         return Result.Ok(dto);
     }

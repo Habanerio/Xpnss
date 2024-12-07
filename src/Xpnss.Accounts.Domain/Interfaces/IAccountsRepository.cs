@@ -6,9 +6,11 @@ namespace Habanerio.Xpnss.Accounts.Domain.Interfaces;
 public interface IAccountsRepository
 {
 
-    Task<Result<BaseAccount>> AddAsync(BaseAccount account, CancellationToken cancellationToken = default);
+    Task<Result<AbstractAccountBase>> AddAsync(
+        AbstractAccountBase account,
+        CancellationToken cancellationToken = default);
 
-    Task<Result<BaseAccount?>> GetAsync(
+    Task<Result<AbstractAccountBase?>> GetAsync(
         string userId,
         string accountId,
         CancellationToken cancellationToken = default);
@@ -16,17 +18,17 @@ public interface IAccountsRepository
     Task<Result<TType?>> GetAsync<TType>(
         string userId,
         string accountId,
-        CancellationToken cancellationToken = default) where TType : BaseAccount;
+        CancellationToken cancellationToken = default) where TType : AbstractAccountBase;
 
-    Task<Result<IEnumerable<BaseAccount>>> ListAsync(
+    Task<Result<IEnumerable<AbstractAccountBase>>> ListAsync(
         string userId,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Would prefer to have specific Update methods, instead of a generic one.
     /// </summary>
-    /// <param name="updatedAccount">The account to be updated.</param>
+    /// <param name="updatedAccount">The accountBase to be updated.</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Result> UpdateAsync(BaseAccount updatedAccount, CancellationToken cancellationToken = default);
+    Task<Result> UpdateAsync(AbstractAccountBase updatedAccount, CancellationToken cancellationToken = default);
 }

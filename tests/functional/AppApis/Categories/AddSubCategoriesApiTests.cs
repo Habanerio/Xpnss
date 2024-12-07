@@ -1,6 +1,5 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using Habanerio.Xpnss.Apis.App.AppApis.Models;
 using Habanerio.Xpnss.Application.DTOs;
 using Habanerio.Xpnss.Categories.Application.Commands;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -65,15 +64,14 @@ public class AddSubCategoriesApiTests(WebApplicationFactory<Apis.App.AppApis.Pro
             }
 
             var content = await response.Content.ReadAsStringAsync();
-            var apiResponse = JsonSerializer.Deserialize<ApiResponse<CategoryDto>>(
+            var apiResponse = JsonSerializer.Deserialize<CategoryDto>(
                 content,
                 JsonSerializationOptions);
 
             // Assert
             Assert.NotNull(apiResponse);
-            Assert.True(apiResponse.IsSuccess);
 
-            var actualDto = Assert.IsType<CategoryDto>(apiResponse.Data);
+            var actualDto = Assert.IsType<CategoryDto>(apiResponse);
             Assert.NotNull(actualDto);
 
             Assert.NotEqual(ObjectId.Empty.ToString(), actualDto.Id);

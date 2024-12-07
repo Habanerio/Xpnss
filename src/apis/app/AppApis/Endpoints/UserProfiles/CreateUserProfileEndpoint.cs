@@ -23,7 +23,7 @@ public sealed class CreateUserProfileEndpoint : BaseEndpoint
                         return await HandleAsync(command, service, cancellationToken);
                     })
                 .Produces<UserProfileDto>((int)HttpStatusCode.OK)
-                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
+                .Produces<string>((int)HttpStatusCode.BadRequest)
                 .WithDisplayName("Create User Profile")
                 .WithName("CreateUserProfile")
                 .WithTags("UserProfiles")

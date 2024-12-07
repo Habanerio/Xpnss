@@ -1,6 +1,10 @@
 using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts;
+using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts.BankAccounts;
+using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts.CashAccounts;
+using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts.CreditCardAccounts;
+using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts.InvestmentAccounts;
+using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts.LoanAccounts;
 using Habanerio.Xpnss.Accounts.Infrastructure.Data.Documents;
-using Habanerio.Xpnss.Domain.Entities;
 using Habanerio.Xpnss.Domain.Types;
 using Habanerio.Xpnss.Domain.ValueObjects;
 
@@ -8,245 +12,269 @@ namespace Habanerio.Xpnss.Accounts.Infrastructure.Mappers;
 
 internal static partial class InfrastructureMapper
 {
-    public static BaseAccount? Map(AccountDocument? document, bool includeTotals = false)
+    public static AbstractAccountBase? Map(AccountDocument? document)
     {
         if (document == null)
             return default;
 
-        var account = GetAccountFromDocument(document, includeTotals);
+        var account = GetAccountFromDocument(document);
 
         return account;
     }
 
-    public static IEnumerable<BaseAccount> Map(IEnumerable<AccountDocument> documents)
+    public static IEnumerable<AbstractAccountBase> Map(IEnumerable<AccountDocument> documents)
     {
         return documents
-            .Select(d =>
-                Map(d, false))
+            .Select(Map)
             .Where(x => x is not null)
-            .Cast<BaseAccount>();
+            .Cast<AbstractAccountBase>();
     }
 
-    public static AccountDocument? Map(BaseAccount? account, bool includeTotals = false)
+    public static AccountDocument? Map(AbstractAccountBase? account)
     {
         if (account is null)
             return default;
 
-        var accountId = account.Id;
-
-        if (account.EntityState == EntityState.ACTIVE && account.Id.Equals(AccountId.Empty))
+        if (account.Id.Equals(AccountId.Empty))
             throw new InvalidOperationException("Active Accounts must have an Id");
 
-        if (account is CashAccount)
-        {
-            var cashDocument = new CashAccountDocument(accountId)
-            {
-                UserId = account.UserId,
-                AccountType = account.AccountType,
-                Name = account.Name,
-                Balance = account.Balance,
-                Description = account.Description,
-                DisplayColor = account.DisplayColor,
-                DateCreated = account.DateCreated,
-                DateClosed = account.DateClosed,
-                DateDeleted = account.DateDeleted,
-                DateUpdated = account.DateUpdated
-            };
+        if (account is CashAccount cash)
+            return (AccountDocument)cash;
 
-            return cashDocument;
-        }
+        if (account is CheckingAccount checking)
+            return (AccountDocument)checking;
 
-        if (account is CheckingAccount checkingAccount)
-        {
-            var checkingDocument = new CheckingAccountDocument(accountId, checkingAccount.OverdraftAmount)
-            {
-                UserId = account.UserId,
-                AccountType = account.AccountType,
-                Name = account.Name,
-                Balance = account.Balance,
-                Description = account.Description,
-                DisplayColor = account.DisplayColor,
-                DateCreated = account.DateCreated,
-                DateClosed = account.DateClosed,
-                DateDeleted = account.DateDeleted,
-                DateUpdated = account.DateUpdated,
-            };
+        if (account is SavingsAccount savings)
+            return (AccountDocument)savings;
 
-            return checkingDocument;
-        }
+        if (account is CreditLineAccount creditLine)
+            return (AccountDocument)creditLine;
 
-        if (account is SavingsAccount savingsAccount)
-        {
-            var savingsDocument = new SavingsAccountDocument(accountId, savingsAccount.InterestRate)
-            {
-                UserId = account.UserId,
-                AccountType = account.AccountType,
-                Name = account.Name,
-                Balance = account.Balance,
-                Description = account.Description,
-                DisplayColor = account.DisplayColor,
-                DateCreated = account.DateCreated,
-                DateClosed = account.DateClosed,
-                DateDeleted = account.DateDeleted,
-                DateUpdated = account.DateUpdated,
-            };
+        if (account is CreditCardAccount credCard)
+            return (AccountDocument)credCard;
 
-            return savingsDocument;
-        }
+        if (account is LoanAccount loan)
+            return (AccountDocument)loan;
 
-        if (account is CreditCardAccount creditCardAccount)
-        {
-            var creditCardDocument = new CreditCardAccountDocument(accountId, creditCardAccount.CreditLimit, creditCardAccount.InterestRate)
-            {
-                UserId = account.UserId,
-                AccountType = account.AccountType,
-                Name = account.Name,
-                Balance = account.Balance,
-                Description = account.Description,
-                DisplayColor = account.DisplayColor,
-                DateCreated = account.DateCreated,
-                DateClosed = account.DateClosed,
-                DateDeleted = account.DateDeleted,
-                DateUpdated = account.DateUpdated,
-            };
+        throw new InvalidOperationException("Account Type not supported");
 
-            return creditCardDocument;
-        }
 
-        if (account is LineOfCreditAccount lineOfCreditAccount)
-        {
-            var lineOfCreditDocument = new LineOfCreditAccountDocument(accountId, lineOfCreditAccount.CreditLimit, lineOfCreditAccount.InterestRate)
-            {
-                UserId = account.UserId,
-                AccountType = account.AccountType,
-                Name = account.Name,
-                Balance = account.Balance,
-                Description = account.Description,
-                DisplayColor = account.DisplayColor,
-                DateCreated = account.DateCreated,
-                DateClosed = account.DateClosed,
-                DateDeleted = account.DateDeleted,
-                DateUpdated = account.DateUpdated,
-            };
+        //if (account is CashAccount cashAccount)
+        //{
+        //    var cashDocument = new AccountDocument(
+        //        cashAccount.Id,
+        //        cashAccount.UserId,
+        //        AccountEnums.CurrencyKeys.CASH,
+        //        cashAccount.Name,
+        //        cashAccount.IsCredit,
+        //        cashAccount.Balance,
+        //        cashAccount.Description,
+        //        cashAccount.DisplayColor,
+        //        cashAccount.DateCreated,
+        //        cashAccount.DateUpdated,
+        //        cashAccount.DateDeleted
+        //    );
 
-            return lineOfCreditDocument;
-        }
+        //    return cashDocument;
+        //}
 
-        throw new InvalidOperationException("BaseAccount Type not supported");
+        //if (account is AbstractBankAccount bankAccount)
+        //{
+        //    if (bankAccount is CheckingAccount checkingAccount)
+        //    {
+        //        var checkingDocument = new AccountDocument(
+        //            checkingAccount.Id,
+        //            checkingAccount.UserId,
+        //            AccountEnums.CurrencyKeys.BANK,
+        //            checkingAccount.Name,
+        //            checkingAccount.IsCredit,
+        //            checkingAccount.Balance,
+        //            checkingAccount.Description,
+        //            checkingAccount.DisplayColor,
+        //            checkingAccount.DateCreated,
+        //            checkingAccount.DateUpdated,
+        //            checkingAccount.DateDeleted)
+        //        {
+        //            ExtAcctId = checkingAccount.ExtAcctId,
+        //            AcctKey = checkingAccount.AcctKey,
+
+        //            BankId = checkingAccount.BankId,
+        //            BankName = checkingAccount.BankName,
+        //            BranchId = checkingAccount.BranchId,
+
+        //            BankAccountType = BankAccountEnums.CurrencyKeys.CHECKING,
+        //            OverdraftLimit = checkingAccount.OverdraftLimit
+        //        };
+
+        //        return checkingDocument;
+        //    }
+
+        //    if (bankAccount is SavingsAccount savingsAccount)
+        //    {
+        //        var savingsDocument = new AccountDocument(
+        //            savingsAccount.Id,
+        //            savingsAccount.UserId,
+        //            AccountEnums.CurrencyKeys.BANK,
+        //            savingsAccount.Name,
+        //            savingsAccount.IsCredit,
+        //            savingsAccount.Balance,
+        //            savingsAccount.Description,
+        //            savingsAccount.DisplayColor,
+        //            savingsAccount.DateCreated,
+        //            savingsAccount.DateUpdated,
+        //            savingsAccount.DateDeleted)
+        //        {
+        //            ExtAcctId = savingsAccount.ExtAcctId,
+        //            AcctKey = savingsAccount.AcctKey,
+
+        //            BankId = savingsAccount.BankId,
+        //            BankName = savingsAccount.BankName,
+        //            BranchId = savingsAccount.BranchId,
+
+        //            BankAccountType = BankAccountEnums.CurrencyKeys.SAVINGS,
+
+        //            InterestRate = savingsAccount.InterestRate
+        //        };
+
+        //        return savingsDocument;
+        //    }
+
+        //    if (bankAccount is CreditLineAccount creditLineAccount)
+        //    {
+        //        var creditLineDocument = new AccountDocument(
+        //            creditLineAccount.Id,
+        //            creditLineAccount.UserId,
+        //            AccountEnums.CurrencyKeys.BANK,
+        //            creditLineAccount.Name,
+        //            creditLineAccount.IsCredit,
+        //            creditLineAccount.Balance,
+        //            creditLineAccount.Description,
+        //            creditLineAccount.DisplayColor,
+        //            creditLineAccount.DateCreated,
+        //            creditLineAccount.DateUpdated,
+        //            creditLineAccount.DateDeleted)
+        //        {
+        //            ExtAcctId = creditLineAccount.ExtAcctId,
+        //            AcctKey = creditLineAccount.AcctKey,
+
+        //            BankId = creditLineAccount.BankId,
+        //            BankName = creditLineAccount.BankName,
+        //            BranchId = creditLineAccount.BranchId,
+
+        //            BankAccountType = BankAccountEnums.CurrencyKeys.CREDITLINE,
+
+        //            CreditLimit = creditLineAccount.CreditLimit,
+        //            InterestRate = creditLineAccount.InterestRate
+        //        };
+
+        //        return creditLineDocument;
+        //    }
+        //}
+
+        //if (account is CreditCardAccount creditCardAccount)
+        //{
+        //    var creditCardDocument = new AccountDocument(
+        //        creditCardAccount.Id,
+        //        creditCardAccount.UserId,
+        //        AccountEnums.CurrencyKeys.CREDITCARD,
+        //        creditCardAccount.Name,
+        //        creditCardAccount.IsCredit,
+        //        creditCardAccount.Balance,
+        //        creditCardAccount.Description,
+        //        creditCardAccount.DisplayColor,
+        //        creditCardAccount.DateCreated,
+        //        creditCardAccount.DateUpdated,
+        //        creditCardAccount.DateDeleted)
+        //    {
+        //        ExtAcctId = creditCardAccount.ExtAcctId,
+        //        AcctKey = creditCardAccount.ACCTKEY,
+
+        //        CreditLimit = creditCardAccount.CreditLimit,
+        //        InterestRate = creditCardAccount.InterestRate
+        //    };
+
+        //    return creditCardDocument;
+        //}
+
+        //if (account is LoanAccount loanAccount)
+        //{
+        //    var loanAccountDocument = new AccountDocument(
+        //        loanAccount.Id,
+        //        loanAccount.UserId,
+        //        AccountEnums.CurrencyKeys.LOAN,
+        //        loanAccount.Name,
+        //        loanAccount.IsCredit,
+        //        loanAccount.Balance,
+        //        loanAccount.Description,
+        //        loanAccount.DisplayColor,
+        //        loanAccount.DateCreated,
+        //        loanAccount.DateUpdated,
+        //        loanAccount.DateDeleted)
+        //    {
+        //        LoanAccountType = loanAccount.LoanAcctType,
+        //        CreditLimit = loanAccount.CreditLimit,
+        //        InterestRate = loanAccount.InterestRate
+        //    };
+
+        //    return loanAccountDocument;
+        //}
+
+        //throw new InvalidOperationException("BaseAccount Type not supported");
     }
 
-    public static IEnumerable<AccountDocument> Map(IEnumerable<BaseAccount> accounts)
+    public static IEnumerable<AccountDocument> Map(IEnumerable<AbstractAccountBase> accounts)
     {
-        return accounts.Select(a => Map(a, false)).Where(x => x is not null).Cast<AccountDocument>();
+        return accounts.Select(a =>
+            Map(a))
+            .Where(x => x is not null)
+            .Cast<AccountDocument>();
     }
 
-    private static BaseAccount? GetAccountFromDocument(AccountDocument? document, bool includeTotals = false)
+    private static AbstractAccountBase? GetAccountFromDocument(AccountDocument? document)
     {
         if (document is null)
             return default;
 
-        if (document.AccountType.Equals(AccountTypes.Keys.CASH) && document is CashAccountDocument cashDoc)
+        if (document.AccountType.Equals(AccountEnums.AccountKeys.CASH))
+            return (CashAccount)document;
+
+        if (document.AccountType.Equals(AccountEnums.AccountKeys.BANK))
         {
-            var cashAccount = CashAccount.Load(
-                new AccountId(cashDoc.Id.ToString()),
+            if (document.BankAccountType.Equals(BankAccountEnums.BankAccountKeys.CHECKING))
+                return (CheckingAccount)document;
 
-                new UserId(cashDoc.UserId),
-                new AccountName(cashDoc.Name),
-                new Money(cashDoc.Balance),
-                cashDoc.Description,
-                cashDoc.DisplayColor,
-                cashDoc.DateClosed,
-                cashDoc.DateCreated,
-                cashDoc.DateUpdated,
-                cashDoc.DateDeleted
-            );
+            if (document.BankAccountType.Equals(BankAccountEnums.BankAccountKeys.SAVINGS))
+                return (SavingsAccount)document;
 
-            return cashAccount;
+            if (document.BankAccountType.Equals(BankAccountEnums.BankAccountKeys.CREDITLINE))
+                return (CreditLineAccount)document;
+
+            if (document.BankAccountType.Equals(BankAccountEnums.BankAccountKeys.CD))
+            {
+                throw new NotImplementedException("CD Account not implemented");
+            }
+
+            if (document.BankAccountType.Equals(BankAccountEnums.BankAccountKeys.MONEYMRKT))
+            {
+                throw new NotImplementedException("Money Market Account not implemented");
+            }
+
+            throw new InvalidOperationException($"Unknown Bank Account Type: {document.BankAccountType}");
         }
 
-        if (document.AccountType.Equals(AccountTypes.Keys.CHECKING) && document is CheckingAccountDocument checkingDoc)
+        if (document.AccountType.Equals(AccountEnums.AccountKeys.CREDITCARD))
         {
-            var checkingAccount = CheckingAccount.Load(
-                new AccountId(checkingDoc.Id.ToString()),
-
-                new UserId(checkingDoc.UserId),
-                new AccountName(checkingDoc.Name),
-                new Money(checkingDoc.Balance),
-                checkingDoc.Description,
-                checkingDoc.DisplayColor,
-                new Money(checkingDoc.OverdraftAmount),
-                checkingDoc.DateClosed,
-                checkingDoc.DateCreated,
-                checkingDoc.DateDeleted,
-                checkingDoc.DateUpdated
-            );
-
-            return checkingAccount;
+            return (CreditCardAccount)document;
         }
 
-        if (document.AccountType.Equals(AccountTypes.Keys.SAVINGS) && document is SavingsAccountDocument savingsDoc)
+        if (document.AccountType.Equals(AccountEnums.AccountKeys.INVESTMENT))
         {
-            var savingsAccount = SavingsAccount.Load(
-                new AccountId(savingsDoc.Id.ToString()),
-
-                new UserId(savingsDoc.UserId),
-                new AccountName(savingsDoc.Name),
-                new Money(savingsDoc.Balance),
-                savingsDoc.Description,
-                savingsDoc.DisplayColor,
-                new PercentageRate(savingsDoc.InterestRate),
-
-                savingsDoc.DateClosed,
-                savingsDoc.DateCreated,
-                savingsDoc.DateUpdated,
-                savingsDoc.DateDeleted
-            );
-
-            return savingsAccount;
+            return (InvestmentAccount)document;
         }
 
-        if (document.AccountType.Equals(AccountTypes.Keys.CREDIT_CARD) && document is CreditCardAccountDocument ccDoc)
+        if (document.AccountType.Equals(AccountEnums.AccountKeys.LOAN))
         {
-            var creditCardAccount = CreditCardAccount.Load(
-                new AccountId(ccDoc.Id.ToString()),
-
-                new UserId(ccDoc.UserId),
-                new AccountName(ccDoc.Name),
-                new Money(ccDoc.Balance),
-                ccDoc.Description,
-                ccDoc.DisplayColor,
-                new Money(ccDoc.CreditLimit),
-                new PercentageRate(ccDoc.InterestRate),
-
-                ccDoc.DateClosed,
-                ccDoc.DateCreated,
-                ccDoc.DateUpdated,
-                ccDoc.DateDeleted
-            );
-
-            return creditCardAccount;
-        }
-
-        if (document.AccountType.Equals(AccountTypes.Keys.LINE_OF_CREDIT) && document is LineOfCreditAccountDocument locDoc)
-        {
-            var lineOfCreditAccount = LineOfCreditAccount.Load(
-                new AccountId(locDoc.Id.ToString()),
-
-                new UserId(locDoc.UserId),
-                new AccountName(locDoc.Name),
-                new Money(locDoc.Balance),
-                locDoc.Description,
-                locDoc.DisplayColor,
-                new Money(locDoc.CreditLimit),
-                new PercentageRate(locDoc.InterestRate),
-
-                locDoc.DateClosed,
-                locDoc.DateCreated,
-                locDoc.DateUpdated,
-                locDoc.DateDeleted
-            );
-
-            return lineOfCreditAccount;
+            return (LoanAccount)document;
         }
 
         throw new InvalidOperationException("BaseAccount Type not supported");

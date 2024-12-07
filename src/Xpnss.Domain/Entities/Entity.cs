@@ -42,7 +42,8 @@ public abstract class Entity(string id)
 public abstract class Entity<TId>(TId id)
     where TId : EntityId
 {
-    public TId Id { get; protected set; } = id;
+    public TId Id { get; protected set; } = id ??
+        throw new ArgumentNullException(nameof(id), "EntityId cannot be null");
 
     public bool IsDeleted => DateDeleted.HasValue;
 

@@ -118,7 +118,7 @@ public class MonthlyTotal : AggregateRoot<EntityObjectId>
     public static MonthlyTotal Load(
         EntityObjectId id,
         UserId userId,
-        EntityObjectId? entityId,
+        EntityObjectId entityId,
         EntityTypes.Keys entityType,
         int year,
         int month,

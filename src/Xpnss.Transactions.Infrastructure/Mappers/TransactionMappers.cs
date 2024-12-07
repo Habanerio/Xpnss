@@ -32,7 +32,7 @@ internal static partial class InfrastructureMapper
         if (depositDocument == null)
             return default;
 
-        if (!depositDocument.TransactionType.Equals(TransactionTypes.Keys.DEPOSIT))
+        if (!depositDocument.TransactionType.Equals(TransactionEnums.TransactionKeys.DEPOSIT))
             throw new InvalidOperationException("Transaction document is not a DepositTransactionDocument");
 
         var transaction = DepositTransaction.Load(
@@ -44,7 +44,7 @@ internal static partial class InfrastructureMapper
             new PayerPayeeId(depositDocument.PayerPayeeId),
             depositDocument.TransactionDate,
             depositDocument.Tags,
-
+            depositDocument.ExtTransactionId,
             depositDocument.DateCreated,
             depositDocument.DateUpdated,
             depositDocument.DateDeleted);
@@ -61,7 +61,7 @@ internal static partial class InfrastructureMapper
         if (purchaseDocument == null)
             return default;
 
-        if (!purchaseDocument.TransactionType.Equals(TransactionTypes.Keys.PURCHASE))
+        if (!purchaseDocument.TransactionType.Equals(TransactionEnums.TransactionKeys.PURCHASE))
             throw new InvalidOperationException("Transaction document is not a PurchaseTransactionDocument");
 
         var purchaseItems = Map(purchaseDocument.Items);
@@ -76,12 +76,14 @@ internal static partial class InfrastructureMapper
             Map(purchaseDocument.Payments),
             purchaseDocument.TransactionDate,
             purchaseDocument.Tags,
+            purchaseDocument.ExtTransactionId,
             purchaseDocument.DateCreated,
             purchaseDocument.DateUpdated,
             purchaseDocument.DateDeleted);
 
         return transaction;
     }
+
 
     /// <summary>
     /// Maps a collection of <see cref="TransactionDocument"/> to a collection of <see cref="Transaction"/>
@@ -91,6 +93,7 @@ internal static partial class InfrastructureMapper
     /// <returns></returns>
     public static IEnumerable<TransactionBase> Map(IEnumerable<TransactionDocument> documents)
         => documents.Select(Map).Where(t => t is not null).Select(t => t!);
+
 
     /// <summary>
     /// Maps an individual <see cref="TransactionDocumentItem"/> to a <see cref="TransactionItem"/>
@@ -106,6 +109,7 @@ internal static partial class InfrastructureMapper
             new TransactionItemId(document.Id),
             new Money(document.Amount),
             new CategoryId(document.CategoryId),
+            new SubCategoryId(document.SubCategoryId),
             document.Description);
     }
 
@@ -117,6 +121,7 @@ internal static partial class InfrastructureMapper
     /// <returns></returns>
     public static IEnumerable<TransactionItem> Map(IEnumerable<TransactionDocumentItem> documents)
         => documents.Select(Map).Where(t => t is not null).Select(t => t!);
+
 
     public static TransactionPaymentItem? Map(TransactionDocumentPayment? document)
     {
@@ -163,13 +168,8 @@ internal static partial class InfrastructureMapper
         if (transaction is null)
             return default;
 
-        if (!transaction.TransactionType.Equals(TransactionTypes.Keys.DEPOSIT))
+        if (!transaction.TransactionType.Equals(TransactionEnums.TransactionKeys.DEPOSIT))
             throw new InvalidOperationException("Transaction is not a DepositTransaction");
-
-        //var transactionId = transaction.Id;
-        //ObjectId? payerPayeeId = transaction.PayerPayeeId?.Value is not null ? 
-        //    ObjectId.Parse(transaction.PayerPayeeId.Value) : 
-        //    null;
 
         var document = new DepositTransactionDocument
         {
@@ -179,9 +179,10 @@ internal static partial class InfrastructureMapper
             TransactionType = transaction.TransactionType,
             Description = transaction.Description,
             IsDeleted = transaction.IsDeleted,
-            PayerPayeeId = !string.IsNullOrWhiteSpace(transaction.PayerPayeeId) ?
-                ObjectId.Parse(transaction.PayerPayeeId.Value) :
-                null,
+            PayerPayeeId = transaction.PayerPayeeId,
+            //PayerPayeeId = !string.IsNullOrWhiteSpace(transaction.PayerPayeeId) ?
+            //    ObjectId.Parse(transaction.PayerPayeeId.Value) :
+            //    null,
             //PayerPayeeId = ObjectId.TryParse(transaction.PayerPayeeId, out var payerPayeeObjectId) ? payerPayeeObjectId : null,
             Tags = transaction.Tags.ToList(),
             TotalAmount = transaction.TotalAmount,
@@ -205,7 +206,7 @@ internal static partial class InfrastructureMapper
         if (transaction is null)
             return default;
 
-        if (!transaction.TransactionType.Equals(TransactionTypes.Keys.PURCHASE))
+        if (!transaction.TransactionType.Equals(TransactionEnums.TransactionKeys.PURCHASE))
             throw new InvalidOperationException("Transaction is not a PurchaseTransaction");
 
         var document = new PurchaseTransactionDocument
@@ -217,9 +218,10 @@ internal static partial class InfrastructureMapper
             Description = transaction.Description,
             IsDeleted = transaction.IsDeleted,
             Items = Map(transaction.Items).ToList(),
-            PayerPayeeId = !string.IsNullOrWhiteSpace(transaction.PayerPayeeId) ?
-                ObjectId.Parse(transaction.PayerPayeeId.Value) :
-                null,
+            PayerPayeeId = transaction.PayerPayeeId,
+            //PayerPayeeId = !string.IsNullOrWhiteSpace(transaction.PayerPayeeId) ?
+            //    ObjectId.Parse(transaction.PayerPayeeId.Value) :
+            //    null,
             Payments = Map(transaction.Payments).ToList(),
             Tags = transaction.Tags.ToList(),
             TotalAmount = transaction.TotalAmount,
@@ -235,7 +237,11 @@ internal static partial class InfrastructureMapper
         return document;
     }
 
-
+    /// <summary>
+    /// Maps a TransactionItem to a TransactionDocumentItem
+    /// </summary>
+    /// <param name="item"></param>
+    /// <returns></returns>
     public static TransactionDocumentItem? Map(TransactionItem? item)
     {
         if (item is null)
@@ -246,7 +252,11 @@ internal static partial class InfrastructureMapper
             item.Amount,
             string.IsNullOrWhiteSpace(item.CategoryId) ?
                 null :
-                ObjectId.Parse(item.CategoryId), item.Description);
+                ObjectId.Parse(item.CategoryId),
+            string.IsNullOrWhiteSpace(item.SubCategoryId) ?
+            null :
+            ObjectId.Parse(item.SubCategoryId),
+            item.Description);
 
         return itemDoc;
     }

@@ -36,12 +36,12 @@ public class TransactionDeletedIntegrationEventHandler(
 
         var account = accountResult.Value;
 
-        account.ApplyTransactionAmount(new Money(@event.Amount), @event.TransactionType);
+        account.AddTransactionAmount(new Money(@event.Amount), @event.TransactionType);
 
-        //var isCreditTransaction = TransactionTypes.DoesBalanceIncrease(account.AccountType, TransactionTypes.ToTransactionType(@event.TransactionType));
+        //var isCreditTransaction = TransactionEnums.DoesBalanceIncrease(accountBase.AccountType, TransactionEnums.ToTransactionType(@event.TransactionType));
 
         //// TODO: This should be handled within the Account itself.
-        //if (account is BaseCreditAccount creditAccount)
+        //if (accountBase is BaseCreditAccount creditAccount)
         //{
         //    if (isCreditTransaction)
         //        creditAccount.RemoveWithdrawal(@event.DateOfTransactionUtc, new Money(@event.CreditLimit));
@@ -51,9 +51,9 @@ public class TransactionDeletedIntegrationEventHandler(
         //else
         //{
         //    if (isCreditTransaction)
-        //        account.RemoveWithdrawal(@event.DateOfTransactionUtc, new Money(@event.CreditLimit));
+        //        accountBase.RemoveWithdrawal(@event.DateOfTransactionUtc, new Money(@event.CreditLimit));
         //    else
-        //        account.RemoveDeposit(@event.DateOfTransactionUtc, new Money(@event.CreditLimit));
+        //        accountBase.RemoveDeposit(@event.DateOfTransactionUtc, new Money(@event.CreditLimit));
         //}
 
         try
@@ -64,7 +64,7 @@ public class TransactionDeletedIntegrationEventHandler(
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "An error occurred while trying to update Account '{@accountId}' for User '{@userId}'", @event.AccountId, @event.UserId);
+            _logger.LogError(e, "An error occurred while trying to update Account '{AccountId}' for User '{UserId}'", @event.AccountId, @event.UserId);
             throw;
         }
     }

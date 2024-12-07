@@ -11,7 +11,7 @@
 //public record UpdateTransactionCommand(
 //    string UserId,
 //    string TransactionId,
-//    string AccountId,
+//    string ExtAcctId,
 //    IEnumerable<TransactionItemDto> Items,
 //    DateTime TransactionDate,
 //    string TransactionType,
@@ -61,7 +61,7 @@
 
 //        var createTransactionCommand = new CreateTransactionCommand(
 //            command.UserId,
-//            command.AccountId,
+//            command.ExtAcctId,
 //            command.Items,
 //            command.TransactionDate,
 //            command.TransactionType,
@@ -83,7 +83,7 @@
 //        public Validator()
 //        {
 //            RuleFor(x => x.UserId).NotEmpty();
-//            RuleFor(x => x.AccountId).NotEmpty();
+//            RuleFor(x => x.ExtAcctId).NotEmpty();
 //            RuleFor(x => x.Items).NotEmpty();
 //            RuleFor(x => x.TransactionDate).NotEmpty();
 //            RuleFor(x => x.TransactionType).NotNull();

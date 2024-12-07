@@ -6,4 +6,4 @@ public record UserProfileDto(
     string FirstName,
     string LastName,
     string Email,
-    DateTime DateLastSeen);
+    DateTime? DateLastSeen = null);
