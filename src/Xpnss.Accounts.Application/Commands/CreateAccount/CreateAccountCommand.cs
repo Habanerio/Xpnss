@@ -26,7 +26,7 @@ namespace Habanerio.Xpnss.Accounts.Application.Commands.CreateAccount;
 /// </remarks>
 public record CreateAccountCommand(
     string UserId,
-    CreateAccountRequest Request) :
+    CreateAccountApiRequest Request) :
     IAccountsCommand<Result<AccountDto>>;
 
 public sealed class CreateAccountCommandHandler(IAccountsRepository repository) :
@@ -67,7 +67,7 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository) 
     /// <param name="request"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    private static AbstractAccountBase GetAccountFromRequest(string userId, CreateAccountRequest request)
+    private static AbstractAccountBase GetAccountFromRequest(string userId, CreateAccountApiRequest request)
     {
         if (request.AccountType is AccountEnums.AccountKeys.CASH)
             return CashAccount.New(

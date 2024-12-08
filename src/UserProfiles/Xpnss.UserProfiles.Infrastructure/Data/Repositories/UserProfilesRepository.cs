@@ -80,7 +80,7 @@ public class UserProfilesRepository(
         var userProfile = InfrastructureMapper.Map(userProfileDocument);
 
         if (userProfile is null)
-            return Result.Fail<UserProfile?>("Failed to map UserProfileDocument to UserProfile");
+            throw new InvalidCastException($"{nameof(GetType)}: Failed to map UserProfileDocument to UserProfile");
 
         return Result.Ok<UserProfile?>(userProfile);
     }
@@ -108,8 +108,8 @@ public class UserProfilesRepository(
 
         if (userProfile is null)
         {
-            _logger.LogError("Failed to map `{Email}`'s UserProfileDocument to UserProfile. ExtUserId: {ExtUserId}",
-                userProfileDocument.Email, userProfileDocument.Email);
+            _logger.LogError("{GetType}: Failed to map `{Email}`'s UserProfileDocument to UserProfile. ExtUserId: {ExtUserId}",
+                nameof(GetType), userProfileDocument.Email, userProfileDocument.Email);
 
             return Result.Fail<UserProfile?>("Failed to map UserProfileDocument to UserProfile");
         }

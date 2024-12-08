@@ -66,10 +66,8 @@ public sealed class PayerPayee : AggregateRoot<PayerPayeeId>
 
     public static PayerPayee New(
         UserId userId,
-        PayerPayeeName name,
-        string description,
-        string location)
+        PayerPayeeName name)
     {
-        return new PayerPayee(userId, name, description, location);
+        return new PayerPayee(userId, name, string.Empty, string.Empty);
     }
 }

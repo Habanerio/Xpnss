@@ -10,7 +10,7 @@ using MediatR;
 
 namespace Habanerio.Xpnss.Transactions.Application.Commands;
 
-public sealed record CreateWithdrawalCommand(CreateWithdrawalTransactionRequest Request) :
+public sealed record CreateWithdrawalCommand(CreateWithdrawalTransactionApiRequest ApiRequest) :
     ITransactionsCommand<Result<WithdrawalTransactionDto>>;
 
 /// <summary>
@@ -36,14 +36,14 @@ public sealed class CreateWithdrawalCommandHandler(
             return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
         var withdrawalDoc = WithdrawalTransaction.New(
-            new UserId(command.Request.UserId),
-            new AccountId(command.Request.AccountId),
-            new Money(command.Request.TotalAmount),
-            command.Request.Description,
-            new PayerPayeeId(command.Request.PayerPayee.Id),
-            command.Request.TransactionDate,
-            command.Request.Tags,
-            command.Request.ExtTransactionId);
+            new UserId(command.ApiRequest.UserId),
+            new AccountId(command.ApiRequest.AccountId),
+            new Money(command.ApiRequest.TotalAmount),
+            command.ApiRequest.Description,
+            new PayerPayeeId(command.ApiRequest.PayerPayee.Id),
+            command.ApiRequest.TransactionDate,
+            command.ApiRequest.Tags,
+            command.ApiRequest.ExtTransactionId);
 
         var result = await _repository.AddAsync(withdrawalDoc, cancellationToken);
 
@@ -60,11 +60,11 @@ public sealed class CreateWithdrawalCommandHandler(
     {
         public Validator()
         {
-            RuleFor(x => x.Request.UserId).NotEmpty();
-            RuleFor(x => x.Request.AccountId).NotEmpty();
-            RuleFor(x => x.Request.TotalAmount).GreaterThan(0);
-            RuleFor(x => x.Request.Description).NotEmpty();
-            RuleFor(x => x.Request.TransactionDate).NotEmpty();
+            RuleFor(x => x.ApiRequest.UserId).NotEmpty();
+            RuleFor(x => x.ApiRequest.AccountId).NotEmpty();
+            RuleFor(x => x.ApiRequest.TotalAmount).GreaterThan(0);
+            RuleFor(x => x.ApiRequest.Description).NotEmpty();
+            RuleFor(x => x.ApiRequest.TransactionDate).NotEmpty();
         }
     }
 }

@@ -1,6 +1,7 @@
 using System.Net;
 using Carter;
 using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Application.Requests;
 using Habanerio.Xpnss.Categories.Application.Commands;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -17,14 +18,14 @@ public class AddSubCategoriesEndpoint : BaseEndpoint
                 async (
                     [FromRoute] string userId,
                     [FromRoute] string categoryId,
-                    [FromBody] AddSubCategoriesCommand command,
+                    [FromBody] AddSubCategoriesApiRequest request,
                     [FromServices] ICategoriesService service,
                     CancellationToken cancellationToken) =>
                 {
-                    return await HandleAsync(userId, categoryId, command, service, cancellationToken);
+                    return await HandleAsync(userId, categoryId, request, service, cancellationToken);
                 })
                 .Produces<CategoryDto>((int)HttpStatusCode.OK)
-                .Produces<string>((int)HttpStatusCode.BadRequest)
+                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
                 .WithDisplayName("Add SubCategories")
                 .WithName("AddSubCategories")
                 .WithTags("Categories")
@@ -34,11 +35,11 @@ public class AddSubCategoriesEndpoint : BaseEndpoint
         public static async Task<IResult> HandleAsync(
             string userId,
             string categoryId,
-            AddSubCategoriesCommand command,
+            AddSubCategoriesApiRequest request,
             ICategoriesService service,
             CancellationToken cancellationToken)
         {
-            ArgumentNullException.ThrowIfNull(command);
+            ArgumentNullException.ThrowIfNull(request);
             ArgumentNullException.ThrowIfNull(service);
 
             if (string.IsNullOrWhiteSpace(userId))
@@ -46,6 +47,8 @@ public class AddSubCategoriesEndpoint : BaseEndpoint
 
             if (string.IsNullOrWhiteSpace(categoryId))
                 return BadRequestWithErrors("Category Id is required");
+
+            var command = new AddSubCategoriesCommand(userId, request);
 
             var result = await service.CommandAsync(command, cancellationToken);
 

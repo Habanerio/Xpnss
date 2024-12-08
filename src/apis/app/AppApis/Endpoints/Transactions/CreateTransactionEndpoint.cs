@@ -1,12 +1,16 @@
 using System.Net;
+
 using Carter;
+
 using FluentValidation;
+
 using Habanerio.Xpnss.Application.DTOs;
 using Habanerio.Xpnss.Application.Requests;
 using Habanerio.Xpnss.PayerPayees.Application.Commands.CreatePayerPayee;
 using Habanerio.Xpnss.PayerPayees.Domain.Interfaces;
 using Habanerio.Xpnss.Transactions.Application.Commands;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
+
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Transactions;
@@ -20,16 +24,17 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
             app.MapPost("/api/v1/users/{userId}/transactions/",
                     async (
                         [FromRoute] string userId,
-                        [FromBody] CreateTransactionRequest request,
+                        [FromBody] CreateTransactionApiRequest request,
                         [FromServices] ITransactionsService transactionsService,
                         [FromServices] IPayerPayeesService payerPayeesService,
+                        [FromServices] ILogger<CreateTransactionEndpoint> logger,
                         CancellationToken cancellationToken) =>
                     {
-                        return await HandleAsync(userId, request, transactionsService, payerPayeesService, cancellationToken);
+                        return await HandleAsync(userId, request, transactionsService, payerPayeesService, logger, cancellationToken);
                     }
                 )
                 .Produces<PurchaseTransactionDto>((int)HttpStatusCode.OK)
-                .Produces<string>((int)HttpStatusCode.BadRequest)
+                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
                 .WithDisplayName("New Transaction")
                 .WithName("CreateTransactionCommand")
                 .WithTags("Transactions")
@@ -39,28 +44,22 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
 
     public static async Task<IResult> HandleAsync(
         string userId,
-        CreateTransactionRequest request,
+        CreateTransactionApiRequest request,
         ITransactionsService transactionsService,
         IPayerPayeesService payerPayeesService,
+        ILogger<CreateTransactionEndpoint> logger,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(transactionsService);
         ArgumentNullException.ThrowIfNull(payerPayeesService);
+        ArgumentNullException.ThrowIfNull(logger);
 
         if (string.IsNullOrWhiteSpace(userId))
             return BadRequestWithErrors("User Id is required");
 
-        var validator = new Validator();
-        var validationResult = await validator.ValidateAsync(request, cancellationToken);
-
-        if (!validationResult.IsValid)
-            return BadRequestWithErrors(validationResult.Errors);
-
-        var payerPayeeId = request.PayerPayee?.Id ?? string.Empty;
+        // Would like to associate the new/existing PayerPayee with the Transaction somehow differently.//
         var payerPayeeName = request.PayerPayee?.Name ?? string.Empty;
-        var payerPayeeDescription = request.PayerPayee?.Description ?? string.Empty;
-        var payerPayeeLocation = request.PayerPayee?.Location ?? string.Empty;
 
         PayerPayeeDto? payerPayeeDto = null;
 
@@ -68,11 +67,10 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
         {
             var payerPayeeCommand = new CreatePayerPayeeCommand(
                 userId,
-                payerPayeeName,
-                payerPayeeDescription,
-                payerPayeeLocation);
+                payerPayeeName);
 
-            var payerPayeeResult = await payerPayeesService.CommandAsync(payerPayeeCommand, cancellationToken);
+            var payerPayeeResult = await payerPayeesService
+                .CommandAsync(payerPayeeCommand, cancellationToken);
 
             if (payerPayeeResult is { IsSuccess: true, ValueOrDefault: not null })
             {
@@ -80,7 +78,7 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
 
                 request = request with
                 {
-                    PayerPayee = new PayerPayeeRequest
+                    PayerPayee = new PayerPayeeApiRequest
                     {
                         Id = payerPayeeDto.Id,
                         Name = payerPayeeDto.Name,
@@ -116,66 +114,18 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
         }
         catch (Exception e)
         {
+            logger.LogCritical(e, "An error occurred while trying to create a new Transaction:" +
+                                    "\r\n UserId: {UserId}" +
+                                    "\r\n AccountId: {AccountId}" +
+                                    "\r\n TransactionType: {TransactionType}" +
+                                    "\r\n TotalAmount: {TotalAmount}",
+                                    request.UserId,
+                                    request.AccountId,
+                                    request.TransactionType,
+                                    request.TotalAmount);
             return Results.BadRequest(e.Message);
         }
     }
 
-    public sealed class Validator : AbstractValidator<CreateTransactionRequest>
-    {
-        public Validator()
-        {
-            RuleFor(x => x).NotNull();
-            RuleFor(x => x.UserId).NotEmpty();
-            RuleFor(x => x.AccountId).NotEmpty();
-            RuleFor(x => x.TransactionDate).NotEmpty();
-            RuleFor(x => x.TransactionType).NotEmpty();
-        }
-    }
 
-    private static async Task<PayerPayeeDto?> DoPayerPayeeAsync(
-        IPayerPayeesService payerPayeesService,
-        string userId,
-        CreatePurchaseTransactionRequest request,
-        CancellationToken cancellationToken = default)
-    {
-        var payerPayeeId = request.PayerPayee.Id;
-        var payerPayeeName = request.PayerPayee.Name;
-        var payerPayeeDescription = request.PayerPayee.Description;
-        var payerPayeeLocation = request.PayerPayee.Description;
-
-        PayerPayeeDto? payerPayeeDto = null;
-
-        // If the PayerPayeeId is empty, but the PayerPayee Name is not, create a new PayerPayee.
-        // If the PayerPayeeId is empty and the PayerPayee Name is empty, then ignore.
-        if (string.IsNullOrWhiteSpace(payerPayeeId) && !string.IsNullOrWhiteSpace(payerPayeeName))
-        {
-            var payerPayeeCommand = new CreatePayerPayeeCommand(
-            userId,
-            payerPayeeName,
-            payerPayeeDescription,
-            payerPayeeLocation);
-
-            var payerPayeeResult = await payerPayeesService.CommandAsync(payerPayeeCommand, cancellationToken);
-
-            if (payerPayeeResult is { IsSuccess: true, ValueOrDefault: not null })
-            {
-                payerPayeeDto = payerPayeeResult.ValueOrDefault;
-
-                request.PayerPayee = request.PayerPayee with
-                {
-                    Id = payerPayeeDto.Id
-                };
-
-                //request = request with
-                //{
-                //    PayerPayee = request.PayerPayee with
-                //    {
-                //        Id = payerPayeeDto.Id
-                //    }
-                //};
-            }
-        }
-
-        return payerPayeeDto;
-    }
 }

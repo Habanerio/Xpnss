@@ -3,10 +3,8 @@ using Habanerio.Xpnss.Domain.Types;
 
 namespace Habanerio.Xpnss.Application.Requests;
 
-public record CreateAccountRequest
+public record CreateAccountApiRequest : UserRequiredApiRequest
 {
-    public string UserId { get; set; }
-
     [JsonPropertyName("AccountType")]
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public AccountEnums.AccountKeys AccountType { get; set; } =
@@ -40,12 +38,12 @@ public record CreateAccountRequest
 
     public decimal OverdraftAmount { get; set; }
 
-    protected CreateAccountRequest() { }
-
     [JsonConstructor]
-    public CreateAccountRequest(
+    protected CreateAccountApiRequest() { }
+
+    public CreateAccountApiRequest(
         string userId,
-        AllAccountEnums.Keys accountType,
+        AllAccountEnums.AllAccountKeys accountType,
         string name,
         string description,
         string displayColor) :
@@ -60,7 +58,7 @@ public record CreateAccountRequest
             displayColor)
     { }
 
-    protected CreateAccountRequest(
+    protected CreateAccountApiRequest(
         string userId,
         AccountEnums.AccountKeys accountType,
         BankAccountEnums.BankAccountKeys bankAccountType,
@@ -70,6 +68,8 @@ public record CreateAccountRequest
         string description,
         string displayColor)
     {
+        UserId = userId;
+
         AccountType = accountType;
         BankAccountType = bankAccountType;
         LoanAccountType = loanAccountType;
@@ -77,11 +77,10 @@ public record CreateAccountRequest
         Name = name;
         Description = description;
         DisplayColor = displayColor;
-        UserId = userId;
     }
 }
 
-public record CreateCashAccountRequest : CreateAccountRequest
+public record CreateCashAccountRequest : CreateAccountApiRequest
 {
     [JsonConstructor]
     public CreateCashAccountRequest()
@@ -104,22 +103,9 @@ public record CreateCashAccountRequest : CreateAccountRequest
             LoanAccountEnums.LoanAccountKeys.NA,
             name, description, displayColor)
     { }
-
-    //public static explicit operator CreateAccountCommand(CreateCashAccountRequest request)
-    //{
-    //    var command = new CreateAccountCommand(
-    //        request.UserId,
-    //        request.AccountType,
-    //        request.Name,
-    //        request.Description,
-    //        request.DisplayColor);
-
-
-    //    return command;
-    //}
 }
 
-public abstract record CreateBankAccountRequest : CreateAccountRequest
+public abstract record CreateBankAccountRequest : CreateAccountApiRequest
 {
     [JsonConstructor]
     protected CreateBankAccountRequest()
@@ -215,25 +201,9 @@ public record CreateCreditLineAccountRequest : CreateBankAccountRequest
         CreditLimit = creditLimit;
         InterestRate = interestRate;
     }
-
-    //public static explicit operator CreateAccountCommand(CreateCreditLineAccountRequest request)
-    //{
-    //    var command = new CreateAccountCommand(
-    //        request.UserId,
-    //        request.AccountType,
-    //        request.Name,
-    //        request.Description,
-    //        request.DisplayColor,
-    //        request.BankAccountType,
-    //        request.LoanAccountType,
-    //        CreditLimit: request.CreditLimit,
-    //        InterestRate: request.InterestRate);
-
-    //    return command;
-    //}
 }
 
-public record CreateCreditCardAccountRequest : CreateAccountRequest
+public record CreateCreditCardAccountRequest : CreateAccountApiRequest
 {
     [JsonConstructor]
     public CreateCreditCardAccountRequest()
@@ -262,25 +232,9 @@ public record CreateCreditCardAccountRequest : CreateAccountRequest
         CreditLimit = creditLimit;
         InterestRate = interestRate;
     }
-
-    //public static explicit operator CreateAccountCommand(CreateCreditCardAccountRequest request)
-    //{
-    //    var command = new CreateAccountCommand(
-    //        request.UserId,
-    //        request.AccountType,
-    //        request.Name,
-    //        request.Description,
-    //        request.DisplayColor,
-    //        request.BankAccountType,
-    //        request.LoanAccountType,
-    //        CreditLimit: request.CreditLimit,
-    //        InterestRate: request.InterestRate);
-
-    //    return command;
-    //}
 }
 
-public record CreateLoanAccountRequest : CreateAccountRequest
+public record CreateLoanAccountRequest : CreateAccountApiRequest
 {
     [JsonConstructor]
     public CreateLoanAccountRequest()
@@ -312,20 +266,4 @@ public record CreateLoanAccountRequest : CreateAccountRequest
 
         LoanAccountType = loanAccountType;
     }
-
-    //public static explicit operator CreateAccountCommand(CreateLoanAccountRequest request)
-    //{
-    //    var command = new CreateAccountCommand(
-    //        request.UserId,
-    //        request.AccountType,
-    //        request.Name,
-    //        request.Description,
-    //        request.DisplayColor,
-    //        request.BankAccountType,
-    //        request.LoanAccountType,
-    //        CreditLimit: request.CreditLimit,
-    //        InterestRate: request.InterestRate);
-
-    //    return command;
-    //}
 }

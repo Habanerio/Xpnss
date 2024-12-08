@@ -15,12 +15,15 @@ public sealed class MonthlyTotalDocument : MongoDocument
     [BsonElement("entity_id")]
     public ObjectId? EntityId { get; set; }
 
+    [BsonElement("sub_entity_id")]
+    public ObjectId? SubEntityId { get; set; }
+
     [BsonElement("user_id")]
     public ObjectId UserId { get; set; }
 
     [BsonElement("entity_type")]
     [BsonRepresentation(BsonType.String)]
-    public EntityTypes.Keys EntityType { get; set; }
+    public EntityEnums.Keys EntityType { get; set; }
 
     [BsonElement("year")]
     public int Year { get; set; }

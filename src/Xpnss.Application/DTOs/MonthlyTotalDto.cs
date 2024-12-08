@@ -4,6 +4,8 @@ public sealed record MonthlyTotalDto
 {
     public string EntityId { get; init; }
 
+    public string SubEntityId { get; init; }
+
     public string EntityType { get; init; }
 
     public int Year { get; init; }

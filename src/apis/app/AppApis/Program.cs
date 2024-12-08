@@ -27,6 +27,8 @@ public class Program
 
         builder.Services.AddServiceDiscovery();
 
+        builder.AddRedisClient(connectionName: "xpnss-web-redis");
+
         builder.Services.AddCarter();
 
         builder.Services.AddCors();
@@ -79,7 +81,7 @@ public class Program
 
         app.MapDefaultEndpoints();
 
-        // Configure the HTTP request pipeline.
+        // Configure the HTTP apiRequest pipeline.
         if (app.Environment.IsDevelopment())
         {
             app.UseCors(options =>

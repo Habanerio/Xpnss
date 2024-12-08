@@ -46,29 +46,29 @@ public partial class AccountDocument :
         LoanAccountEnums.LoanAccountKeys.NA;
 
     [BsonElement("institution_name")]
-    public string InstitutionName { get; set; } = "";
+    public string InstitutionName { get; set; } = string.Empty;
 
     /// <summary>
     /// Bank Account, Credit Card Account, Investment Account, Presentment Account, Loan Account(?) ExtAcctId
     /// </summary>
     [BsonElement("ofx_account_id")]
-    public string ExtAcctId { get; set; } = "";
+    public string ExtAcctId { get; set; } = string.Empty;
 
     /// <summary>
     /// Name of the specific Account type
     /// </summary>
     /// <example>Capital One (Credit Card)</example>
     [BsonElement("name")]
-    public string Name { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
 
     [BsonElement("balance")]
     public decimal Balance { get; set; }
 
     [BsonElement("description")]
-    public string Description { get; set; } = "";
+    public string Description { get; set; } = string.Empty;
 
     [BsonElement("display_color")]
-    public string DisplayColor { get; set; } = "";
+    public string DisplayColor { get; set; } = string.Empty;
 
 
     [BsonElement("credit_limit")]

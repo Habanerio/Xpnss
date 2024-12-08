@@ -1,7 +1,7 @@
 using FluentResults;
 using FluentValidation;
 using Habanerio.Xpnss.Application.DTOs;
-using Habanerio.Xpnss.Domain.Types;
+using Habanerio.Xpnss.Application.Requests;
 using Habanerio.Xpnss.Infrastructure.IntegrationEvents.UserProfiles;
 using Habanerio.Xpnss.UserProfiles.Domain.Entities;
 using Habanerio.Xpnss.UserProfiles.Domain.Interfaces;
@@ -11,11 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace Habanerio.Xpnss.UserProfiles.Application.Commands;
 
 public sealed record CreateUserProfileCommand(
-    string Email,
-    string FirstName,
-    string LastName,
-    string ExtUserId,
-    CurrencyEnums.CurrencyKeys DefaultCurrency) :
+    CreateUserProfileApiRequest Request) :
     IUserProfilesCommand<Result<UserProfileDto>>;
 
 public class CreateUserProfileCommandHandler(
@@ -34,9 +30,11 @@ public class CreateUserProfileCommandHandler(
         throw new ArgumentNullException(nameof(repository));
 
     public async Task<Result<UserProfileDto>> Handle(
-        CreateUserProfileCommand request,
+        CreateUserProfileCommand command,
         CancellationToken cancellationToken)
     {
+        var request = command.Request;
+
         var validator = new Validator();
 
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
@@ -73,7 +71,7 @@ public class CreateUserProfileCommandHandler(
 
         if (result.IsFailed || result.ValueOrDefault is null)
         {
-            _logger.LogError("{GetType}: Could not save the {FirstName} User Profile ({Email})",
+            _logger.LogError("{GetType}: Could not save '{FirstName}' User Profile ({Email})",
                 nameof(GetType), firstName, email);
 
             return Result.Fail(result.Errors?[0].Message ??
@@ -97,11 +95,10 @@ public class CreateUserProfileCommandHandler(
         return userProfileDto;
     }
 
-    public class Validator : AbstractValidator<CreateUserProfileCommand>
+    public class Validator : AbstractValidator<CreateUserProfileApiRequest>
     {
         public Validator()
         {
-            //RuleFor(x => x.ExtUserId).NotEmpty();
             RuleFor(x => x.FirstName).NotEmpty();
             RuleFor(x => x.Email).NotEmpty().EmailAddress();
         }

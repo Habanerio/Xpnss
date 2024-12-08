@@ -7,7 +7,8 @@ using MediatR;
 
 namespace Habanerio.Xpnss.Accounts.Application.Queries.GetAccounts;
 
-public sealed record GetAccountsQuery(string UserId) : IAccountsQuery<Result<IEnumerable<AccountDto>>>;
+public sealed record GetAccountsQuery(string UserId) :
+    IAccountsQuery<Result<IEnumerable<AccountDto>>>;
 
 /// <summary>
 /// MediatR query to get accounts by user id.
@@ -18,7 +19,9 @@ public class GetAccountsQueryHandler(IAccountsRepository repository) :
     private readonly IAccountsRepository _repository = repository ??
         throw new ArgumentNullException(nameof(repository));
 
-    public async Task<Result<IEnumerable<AccountDto>>> Handle(GetAccountsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<AccountDto>>> Handle(
+        GetAccountsQuery request,
+        CancellationToken cancellationToken)
     {
         var validator = new Validator();
 

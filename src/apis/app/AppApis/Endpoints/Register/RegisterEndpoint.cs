@@ -16,7 +16,7 @@ public class RegisterEndpoint : BaseEndpoint
         {
             builder.MapPost("/api/v1/register",
                     async (
-                        [FromBody] CreateUserProfileRequest request,
+                        [FromBody] CreateUserProfileApiRequest request,
                         [FromServices] IUserProfilesService userProfilesService,
                         CancellationToken cancellationToken) =>
                     {
@@ -24,7 +24,7 @@ public class RegisterEndpoint : BaseEndpoint
                     }
                 )
                 .Produces<UserProfileDto>((int)HttpStatusCode.OK)
-                .Produces<string>((int)HttpStatusCode.BadRequest)
+                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
                 .WithDisplayName("Register")
                 .WithName("Register")
                 .WithTags("Register")
@@ -32,7 +32,7 @@ public class RegisterEndpoint : BaseEndpoint
         }
 
         private static async Task<IResult> HandleAsync(
-            CreateUserProfileRequest request,
+            CreateUserProfileApiRequest request,
             IUserProfilesService userProfilesService,
             CancellationToken cancellationToken)
         {
@@ -42,14 +42,10 @@ public class RegisterEndpoint : BaseEndpoint
             if (string.IsNullOrWhiteSpace(request.FirstName))
                 return BadRequestWithErrors($"First Name is required ({nameof(request.FirstName)})");
 
-            var createUserProfileCommand = new CreateUserProfileCommand(
-                request.Email,
-                request.FirstName,
-                request.LastName,
-                request.ExtUserId,
-                request.DefaultCurrency);
+            var createUserProfileCommand = new CreateUserProfileCommand(request);
 
-            var userProfileResult = await userProfilesService.CommandAsync(createUserProfileCommand, cancellationToken);
+            var userProfileResult = 
+                await userProfilesService.CommandAsync(createUserProfileCommand, cancellationToken);
 
             if (userProfileResult.IsFailed)
                 return BadRequestWithErrors(userProfileResult.Errors[0].Message);
@@ -59,12 +55,14 @@ public class RegisterEndpoint : BaseEndpoint
                     $"Could not create a UserProfile for {request.FirstName} ({request.Email})");
 
             if (string.IsNullOrWhiteSpace(userProfileResult.Value.Id))
-                return BadRequestWithErrors($"Could not create a UserProfile for {request.FirstName} ({request.Email})");
+                return BadRequestWithErrors(
+                    $"Could not create a UserProfile for {request.FirstName} ({request.Email})");
 
             var userProfileDto = userProfileResult.Value;
 
             if (userProfileDto is null)
-                return BadRequestWithErrors($"Could not create a UserProfile for {request.FirstName} ({request.Email})");
+                return BadRequestWithErrors(
+                    $"Could not create a UserProfile for {request.FirstName} ({request.Email})");
 
             return Results.Ok(userProfileDto);
         }

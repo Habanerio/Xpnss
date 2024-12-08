@@ -4,6 +4,7 @@ using FluentValidation;
 using Habanerio.Xpnss.Accounts.Application.Commands.UpdateAccountDetails;
 using Habanerio.Xpnss.Accounts.Domain.Interfaces;
 using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Application.Requests;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Accounts;
@@ -21,14 +22,14 @@ public class UpdateAccountDetailsEndpoint : BaseEndpoint
                     async (
                         [FromRoute] string userId,
                         [FromRoute] string accountId,
-                        [FromBody] UpdateAccountDetailsCommand command,
+                        [FromBody] UpdateAccountDetailsApiRequest request,
                         [FromServices] IAccountsService service,
                         CancellationToken cancellationToken) =>
                     {
-                        return await HandleAsync(userId, accountId, command, service, cancellationToken);
+                        return await HandleAsync(userId, accountId, request, service, cancellationToken);
                     })
                 .Produces<AccountDto>((int)HttpStatusCode.OK)
-                .Produces<string>((int)HttpStatusCode.BadRequest)
+                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
                 .Produces((int)HttpStatusCode.NotFound)
                 .WithDisplayName("Update Account Details")
                 .WithName("UpdateAccountDetails")
@@ -40,11 +41,11 @@ public class UpdateAccountDetailsEndpoint : BaseEndpoint
     public static async Task<IResult> HandleAsync(
         string userId,
         string accountId,
-        UpdateAccountDetailsCommand command,
+        UpdateAccountDetailsApiRequest request,
         IAccountsService service,
         CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(service);
 
         if (string.IsNullOrWhiteSpace(userId))
@@ -53,10 +54,12 @@ public class UpdateAccountDetailsEndpoint : BaseEndpoint
         if (string.IsNullOrWhiteSpace(accountId))
             return BadRequestWithErrors("Account Id is required");
 
-        var validationResult = await new Validator().ValidateAsync(command, cancellationToken);
+        var validationResult = await new Validator().ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
             return BadRequestWithErrors(validationResult.Errors);
+
+        var command = new UpdateAccountDetailsCommand(userId, request);
 
         var result = await service.CommandAsync(command, cancellationToken);
 
@@ -66,7 +69,7 @@ public class UpdateAccountDetailsEndpoint : BaseEndpoint
         return Results.Ok(result.Value);
     }
 
-    public sealed class Validator : AbstractValidator<UpdateAccountDetailsCommand>
+    public sealed class Validator : AbstractValidator<UpdateAccountDetailsApiRequest>
     {
         public Validator()
         {

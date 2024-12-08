@@ -22,7 +22,7 @@ public sealed class GetCategoriesEndpoint : BaseEndpoint
                         return await HandleAsync(userId, service, cancellationToken);
                     })
                 .Produces<IEnumerable<CategoryDto>>((int)HttpStatusCode.OK)
-                .Produces<string>((int)HttpStatusCode.BadRequest)
+                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
                 .WithDisplayName("Get Categories")
                 .WithName("GetCategories")
                 .WithTags("Categories")

@@ -22,7 +22,7 @@ public sealed class GetUserProfileByExtIdEndpoint : BaseEndpoint
                         return await HandleAsync(extUserId, service, cancellationToken);
                     })
                 .Produces<UserProfileDto>((int)HttpStatusCode.OK)
-                .Produces<string>((int)HttpStatusCode.BadRequest)
+                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
                 .WithDisplayName("Get User Profile By Ext Id")
                 .WithName("GetUserProfileByExtId")
                 .WithTags("UserProfiles")

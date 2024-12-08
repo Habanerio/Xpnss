@@ -1,12 +1,15 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+
 using Habanerio.Xpnss.Accounts.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.Apis.App.AppApis;
 using Habanerio.Xpnss.Application.DTOs;
 using Habanerio.Xpnss.Application.Requests;
 using Habanerio.Xpnss.Domain.Types;
 using Habanerio.Xpnss.MonthlyTotals.Infrastructure.Data.Documents;
+
 using Microsoft.AspNetCore.Mvc.Testing;
+
 using MongoDB.Bson;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis.Transactions;
@@ -26,7 +29,7 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
     protected async Task AssertTransactionAsync(
         ObjectId testUserId,
         AccountDocument? originalAccountDoc,
-        CreateTransactionRequest originalRequest,
+        CreateTransactionApiRequest originalRequest,
         TransactionEnums.TransactionKeys transactionType)
     {
         Assert.NotNull(originalRequest);
@@ -44,13 +47,13 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
 
         if (transactionType is TransactionEnums.TransactionKeys.DEPOSIT)
         {
-            var createDepositTransactionRequest = originalRequest as CreateDepositTransactionRequest ??
+            var createDepositTransactionRequest = originalRequest as CreateDepositTransactionApiRequest ??
                 throw new InvalidOperationException(nameof(originalRequest));
 
             Assert.NotNull(createDepositTransactionRequest);
 
             actualTransactionDto =
-                await GetCreateTransactionFromApi<CreateDepositTransactionRequest, DepositTransactionDto>
+                await GetCreateTransactionFromApi<CreateDepositTransactionApiRequest, DepositTransactionDto>
                     (testUserId, createDepositTransactionRequest);
 
             await AssertTransactionResultDtoAsync(
@@ -62,13 +65,13 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
         }
         else if (transactionType is TransactionEnums.TransactionKeys.PURCHASE)
         {
-            var createPurchaseTransactionRequest = originalRequest as CreatePurchaseTransactionRequest ??
+            var createPurchaseTransactionRequest = originalRequest as CreatePurchaseTransactionApiRequest ??
                 throw new InvalidOperationException(nameof(originalRequest));
 
             Assert.NotNull(createPurchaseTransactionRequest);
 
             actualTransactionDto =
-                await GetCreateTransactionFromApi<CreatePurchaseTransactionRequest, PurchaseTransactionDto>
+                await GetCreateTransactionFromApi<CreatePurchaseTransactionApiRequest, PurchaseTransactionDto>
                     (testUserId, createPurchaseTransactionRequest);
 
             await AssertTransactionResultDtoAsync(
@@ -84,95 +87,6 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
         {
             Assert.Fail($"'{transactionType}' is an unknown type");
         }
-
-        //// Check that the Account Document's Balance has been updated after the request was made
-        //AccountDocument? updatedAccountDoc =
-        //    await AccountDocumentsRepository.FirstOrDefaultDocumentAsync(a =>
-        //    a.Id == originalAccountDoc.Id && a.UserId == testUserId);
-
-        //var updatedMonthlyTotalDocs = (await GetMonthlyTotalsAsync(
-        //    testUserId,
-        //    originalRequest.TransactionDate.Year,
-        //    originalRequest.TransactionDate.Month)).ToList();
-
-        //Assert.NotNull(actualTransactionDto);
-        //Assert.True(!actualTransactionDto.Id.Equals(ObjectId.Empty.ToString()));
-        //Assert.Equal(originalRequest.UserId, actualTransactionDto.UserId);
-
-        //Assert.Equal(originalRequest.Description, actualTransactionDto.Description);
-
-        //// If a Debit Request, then dto.IsCredit should be false
-        //Assert.True(actualDepositTransactionDto is null || !actualDepositTransactionDto.IsCredit);
-
-        //// If a Credit Request, then dto.IsCredit should be true
-        //Assert.True(actualPurchaseTransactionDto is null || actualPurchaseTransactionDto.IsCredit);
-
-        //Assert.Equal(originalRequest.TransactionDate.Date, actualTransactionDto.TransactionDate.Date);
-
-        //Assert.Equal(transactionType, actualTransactionDto.TransactionType);
-
-        //AssertPayerPayee(originalRequest, actualTransactionDto);
-
-        //if (actualPurchaseTransactionDto is not null)
-        //{
-        //    Assert.NotNull(actualPurchaseTransactionDto);
-
-        //    Assert.Equal(createPurchaseTransactionRequest.Items.Count, actualPurchaseTransactionDto.Items.Count);
-
-
-        //    Assert.Equal(createPurchaseTransactionRequest.Items.Sum(i =>
-        //        i.Amount), actualPurchaseTransactionDto.TotalAmount);
-
-        //    // New transaction, Total Owing should be the same as Total Amount
-        //    Assert.Equal(createPurchaseTransactionRequest.Items.Sum(i =>
-        //        i.Amount), actualPurchaseTransactionDto.TotalOwing);
-
-        //    // New transaction, there should be no payments
-        //    Assert.Equal(0, actualPurchaseTransactionDto.TotalPaid);
-
-        //    foreach (var item in createPurchaseTransactionRequest.Items)
-        //    {
-        //        var actualTransactionItem = actualPurchaseTransactionDto.Items.Find(i =>
-        //            i.CategoryId == item.CategoryId &&
-        //            i.Description == item.Description &&
-        //            i.Amount == item.Amount);
-
-        //        Assert.NotNull(actualTransactionItem);
-        //    }
-        //}
-
-        //AssertAccount(testUserId, originalAccountDoc, updatedAccountDoc, actualTransactionDto);
-
-        //// Monthly Totals
-        //Assert.NotNull(updatedMonthlyTotalDocs);
-        //Assert.NotEmpty(updatedMonthlyTotalDocs);
-
-        //var originalAccountMonthlyTotalDoc = originalMonthlyTotalDocs.Find(t =>
-        //    t.Year == originalRequest.TransactionDate.Year &&
-        //    t.Month == originalRequest.TransactionDate.Month);
-
-        //if (originalAccountMonthlyTotalDoc is not null)
-        //{
-        //    var updatedAccountMonthlyTotalDoc = updatedMonthlyTotalDocs.Find(t =>
-        //        t.Year == originalRequest.TransactionDate.Year &&
-        //        t.Month == originalRequest.TransactionDate.Month);
-
-        //    Assert.NotNull(updatedAccountMonthlyTotalDoc);
-
-        //    // TODO: Finish this ...
-        //}
-
-        ////if (actualPurchaseTransactionDto is not null)
-        ////{
-        ////    var monthlyTotalDoc = updatedMonthlyTotalDocs.Find(t =>
-        ////        t.Year == originalRequest.TransactionDate.Year &&
-        ////        t.Month == originalRequest.TransactionDate.Month);
-        ////}
-
-        ////Assert.NotEmpty(actualAccount.MonthlyTotals);
-
-        ////Assert.NotNull(actualAccount.MonthlyTotals.Find(t =>
-        ////    t.Year == transactionDate.Year && t.Month == transactionDate.Month));
     }
 
     private async Task AssertTransactionResultDtoAsync<TRequest, TDto>(
@@ -181,7 +95,7 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
         AccountDocument? originalAccountDoc,
         List<MonthlyTotalDocument>? originalMonthlyTotalDocs,
         TDto actualTransactionDto)
-        where TRequest : CreateTransactionRequest where TDto : TransactionDto
+        where TRequest : CreateTransactionApiRequest where TDto : TransactionDto
     {
         Assert.NotNull(actualTransactionDto);
 
@@ -217,14 +131,14 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
             actualTransactionDto);
 
         if (createTransactionRequest is
-                CreateDepositTransactionRequest depositRequest &&
+                CreateDepositTransactionApiRequest depositRequest &&
             actualTransactionDto is
                 DepositTransactionDto depositDto)
         {
             AssertDepositTransaction(depositRequest, depositDto);
         }
         else if (createTransactionRequest is
-                     CreatePurchaseTransactionRequest purchaseRequest &&
+                     CreatePurchaseTransactionApiRequest purchaseRequest &&
                  actualTransactionDto is
                      PurchaseTransactionDto purchaseDto)
         {
@@ -276,14 +190,14 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
 
     protected static void AssertAccount(
         ObjectId testUserId,
-        CreateTransactionRequest transactionRequest,
+        CreateTransactionApiRequest transactionRequest,
         AccountDocument? originalAccountDoc,
         AccountDocument? updatedAccountDoc,
         TransactionDto actualTransactionDto)
     {
         var transactionType = actualTransactionDto.TransactionType;
 
-        // If an accountBase was expected to be used, then verify that the ExtAcctId matches the request
+        // If an accountBase was expected to be used, then verify that the ExtAcctId matches the apiRequest
         // If no accountBase was expected to be used, then verify that the ExtAcctId is null
         if (string.IsNullOrWhiteSpace(transactionRequest.AccountId) &&
             originalAccountDoc is null)
@@ -314,29 +228,29 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
     }
 
     protected static void AssertDepositTransaction(
-        CreateDepositTransactionRequest transactionRequest,
+        CreateDepositTransactionApiRequest transactionApiRequest,
         DepositTransactionDto? transactionDto)
     {
         Assert.NotNull(transactionDto);
-        Assert.Equal(transactionRequest.TransactionDate, transactionDto.TransactionDate);
-        Assert.Equal(transactionRequest.TotalAmount, transactionDto.TotalAmount);
+        Assert.Equal(transactionApiRequest.TransactionDate, transactionDto.TransactionDate);
+        Assert.Equal(transactionApiRequest.TotalAmount, transactionDto.TotalAmount);
     }
 
     protected static void AssertPurchaseTransaction(
-        CreatePurchaseTransactionRequest transactionRequest,
+        CreatePurchaseTransactionApiRequest transactionApiRequest,
         PurchaseTransactionDto? transactionDto)
     {
         Assert.NotNull(transactionDto);
-        Assert.Equal(transactionRequest.TransactionDate, transactionDto.TransactionDate);
-        Assert.Equal(transactionRequest.TotalAmount, transactionDto.TotalAmount);
+        Assert.Equal(transactionApiRequest.TransactionDate, transactionDto.TransactionDate);
+        Assert.Equal(transactionApiRequest.TotalAmount, transactionDto.TotalAmount);
 
-        Assert.Equal(transactionRequest.Items.Count, transactionRequest.Items.Count);
+        Assert.Equal(transactionApiRequest.Items.Count, transactionApiRequest.Items.Count);
 
-        Assert.Equal(transactionRequest.Items.Sum(i =>
+        Assert.Equal(transactionApiRequest.Items.Sum(i =>
             i.Amount), transactionDto.TotalAmount);
 
         // New transaction, Total Owing should be the same as Total Amount
-        Assert.Equal(transactionRequest.Items.Sum(i =>
+        Assert.Equal(transactionApiRequest.Items.Sum(i =>
             i.Amount), transactionDto.TotalOwing);
 
         // New transaction, there should be no payments
@@ -344,7 +258,7 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
         Assert.Null(transactionDto.PaidDate);
         Assert.Equal(0, transactionDto.TotalPaid);
 
-        foreach (var item in transactionRequest.Items)
+        foreach (var item in transactionApiRequest.Items)
         {
             var actualTransactionItem = transactionDto.Items.Find(i =>
                 i.CategoryId == item.CategoryId &&
@@ -358,26 +272,26 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
     /// <summary>
     /// Asserts the Transaction's PayerPayee details
     /// </summary>
-    /// <param name="createTransactionRequest">The request that created the transaction</param>
+    /// <param name="createTransactionRequest">The apiRequest that created the transaction</param>
     /// <param name="actualTransactionDto">The transaction's dto</param>
     protected static void AssertPayerPayee(
-        CreateTransactionRequest createTransactionRequest,
+        CreateTransactionApiRequest createTransactionRequest,
         TransactionDto actualTransactionDto)
     {
 
-        // If the request has a PayerPayee Id OR a Name,
+        // If the apiRequest has a PayerPayee Id OR a Name,
         // then it must return a PayerPayee Id (whether existing or new)
         if (!string.IsNullOrWhiteSpace(createTransactionRequest.PayerPayee.Id) ||
             !string.IsNullOrWhiteSpace(createTransactionRequest.PayerPayee.Name))
         {
             Assert.True(!string.IsNullOrWhiteSpace(actualTransactionDto.PayerPayeeId) &&
-                        actualTransactionDto.PayerPayeeId != ObjectId.Empty.ToString());
+                actualTransactionDto.PayerPayeeId != ObjectId.Empty.ToString());
 
             Assert.NotNull(actualTransactionDto.PayerPayeeId);
 
             Assert.NotNull(actualTransactionDto.PayerPayee);
 
-            // If the request has a PayerPayee Id, then it must match the response
+            // If the apiRequest has a PayerPayee Id, then it must match the response
             if (!string.IsNullOrWhiteSpace(createTransactionRequest.PayerPayee.Id))
                 Assert.Equal(createTransactionRequest.PayerPayee.Id,
                     actualTransactionDto.PayerPayeeId);
@@ -388,12 +302,6 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
 
                 Assert.Equal(createTransactionRequest.PayerPayee.Name,
                     actualTransactionDto.PayerPayee.Name);
-
-                Assert.Equal(createTransactionRequest.PayerPayee.Description,
-                    actualTransactionDto.PayerPayee.Description);
-
-                Assert.Equal(createTransactionRequest.PayerPayee.Location,
-                    actualTransactionDto.PayerPayee.Location);
             }
         }
     }
@@ -403,15 +311,40 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
         (decimal)(RandomGenerator.Next(min * 100, max * 100)) / 100;
 
 
+    protected static string GetRandomMerchant()
+    {
+        var merchants = new List<string>
+        {
+            "Amazon",
+            "Best Buy",
+            "Home Depot",
+            "Lowe's",
+            "Target",
+            "Walmart",
+            "Whole Foods",
+            "Trader Joe's",
+            "Costco",
+            "Safeway",
+            "Albertsons",
+            "Starbucks",
+            "Walmart",
+            "Tim Hortons"
+        };
+
+        var random = new Random();
+
+        return merchants[random.Next(merchants.Count)];
+    }
+
     /// <summary>
     /// Calls the Create Transaction endpoint and returns a TransactionDto
     /// </summary>
     /// <param name="userId">The Id of the User to create the Transaction for</param>
-    /// <param name="createTransactionRequest">The Request to send to the endpoint</param>
+    /// <param name="createTransactionRequest">The ApiRequest to send to the endpoint</param>
     /// <returns>TransactionDto</returns>
     private async Task<TDto> GetCreateTransactionFromApi<TRequest, TDto>(
         ObjectId userId,
-        TRequest createTransactionRequest) where TDto : TransactionDto where TRequest : CreateTransactionRequest
+        TRequest createTransactionRequest) where TDto : TransactionDto where TRequest : CreateTransactionApiRequest
     {
         // Act
         var createTransactionResponse = await HttpClient.PostAsJsonAsync(

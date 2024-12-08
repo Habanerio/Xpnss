@@ -13,6 +13,7 @@ internal static partial class ApplicationMapper
         return new MonthlyTotalDto()
         {
             EntityId = entity.EntityId ?? string.Empty,
+            SubEntityId = entity.SubEntityId ?? string.Empty,
             EntityType = entity.EntityType.ToString(),
             Month = entity.Month,
             Year = entity.Year,
@@ -28,7 +29,7 @@ internal static partial class ApplicationMapper
         var entitiesArray = entities?.ToArray() ?? [];
 
         if (!entitiesArray.Any())
-            throw new ArgumentException("The entities cannot be empty", nameof(entities));
+            return [];
 
         return entitiesArray.Select(Map)
             .Where(x => x is not null)

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Habanerio.Xpnss.Domain.Types;
 using Habanerio.Xpnss.Domain.ValueObjects;
 using Habanerio.Xpnss.Infrastructure.IntegrationEvents.Transactions;
@@ -10,8 +11,7 @@ namespace Habanerio.Xpnss.MonthlyTotals.Infrastructure.IntegrationEvents.EventHa
 /// <summary>
 /// Responsible for handling the `TransactionCreatedIntegrationEvent` and updating the MonthlyTotals.
 /// </summary>
-/// <param name="repository"></param>
-/// <param name="logger"></param>
+// TODO: May need to rethink this. May need separate Handlers for Transactions with, and without items
 public class TransactionCreatedIntegrationEventHandler(
     IMonthlyTotalsRepository repository,
     ILogger<TransactionCreatedIntegrationEventHandler> logger) :
@@ -29,53 +29,124 @@ public class TransactionCreatedIntegrationEventHandler(
     {
         try
         {
-            var isCreditTransaction = TransactionEnums.IsCreditTransaction(@event.TransactionType);
-
-            if (!string.IsNullOrWhiteSpace(@event.AccountId))
-                await UpdateMonthlyTotalAsync(
-                    @event.UserId,
-                    @event.AccountId,
-                    EntityTypes.Keys.ACCOUNT,
-                    @event.Amount,
-                    @event.DateOfTransaction,
-                    isCreditTransaction,
-                    cancellationToken);
-
-            if (!string.IsNullOrWhiteSpace(@event.CategoryId))
-                await UpdateMonthlyTotalAsync(
-                    @event.UserId,
-                    @event.CategoryId,
-                    EntityTypes.Keys.CATEGORY,
-                    @event.Amount,
-                    @event.DateOfTransaction,
-                    isCreditTransaction,
-                    cancellationToken);
-
-            if (!string.IsNullOrWhiteSpace(@event.PayerPayeeId))
-                await UpdateMonthlyTotalAsync(
-                    @event.UserId,
-                    @event.PayerPayeeId,
-                    EntityTypes.Keys.PAYER_PAYEE,
-                    @event.Amount,
-                    @event.DateOfTransaction,
-                    isCreditTransaction,
-                    cancellationToken);
-
-            // This is the Total for the User across all Accounts
-            if (!string.IsNullOrWhiteSpace(@event.UserId))
-                await UpdateMonthlyTotalAsync(
-                    @event.UserId,
-                    @event.UserId,
-                    EntityTypes.Keys.USER,
-                    @event.Amount,
-                    @event.DateOfTransaction,
-                    isCreditTransaction,
-                    cancellationToken);
+            await UpdateAccountMonthlyTotalAsync(@event, cancellationToken);
+            await UpdateCategoryMonthlyTotalAsync(@event, cancellationToken);
+            await UpdatePayerPayeeMonthlyTotal(@event, cancellationToken);
+            await UpdateUserMonthlyTotal(@event, cancellationToken);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "An error occurred while trying to update Account '{@AccountId}' for User '{@UserId}'", @event.AccountId, @event.UserId);
+            _logger.LogError(e, "An error occurred while trying to update Account '{AccountId}' for User '{UserId}'", @event.AccountId, @event.UserId);
         }
+    }
+
+    /// <summary>
+    /// Attempt to update the MonthlyTotal for the Account.
+    /// </summary>
+    /// <param name="event"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    private async Task UpdateAccountMonthlyTotalAsync(
+        TransactionCreatedIntegrationEvent @event,
+        CancellationToken cancellationToken = default)
+    {
+        var isCreditTransaction = TransactionEnums.IsCreditTransaction(@event.TransactionType);
+
+        if (!string.IsNullOrWhiteSpace(@event.AccountId))
+            await UpdateMonthlyTotalAsync(
+                @event.UserId,
+                @event.AccountId,
+                string.Empty,
+                EntityEnums.Keys.ACCOUNT,
+                @event.Amount,
+                @event.DateOfTransaction,
+            isCreditTransaction,
+                cancellationToken);
+    }
+
+    /// <summary>
+    /// Attempt to update the MonthlyTotal for the Category and SubCategory.
+    /// </summary>
+    /// <param name="event"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    private async Task UpdateCategoryMonthlyTotalAsync(
+        TransactionCreatedIntegrationEvent @event,
+        CancellationToken cancellationToken = default)
+    {
+        var isCreditTransaction = TransactionEnums.IsCreditTransaction(@event.TransactionType);
+
+        // Update the Parent Category Monthly Total
+        if (!string.IsNullOrWhiteSpace(@event.CategoryId))
+            await UpdateMonthlyTotalAsync(
+                @event.UserId,
+                @event.CategoryId,
+                string.Empty,
+                EntityEnums.Keys.CATEGORY,
+                @event.Amount,
+                @event.DateOfTransaction,
+                isCreditTransaction,
+                cancellationToken);
+
+        // Update the SubCategory Monthly Total (but place it under "Category")
+        if (!string.IsNullOrWhiteSpace(@event.SubCategoryId))
+            await UpdateMonthlyTotalAsync(
+                @event.UserId,
+                @event.CategoryId,
+                @event.SubCategoryId,
+                EntityEnums.Keys.CATEGORY,
+                @event.Amount,
+                @event.DateOfTransaction,
+                isCreditTransaction,
+                cancellationToken);
+    }
+
+    /// <summary>
+    /// Attempt to update the MonthlyTotal for the PayerPayee.
+    /// </summary>
+    /// <param name="event"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    private async Task UpdatePayerPayeeMonthlyTotal(
+        TransactionCreatedIntegrationEvent @event,
+        CancellationToken cancellationToken = default)
+    {
+        var isCreditTransaction = TransactionEnums.IsCreditTransaction(@event.TransactionType);
+
+        if (!string.IsNullOrWhiteSpace(@event.PayerPayeeId))
+            await UpdateMonthlyTotalAsync(
+                @event.UserId,
+                @event.PayerPayeeId,
+                string.Empty,
+                EntityEnums.Keys.PAYER_PAYEE,
+                @event.Amount,
+                @event.DateOfTransaction,
+                isCreditTransaction,
+                cancellationToken);
+    }
+
+    /// <summary>
+    /// Attempt to update the MonthlyTotal for the User.
+    /// </summary>
+    /// <param name="event"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    private async Task UpdateUserMonthlyTotal(
+        TransactionCreatedIntegrationEvent @event,
+        CancellationToken cancellationToken = default)
+    {
+        var isCreditTransaction = TransactionEnums.IsCreditTransaction(@event.TransactionType);
+
+        if (!string.IsNullOrWhiteSpace(@event.UserId))
+            await UpdateMonthlyTotalAsync(
+                @event.UserId,
+                @event.UserId,
+                string.Empty,
+                EntityEnums.Keys.USER,
+                @event.Amount,
+                @event.DateOfTransaction,
+                isCreditTransaction,
+                cancellationToken);
     }
 
     /// <summary>
@@ -86,27 +157,39 @@ public class TransactionCreatedIntegrationEventHandler(
     private async Task UpdateMonthlyTotalAsync(
         string userId,
         string entityId,
-        EntityTypes.Keys entityType,
+        string subEntityId,
+        EntityEnums.Keys entityType,
         decimal amount,
         DateTime dateOfTransaction,
         bool isCreditTransaction,
         CancellationToken cancellationToken = default)
     {
-        var monthlyTotalResult = await _repository
-            .GetAsync(
-                userId,
-                entityId,
-                entityType,
-                dateOfTransaction.Year,
-                dateOfTransaction.Month,
-                cancellationToken);
+        MonthlyTotal? existingMonthlyTotal = null;
 
-        if (monthlyTotalResult.IsFailed)
-            throw new InvalidOperationException(monthlyTotalResult.Errors[0]?.Message ??
-                $"An error occurred while trying to retrieve {entityType} '{entityId}' " +
-                $"Monthly Total ({dateOfTransaction.Year}/{dateOfTransaction.Month}) for User '{userId}'");
+        try
+        {
+            var monthlyTotalResult = await _repository
+                .GetAsync(
+                    userId,
+                    entityId,
+                    subEntityId,
+                    entityType,
+                    dateOfTransaction.Year,
+                    dateOfTransaction.Month,
+                    cancellationToken);
 
-        var existingMonthlyTotal = monthlyTotalResult.ValueOrDefault;
+            if (monthlyTotalResult.IsFailed)
+                throw new InvalidOperationException(monthlyTotalResult.Errors[0]?.Message ??
+                    $"An error occurred while trying to retrieve {entityType} '{entityId}' " +
+                    $"Monthly Total ({dateOfTransaction.Year}/{dateOfTransaction.Month}) for User '{userId}'");
+
+            existingMonthlyTotal = monthlyTotalResult.ValueOrDefault;
+        }
+        catch (Exception e)
+        {
+            throw;
+        }
+
 
         if (existingMonthlyTotal is null)
         {
@@ -115,6 +198,9 @@ public class TransactionCreatedIntegrationEventHandler(
                 existingMonthlyTotal = MonthlyTotal.New(
                     new UserId(userId),
                     new EntityObjectId(entityId),
+                    !string.IsNullOrWhiteSpace(subEntityId) ?
+                        new EntityObjectId(subEntityId) :
+                        EntityObjectId.Empty,
                     entityType,
                     dateOfTransaction.Year,
                     dateOfTransaction.Month,
@@ -142,6 +228,8 @@ public class TransactionCreatedIntegrationEventHandler(
             }
         }
 
+        var json = JsonSerializer.Serialize(existingMonthlyTotal);
+
         try
         {
             var result = await _repository.AddAsync(existingMonthlyTotal, cancellationToken);
@@ -156,16 +244,18 @@ public class TransactionCreatedIntegrationEventHandler(
                 return;
             }
 
-            _logger.LogInformation("A(n) '{EntityType}' Monthly Total for '{EntityId}' was updated for user {UserId}}",
-                entityType,
-                entityId,
-                userId);
+            var y = true;
+            //_logger.LogInformation("A(n) '{EntityType}' Monthly Total for '{EntityId}' was updated for user {UserId}}",
+            //    entityType,
+            //    entityId,
+            //    userId);
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "An error occurred while trying to update {EntityType} '{AccountId}' " +
-                "Monthly Total ({@Year}/{@Month}) for User '{@event.UserId}'.",
-                userId, entityType, entityId, dateOfTransaction.Year, dateOfTransaction.Month);
+            var x = true;
+            //_logger.LogCritical(e, "An error occurred while trying to update {EntityType} '{AccountId}' " +
+            //    "Monthly Total ({@Year}/{@Month}) for User '{@event.UserId}'. Data: {Json}",
+            //    userId, entityType, entityId, dateOfTransaction.Year, dateOfTransaction.Month, json);
         }
     }
 }

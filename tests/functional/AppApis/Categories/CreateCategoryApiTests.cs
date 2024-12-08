@@ -1,7 +1,8 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using Habanerio.Xpnss.Application.DTOs;
-using Habanerio.Xpnss.Categories.Application.Commands;
+using Habanerio.Xpnss.Application.Requests;
+using Habanerio.Xpnss.Domain.Types;
 using Microsoft.AspNetCore.Mvc.Testing;
 using MongoDB.Bson;
 
@@ -21,9 +22,10 @@ public class CreateCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
         var newCategoryDescription = $"{newCategoryName} Description";
 
         // Arrange
-        var request = new CreateCategoryCommand(
+        var request = new CreateCategoryApiRequest(
             userId.ToString(),
             newCategoryName,
+            CategoryGroupEnums.CategoryKeys.EXPENSE,
             newCategoryDescription);
 
         // Act
@@ -56,7 +58,7 @@ public class CreateCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
         // as it is recalculated when the category is created so that
         // no two categories have the same SortOrder,
         // and to make sure that they are all sequential.
-        //Assert.Equal(request.SortOrder, actualDto.SortOrder);
+        //Assert.Equal(apiRequest.SortOrder, actualDto.SortOrder);
     }
 
     [Fact]
@@ -79,9 +81,10 @@ public class CreateCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
         var newCategoryDescription = $"{newCategoryName} Description";
 
         // Arrange
-        var request = new CreateCategoryCommand(
+        var request = new CreateCategoryApiRequest(
             userId.ToString(),
             newCategoryName,
+            CategoryGroupEnums.CategoryKeys.INCOME,
             newCategoryDescription);
 
         // Act

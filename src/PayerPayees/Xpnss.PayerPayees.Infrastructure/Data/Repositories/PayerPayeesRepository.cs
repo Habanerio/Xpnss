@@ -31,14 +31,16 @@ public class PayerPayeesRepository(
         var payerPayeeDoc = InfrastructureMapper.Map(payerPayee);
 
         if (payerPayeeDoc is null)
-            throw new InvalidCastException("Failed to map PayerPayee to PayerPayeeDocument");
+            throw new InvalidCastException(
+                $"{nameof(GetType)}: Failed to map PayerPayee to PayerPayeeDocument");
 
         await AddDocumentAsync(payerPayeeDoc, cancellationToken);
 
         var newPayerPayee = InfrastructureMapper.Map(payerPayeeDoc);
 
         if (newPayerPayee is null)
-            throw new InvalidCastException("Failed to map PayerPayeeDocument to PayerPayee");
+            throw new InvalidCastException(
+                $"{nameof(GetType)}: Failed to map PayerPayeeDocument to PayerPayee");
 
         //HandleDomainEvents(payerPayee);
 
@@ -69,7 +71,8 @@ public class PayerPayeesRepository(
         var payerPayee = InfrastructureMapper.Map(payerPayeeDoc);
 
         if (payerPayee is null)
-            throw new InvalidCastException("Failed to map MerchantDocument to Merchant");
+            throw new InvalidCastException(
+                $"{nameof(GetType)}: Failed to map MerchantDocument to Merchant");
 
         return Result.Ok<PayerPayee?>(payerPayee);
     }
@@ -122,7 +125,8 @@ public class PayerPayeesRepository(
         var dto = InfrastructureMapper.Map(payerPayeeDoc);
 
         if (dto is null)
-            throw new InvalidCastException("Failed to map PayerPayeeDocument to PayerPayee");
+            throw new InvalidCastException(
+                $"{nameof(GetType)}: Failed to map PayerPayeeDocument to PayerPayee");
 
         return Result.Ok<PayerPayee?>(dto);
     }

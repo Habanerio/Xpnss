@@ -44,7 +44,7 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
                         .Next(0, existingPayerPayees.Count - 1)] :
                 default;
 
-            var payerPayee = new PayerPayeeRequest
+            var payerPayee = new PayerPayeeApiRequest
             {
                 Id = existingPayerPayee?.Id ?? string.Empty,
                 Name = existingPayerPayee?.Name ?? string.Empty,
@@ -60,7 +60,7 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
                 $"{existingPayerPayee.Id} - {existingPayerPayee.Name}";
 
             // Arrange
-            var createTransactionRequest = new CreateDepositTransactionRequest
+            var createTransactionRequest = new CreateDepositTransactionApiRequest
             {
                 UserId = testUserId.ToString(),
                 AccountId = existingAccount.Id.ToString(),
@@ -107,7 +107,7 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
             "Deposit Transaction Description - No PayerPayee" :
             $"Deposit Transaction Description with PayerPayee: {existingPayerPayee.Id} - {existingPayerPayee.Name}";
 
-        var payerPayee = new PayerPayeeRequest
+        var payerPayee = new PayerPayeeApiRequest
         {
             Id = existingPayerPayee?.Id ?? string.Empty,
             Name = existingPayerPayee?.Name ?? string.Empty,
@@ -118,7 +118,7 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
         var randomTransactionAmount = new Random().Next(15, 250);
 
         // Arrange
-        var createTransactionRequest = new CreateDepositTransactionRequest
+        var createTransactionRequest = new CreateDepositTransactionApiRequest
         {
             UserId = testUserId.ToString(),
             AccountId = existingAccount.Id.ToString(),
@@ -164,7 +164,7 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
             "Deposit Transaction Description - No PayerPayee" :
             $"Deposit Transaction Description with PayerPayee: {existingPayerPayee.Id} - {existingPayerPayee.Name}";
 
-        var payerPayee = new PayerPayeeRequest
+        var payerPayee = new PayerPayeeApiRequest
         {
             Id = existingPayerPayee?.Id ?? string.Empty,
             Name = existingPayerPayee?.Name ?? string.Empty,
@@ -175,7 +175,7 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
         var randomTransactionAmount = new Random().Next(25, 500);
 
         // Arrange
-        var createTransactionRequest = new CreateDepositTransactionRequest
+        var createTransactionRequest = new CreateDepositTransactionApiRequest
         {
             UserId = testUserId.ToString(),
             AccountId = existingAccount.Id.ToString(),
@@ -211,7 +211,7 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
         var randomTransactionAmount = new Random().Next(1, 1000);
 
         // Arrange
-        var createTransactionRequest = new CreateDepositTransactionRequest
+        var createTransactionRequest = new CreateDepositTransactionApiRequest
         {
             UserId = testUserId.ToString(),
             AccountId = existingAccount.Id.ToString(),
@@ -221,7 +221,7 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
             Description = $"Deposit Transaction Description - Expecting PayerPayee `{payerPayeeRandom}`",
 
             // New PayerPayee
-            PayerPayee = new PayerPayeeRequest()
+            PayerPayee = new PayerPayeeApiRequest()
             {
                 Id = string.Empty,
                 Name = $"New PayerPayee {payerPayeeRandom}",
@@ -251,7 +251,7 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
         var transactionDate = GetRandomPastDate;
 
         // Arrange
-        var createTransactionRequest = new CreateDepositTransactionRequest
+        var createTransactionRequest = new CreateDepositTransactionApiRequest
         {
             UserId = testUserId.ToString(),
             AccountId = existingAccount.Id.ToString(),
@@ -272,7 +272,7 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
     ///// <returns></returns>
     //private async Task AssertTransactionAsync(
     //    AccountDocument? existingAccountDoc,
-    //    CreateDepositTransactionRequest createTransactionRequest)
+    //    CreateDepositTransactionApiRequest createTransactionRequest)
     //{
     //    var USER_ID = await GetTestUserObjectIdAsync();
 
@@ -311,13 +311,13 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
     //    Assert.Equal(TRANSACTION_TYPE.ToString(), actualTransactionDto.TransactionType);
 
 
-    //    // If the request has a PayerPayee Id OR a Name, then it must return an Id (whether existing or new)
+    //    // If the apiRequest has a PayerPayee Id OR a Name, then it must return an Id (whether existing or new)
     //    if (!string.IsNullOrWhiteSpace(createTransactionRequest.PayerPayee.Id) ||
     //        !string.IsNullOrWhiteSpace(createTransactionRequest.PayerPayee.Name))
     //    {
     //        Assert.NotNull(actualTransactionDto.PayerPayeeId);
 
-    //        // If the request has a PayerPayee Id, then it must match the response
+    //        // If the apiRequest has a PayerPayee Id, then it must match the response
     //        if (!string.IsNullOrWhiteSpace(createTransactionRequest.PayerPayee.Id))
     //            Assert.Equal(createTransactionRequest.PayerPayee.Id, actualTransactionDto.PayerPayeeId);
 

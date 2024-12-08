@@ -4,32 +4,30 @@ using Habanerio.Xpnss.Application.DTOs;
 using Habanerio.Xpnss.PayerPayees.Application.Mappers;
 using Habanerio.Xpnss.PayerPayees.Domain.Interfaces;
 using MediatR;
-using MongoDB.Bson;
 
-namespace Habanerio.Xpnss.PayerPayees.Application.Queries.GetPayerPayeesByIds;
+namespace Habanerio.Xpnss.PayerPayees.Application.Queries.GetPayerPayees;
 
-public class GetPayerPayeesByIdsQueryHandler(IPayerPayeesRepository repository) :
-    IRequestHandler<GetPayerPayeesByIdsQuery, Result<IEnumerable<PayerPayeeDto>>>
+public sealed record GetPayerPayeesQuery(string UserId) :
+    IPayerPayeesQuery<Result<IEnumerable<PayerPayeeDto>>>;
+
+public class GetPayerPayeesQueryHandler(IPayerPayeesRepository repository) :
+    IRequestHandler<GetPayerPayeesQuery, Result<IEnumerable<PayerPayeeDto>>>
 {
     private readonly IPayerPayeesRepository _repository = repository ??
         throw new ArgumentNullException(nameof(repository));
 
     public async Task<Result<IEnumerable<PayerPayeeDto>>> Handle(
-        GetPayerPayeesByIdsQuery request,
+        GetPayerPayeesQuery query,
         CancellationToken cancellationToken)
     {
         var validator = new Validator();
-        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+        var validationResult = await validator.ValidateAsync(query, cancellationToken);
 
         if (!validationResult.IsValid)
             return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
         var payerPayeeResult = await _repository
-            .GetAsync(
-                request.UserId,
-                request.PayerPayeesIds
-                    .Select(ObjectId.Parse),
-                cancellationToken);
+            .ListAsync(query.UserId, cancellationToken);
 
         if (payerPayeeResult.IsFailed)
             return Result.Fail(payerPayeeResult.Errors);
@@ -39,14 +37,17 @@ public class GetPayerPayeesByIdsQueryHandler(IPayerPayeesRepository repository) 
 
         var dtos = ApplicationMapper.Map(payerPayeeResult.Value);
 
+        if (dtos is null)
+            throw new InvalidCastException(
+                $"{nameof(GetType)}: Failed to map PayerPayee to PayerPayeeDto");
+
         return Result.Ok(dtos);
     }
 
-    public class Validator : AbstractValidator<GetPayerPayeesByIdsQuery>
+    public class Validator : AbstractValidator<GetPayerPayeesQuery>
     {
         public Validator()
         {
-            RuleFor(x => x.PayerPayeesIds).NotEmpty();
             RuleFor(x => x.UserId).NotEmpty();
         }
     }

@@ -32,7 +32,8 @@ public class GetPayerPayeeQueryHandler(IPayerPayeesRepository repository) :
         var payerPayeeDto = ApplicationMapper.Map(result.Value);
 
         if (payerPayeeDto is null)
-            throw new InvalidCastException("Failed to map PayerPayeeDocument to PayerPayeeDto");
+            throw new InvalidCastException(
+                $"{nameof(GetType)}: Failed to map PayerPayeeDocument to PayerPayeeDto");
 
         return Result.Ok<PayerPayeeDto?>(payerPayeeDto);
     }

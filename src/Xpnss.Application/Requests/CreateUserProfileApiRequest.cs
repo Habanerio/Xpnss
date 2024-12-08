@@ -3,7 +3,7 @@ using Habanerio.Xpnss.Domain.Types;
 
 namespace Habanerio.Xpnss.Application.Requests;
 
-public record CreateUserProfileRequest
+public record CreateUserProfileApiRequest
 {
     public string Email { get; set; } = string.Empty;
 
@@ -17,14 +17,14 @@ public record CreateUserProfileRequest
     public CurrencyEnums.CurrencyKeys DefaultCurrency { get; set; } = CurrencyEnums.CurrencyKeys.CAD;
 
     [JsonConstructor]
-    public CreateUserProfileRequest()
+    public CreateUserProfileApiRequest()
     { }
 
-    public CreateUserProfileRequest(
+    public CreateUserProfileApiRequest(
         string email,
         string firstName,
-        string extUserId,
         string lastName = "",
+        string extUserId = "",
         CurrencyEnums.CurrencyKeys defaultCurrency = CurrencyEnums.CurrencyKeys.CAD)
     {
         Email = email;

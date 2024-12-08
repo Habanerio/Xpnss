@@ -22,7 +22,7 @@ public class GetAccountsEndpoint : BaseEndpoint
                         return await HandleAsync(userId, service, cancellationToken);
                     })
                 .Produces<IEnumerable<AccountDto>>((int)HttpStatusCode.OK)
-                .Produces<string>((int)HttpStatusCode.BadRequest)
+                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
                 .Produces((int)HttpStatusCode.NotFound)
                 .WithDisplayName("Get Accounts")
                 .WithName("GetAccounts")

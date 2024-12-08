@@ -17,6 +17,9 @@ public sealed record AccountDto
     public BankAccountEnums.BankAccountKeys BankAccountType { get; set; } =
         BankAccountEnums.BankAccountKeys.NA;
 
+    public InvestmentAccountEnums.InvestmentAccountKeys InvestmentAccountType { get; set; } =
+        InvestmentAccountEnums.InvestmentAccountKeys.NA;
+
     public LoanAccountEnums.LoanAccountKeys LoanAccountType { get; set; } =
         LoanAccountEnums.LoanAccountKeys.NA;
 
@@ -26,9 +29,9 @@ public sealed record AccountDto
 
     public DateTime? ClosedDate { get; set; }
 
-    public string Description { get; set; } = "";
+    public string Description { get; set; } = string.Empty;
 
-    public string DisplayColor { get; set; } = "";
+    public string DisplayColor { get; set; } = string.Empty;
 
     public bool IsCredit { get; set; }
 
@@ -36,9 +39,9 @@ public sealed record AccountDto
 
     #region - Bank Account Properties -
 
-    public string ExtAcctId { get; set; } = "";
+    public string ExtAcctId { get; set; } = string.Empty;
 
-    public string InstitutionName { get; set; } = "";
+    public string InstitutionName { get; set; } = string.Empty;
 
     #endregion
 

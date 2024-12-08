@@ -28,6 +28,7 @@ internal static partial class ApplicationMapper
 
             accountDto.AccountType = AccountEnums.AccountKeys.CASH;
             accountDto.BankAccountType = BankAccountEnums.BankAccountKeys.NA;
+            accountDto.InvestmentAccountType = InvestmentAccountEnums.InvestmentAccountKeys.NA;
             accountDto.LoanAccountType = LoanAccountEnums.LoanAccountKeys.NA;
 
             return accountDto;
@@ -41,6 +42,7 @@ internal static partial class ApplicationMapper
 
             accountDto.AccountType = AccountEnums.AccountKeys.BANK;
             accountDto.BankAccountType = bankAccountEntity.BankAccountType;
+            accountDto.InvestmentAccountType = InvestmentAccountEnums.InvestmentAccountKeys.NA;
             accountDto.LoanAccountType = LoanAccountEnums.LoanAccountKeys.NA;
 
             accountDto.ClosedDate = bankAccountEntity.ClosedDate;
@@ -93,6 +95,7 @@ internal static partial class ApplicationMapper
 
             accountDto.AccountType = AccountEnums.AccountKeys.CREDITCARD;
             accountDto.BankAccountType = BankAccountEnums.BankAccountKeys.NA;
+            accountDto.InvestmentAccountType = InvestmentAccountEnums.InvestmentAccountKeys.NA;
             accountDto.LoanAccountType = LoanAccountEnums.LoanAccountKeys.NA;
 
             accountDto.ClosedDate = ccAccount.ClosedDate;
@@ -116,6 +119,7 @@ internal static partial class ApplicationMapper
 
             accountDto.AccountType = AccountEnums.AccountKeys.LOAN;
             accountDto.BankAccountType = BankAccountEnums.BankAccountKeys.NA;
+            accountDto.InvestmentAccountType = InvestmentAccountEnums.InvestmentAccountKeys.NA;
             accountDto.LoanAccountType = LoanAccountEnums.LoanAccountKeys.NA;
 
             accountDto.ClosedDate = investmentAccount.ClosedDate;
@@ -131,6 +135,7 @@ internal static partial class ApplicationMapper
 
             accountDto.AccountType = AccountEnums.AccountKeys.LOAN;
             accountDto.BankAccountType = BankAccountEnums.BankAccountKeys.NA;
+            accountDto.InvestmentAccountType = InvestmentAccountEnums.InvestmentAccountKeys.NA;
             accountDto.LoanAccountType = LoanAccountEnums.LoanAccountKeys.NA;
 
             accountDto.ClosedDate = loanAccount.ClosedDate;

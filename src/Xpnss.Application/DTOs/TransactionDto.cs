@@ -11,13 +11,13 @@ public record TransactionDto
 
     public string AccountId { get; set; }
 
-    public string Description { get; set; } = "";
+    public string Description { get; set; } = string.Empty;
 
-    public string ExtTransactionId { get; set; } = "";
+    public string ExtTransactionId { get; set; } = string.Empty;
 
     public bool IsCredit { get; protected set; }
 
-    public string? PayerPayeeId { get; set; } = "";
+    public string? PayerPayeeId { get; set; } = string.Empty;
 
     public PayerPayeeDto? PayerPayee { get; set; }
 
@@ -62,7 +62,7 @@ public abstract record CreditTransactionDto : TransactionDto
 public sealed record DepositTransactionDto() :
     CreditTransactionDto(TransactionEnums.TransactionKeys.DEPOSIT)
 {
-    //public string CategoryId { get; set; } = "";
+    //public string CategoryId { get; set; } = string.Empty;
 }
 
 #endregion
@@ -105,23 +105,25 @@ public sealed record WithdrawalTransactionDto() :
     /// <summary>
     /// The Id of the underlying account that the withdrawal was made FROM.
     /// </summary>
-    public string WithdrewFromAccountId { get; set; } = "";
+    public string WithdrewFromAccountId { get; set; } = string.Empty;
 
     /// <summary>
     /// The Id of the underlying account that the withdrawal was made TO.
     /// </summary>
-    public string WithdrewToAccountId { get; set; } = "";
+    public string WithdrewToAccountId { get; set; } = string.Empty;
 }
 
 #endregion
 
 public sealed record TransactionItemDto
 {
-    public string Id { get; set; } = "";
+    public string Id { get; set; } = string.Empty;
 
-    public string CategoryId { get; set; } = "";
+    public string CategoryId { get; set; } = string.Empty;
 
-    public string Description { get; set; } = "";
+    public string SubCategoryId { get; set; } = string.Empty;
+
+    public string Description { get; set; } = string.Empty;
 
     public decimal Amount { get; set; }
 }

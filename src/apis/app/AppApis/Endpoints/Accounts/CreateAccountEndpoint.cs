@@ -23,7 +23,7 @@ public class CreateAccountEndpoint : BaseEndpoint
             app.MapPost("/api/v1/users/{userId}/accounts",
                     async (
                         [FromRoute] string userId,
-                        [FromBody] CreateAccountRequest request,
+                        [FromBody] CreateAccountApiRequest request,
                         [FromServices] IAccountsService service,
                         [FromServices] IUserProfilesService userProfilesService,
                         CancellationToken cancellationToken) =>
@@ -31,7 +31,7 @@ public class CreateAccountEndpoint : BaseEndpoint
                         return await HandleAsync(userId, request, service, userProfilesService, cancellationToken);
                     })
                 .Produces<AccountDto>()
-                .Produces<string>((int)HttpStatusCode.BadRequest)
+                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
                 .WithDisplayName("Create New Account")
                 .WithName("CreateAccount")
                 .WithTags("Accounts")
@@ -41,7 +41,7 @@ public class CreateAccountEndpoint : BaseEndpoint
 
     public static async Task<IResult> HandleAsync(
         string userId,
-        CreateAccountRequest request,
+        CreateAccountApiRequest request,
         IAccountsService service,
         IUserProfilesService userProfilesService,
         CancellationToken cancellationToken)
@@ -53,6 +53,9 @@ public class CreateAccountEndpoint : BaseEndpoint
         if (string.IsNullOrWhiteSpace(userId))
             return BadRequestWithErrors("User Id is required");
 
+        var validator = new Validator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
         var getUserCommand = new GetUserProfileByIdQuery(userId);
 
         var userResult = await userProfilesService.QueryAsync(getUserCommand, cancellationToken);
@@ -63,10 +66,9 @@ public class CreateAccountEndpoint : BaseEndpoint
         if (userResult.Value is null)
             return Results.Unauthorized();
 
-        request = request with { UserId = userId };
+        //apiRequest = apiRequest with { UserId = userId };
 
-        var validator = new Validator();
-        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
 
         if (!validationResult.IsValid)
             return BadRequestWithErrors(validationResult.Errors);
@@ -81,7 +83,7 @@ public class CreateAccountEndpoint : BaseEndpoint
         return Results.Ok(result.Value);
     }
 
-    public sealed class Validator : AbstractValidator<CreateAccountRequest>
+    public sealed class Validator : AbstractValidator<CreateAccountApiRequest>
     {
         public Validator()
         {
