@@ -1,7 +1,7 @@
 using FluentResults;
 using FluentValidation;
 using Habanerio.Xpnss.Application.DTOs;
-using Habanerio.Xpnss.Application.Requests;
+using Habanerio.Xpnss.Application.Requests.Categories;
 using Habanerio.Xpnss.Categories.Application.Mappers;
 using Habanerio.Xpnss.Categories.Domain.Entities;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;

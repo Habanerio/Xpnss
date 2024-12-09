@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using Habanerio.Xpnss.Domain.Types;
 
-namespace Habanerio.Xpnss.Application.Requests;
+namespace Habanerio.Xpnss.Application.Requests.Categories;
 
 public sealed record CreateCategoryApiRequest : UserRequiredApiRequest
 {

@@ -8,17 +8,20 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Categories;
 
-public class AddSubCategoriesEndpoint : BaseEndpoint
+/// <summary>
+/// Updates a collection of SubCategories that belong to the same Category.
+/// </summary>
+public class UpdateSubCategoriesEndpoint : BaseEndpoint
 {
     public sealed class Endpoint : ICarterModule
     {
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.MapPost("/api/v1/users/{userId}/categories/{categoryId}/subcategories",
+            app.MapPatch("/api/v1/users/{userId}/categories/{categoryId}/subs",
                 async (
                     [FromRoute] string userId,
                     [FromRoute] string categoryId,
-                    [FromBody] AddSubCategoriesApiRequest request,
+                    [FromBody] List<UpdateSubCategoryApiRequest> request,
                     [FromServices] ICategoriesService service,
                     CancellationToken cancellationToken) =>
                 {
@@ -26,8 +29,8 @@ public class AddSubCategoriesEndpoint : BaseEndpoint
                 })
                 .Produces<CategoryDto>((int)HttpStatusCode.OK)
                 .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
-                .WithDisplayName("Add SubCategories")
-                .WithName("AddSubCategories")
+                .WithDisplayName("Update SubCategory")
+                .WithName("UpdateSubCategory")
                 .WithTags("Categories")
                 .WithOpenApi();
         }
@@ -35,7 +38,7 @@ public class AddSubCategoriesEndpoint : BaseEndpoint
         public static async Task<IResult> HandleAsync(
             string userId,
             string categoryId,
-            AddSubCategoriesApiRequest request,
+            List<UpdateSubCategoryApiRequest> request,
             ICategoriesService service,
             CancellationToken cancellationToken)
         {
@@ -48,14 +51,25 @@ public class AddSubCategoriesEndpoint : BaseEndpoint
             if (string.IsNullOrWhiteSpace(categoryId))
                 return BadRequestWithErrors("Category Id is required");
 
-            var command = new AddSubCategoriesCommand(userId, request);
+            var subCategories = new List<SubCategoryDto>();
 
-            var result = await service.CommandAsync(command, cancellationToken);
+            foreach (var subRequest in request)
+            {
+                var command = new UpdateSubCategoryCommand(
+                    userId,
+                    categoryId,
+                    subRequest.Id,
+                    subRequest.Name,
+                    subRequest.Description,
+                    subRequest.SortOrder);
 
-            if (result.IsFailed)
-                return BadRequestWithErrors(result.Errors);
+                var result = await service.CommandAsync(command, cancellationToken);
 
-            return Results.Ok(result.Value);
+                if (result is { IsSuccess: true, ValueOrDefault: not null })
+                    subCategories.Add(result.Value);
+            }
+
+            return Results.Ok(subCategories);
         }
     }
 }

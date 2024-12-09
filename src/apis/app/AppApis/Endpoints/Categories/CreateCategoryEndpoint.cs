@@ -2,7 +2,7 @@ using System.Net;
 using Carter;
 using FluentValidation;
 using Habanerio.Xpnss.Application.DTOs;
-using Habanerio.Xpnss.Application.Requests;
+using Habanerio.Xpnss.Application.Requests.Categories;
 using Habanerio.Xpnss.Categories.Application.Commands;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;

@@ -1,7 +1,7 @@
 using FluentResults;
 using FluentValidation;
 using Habanerio.Xpnss.Application.DTOs;
-using Habanerio.Xpnss.Application.Requests;
+using Habanerio.Xpnss.Application.Requests.Categories;
 using Habanerio.Xpnss.Categories.Application.Mappers;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
 using Habanerio.Xpnss.Categories.Infrastructure.Data.Documents;
@@ -47,11 +47,11 @@ public class AddSubCategoriesCommandHandler(ICategoriesRepository repository) :
 
         var parentCatDoc = parentCatResult.ValueOrDefault;
 
-        var subCatItems = request.SubCategories.ToArray();
+        var requestSubCategories = request.SubCategories.ToArray();
 
-        for (var i = 0; i < subCatItems.Length; i++)
+        for (var i = 0; i < requestSubCategories.Length; i++)
         {
-            var subCatDto = subCatItems[i];
+            var subCatDto = requestSubCategories[i];
 
             var subCatValidator = new SubCategoryValidator();
 
