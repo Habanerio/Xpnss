@@ -141,8 +141,12 @@ public static partial class InfrastructureMapper
     /// <returns></returns>
     public static IEnumerable<SubCategory> Map(IEnumerable<SubCategoryDocument> documents)
     {
-        return documents.Select(Map)
+        var subCategories = documents.Select(Map)
             .Where(x => x is not null)
             .Cast<SubCategory>();
+
+        return subCategories
+            .OrderBy(x => x.SortOrder)
+            .ThenBy(x => x.Name);
     }
 }

@@ -44,7 +44,7 @@ public class Category : AggregateRoot<CategoryId>
     {
         IsTransient = true;
 
-        ResortSubCategories();
+        ReSortSubCategories();
         // Add `CategoryCreated` Domain Event
     }
 
@@ -84,7 +84,7 @@ public class Category : AggregateRoot<CategoryId>
 
         _subCategories = [.. subCategories];
 
-        ResortSubCategories();
+        ReSortSubCategories();
     }
 
     public static Category Load(
@@ -148,10 +148,32 @@ public class Category : AggregateRoot<CategoryId>
 
         sortOrder = sortOrder < 1 ? 99 : sortOrder;
 
-        Name = name;
-        Description = description;
-        SortOrder = sortOrder;
-        DateUpdated = DateTime.UtcNow;
+        var isDirty = false;
+
+        if (!Name.Equals(name))
+        {
+            Name = name;
+            isDirty = true;
+        }
+
+        if (!Description.Equals(description))
+        {
+            Description = description;
+            isDirty = true;
+        }
+
+        if (SortOrder != sortOrder)
+        {
+            SortOrder = sortOrder;
+            isDirty = true;
+        }
+
+        if (isDirty)
+        {
+            DateUpdated = DateTime.UtcNow;
+
+            // Add `CategoryUpdated` Domain Event
+        }
     }
 
     /// <summary>
@@ -186,9 +208,46 @@ public class Category : AggregateRoot<CategoryId>
 
         _subCategories.Add(newSubCategory);
 
-        ResortSubCategories();
+        ReSortSubCategories();
 
         // Add `SubCategoryCreated` Domain Event ?
+    }
+
+    public void UpdateSubCategory(string subCategoryId, string name, string description, int sortOrder)
+    {
+        var subCategory = _subCategories.Find(c => c.Id == subCategoryId);
+
+        if (subCategory is null)
+            return;
+
+        var isDirty = false;
+
+        if (!subCategory.Name.Value.Equals(name))
+        {
+            subCategory.Name = new CategoryName(name);
+            isDirty = true;
+        }
+
+        if (!subCategory.Description.Equals(description))
+        {
+            subCategory.Description = description;
+            isDirty = true;
+        }
+
+        if (subCategory.SortOrder != sortOrder)
+        {
+            subCategory.SortOrder = sortOrder;
+            isDirty = true;
+        }
+
+        if (isDirty)
+        {
+            ReSortSubCategories();
+
+            subCategory.DateUpdated = DateTime.UtcNow;
+
+            // Add `SubCategoryUpdated` Domain Event
+        }
     }
 
     public void RemoveSubCategory(SubCategoryId subCategoryId)
@@ -218,12 +277,13 @@ public class Category : AggregateRoot<CategoryId>
         // Add `SubCategoryDeleted` Domain Event
     }
 
-    private void ResortSubCategories()
+    private void ReSortSubCategories()
     {
         // Reorder the SubCategories
         var idx = 1;
 
-        var sortedCategories = _subCategories.OrderBy(c => c.SortOrder)
+        var sortedCategories = _subCategories
+            .OrderBy(c => c.SortOrder)
             .ThenBy(c => c.Name.Value)
             .ToList();
 

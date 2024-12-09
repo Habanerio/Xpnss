@@ -59,15 +59,6 @@ public class UserProfileCreatedIntegrationEventHandler(
         categories.Add(incomeCategory);
 
 
-        var debtCategories = Category.New(
-            new UserId(userId),
-            new CategoryName("Debts"),
-            CategoryGroupEnums.CategoryKeys.DEBT,
-            "Debts, Loans, CC Interest Payments, ...",
-            2);
-
-        categories.Add(debtCategories);
-
 
         var ccLoansCategory = Category.New(
             new UserId(userId),
@@ -77,7 +68,10 @@ public class UserProfileCreatedIntegrationEventHandler(
             2);
 
         ccLoansCategory.AddSubCategory(
-            new CategoryName("Payments"), "Credit Card Payments", 1);
+            new CategoryName("Interest Charges"), "Interest Charges", 1);
+
+        ccLoansCategory.AddSubCategory(
+            new CategoryName("Fees"), "Fees", 2);
 
         categories.Add(ccLoansCategory);
 

@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Habanerio.Xpnss.Application.Requests;
+namespace Habanerio.Xpnss.Application.Requests.Categories;
 
 public record AddSubCategoriesApiRequest : UserRequiredApiRequest
 {

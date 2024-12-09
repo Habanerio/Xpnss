@@ -128,7 +128,7 @@ public class CategoriesRepository(
 
         //HandleDomainEvents(category);
 
-        return Result.Ok();
+        return Result.Ok(category);
     }
 
     //private void HandleIntegrationEvents(Category entity)
