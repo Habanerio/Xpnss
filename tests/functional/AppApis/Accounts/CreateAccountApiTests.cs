@@ -291,7 +291,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
     //    var userId = await GetTestUserObjectIdAsync();
 
     //    // Arrange
-    //    var request = new CreateAccountCommand
+    //    var apiRequest = new CreateAccountCommand
     //    (
     //        UserId: userId.ToString(),
     //        AccountType: string.Empty,
@@ -301,7 +301,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
     //    // Act
     //    var response = await HttpClient.PostAsJsonAsync(
     //        ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", userId.ToString()),
-    //        request);
+    //        apiRequest);
 
     //    // Assert
     //    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

@@ -16,6 +16,8 @@ public sealed record TransactionCreatedIntegrationEvent : IntegrationEvent
 
     public string CategoryId { get; }
 
+    public string SubCategoryId { get; set; }
+
     public string PayerPayeeId { get; }
 
     public string TransactionId { get; }
@@ -31,6 +33,7 @@ public sealed record TransactionCreatedIntegrationEvent : IntegrationEvent
         string userId,
         string accountId,
         string categoryId,
+        string subCategoryId,
         string payerPayeeId,
         TransactionEnums.TransactionKeys transactionType,
         decimal amount,
@@ -38,9 +41,6 @@ public sealed record TransactionCreatedIntegrationEvent : IntegrationEvent
     {
         if (string.IsNullOrWhiteSpace(userId))
             throw new ArgumentException("Value cannot be null or whitespace.", nameof(userId));
-
-        if (string.IsNullOrWhiteSpace(accountId))
-            throw new ArgumentException("Value cannot be null or whitespace.", nameof(accountId));
 
         if (string.IsNullOrWhiteSpace(transactionId))
             throw new ArgumentException("Value cannot be null or whitespace.", nameof(transactionId));
@@ -51,6 +51,7 @@ public sealed record TransactionCreatedIntegrationEvent : IntegrationEvent
         UserId = userId;
         AccountId = accountId;
         CategoryId = categoryId;
+        SubCategoryId = subCategoryId;
         PayerPayeeId = payerPayeeId;
         TransactionId = transactionId;
         TransactionType = transactionType;

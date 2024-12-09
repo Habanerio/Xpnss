@@ -112,6 +112,7 @@ internal static partial class ApplicationMapper
         {
             Id = item.Id,
             CategoryId = item.CategoryId,
+            SubCategoryId = item.SubCategoryId,
             Description = item.Description,
             Amount = item.Amount,
         };

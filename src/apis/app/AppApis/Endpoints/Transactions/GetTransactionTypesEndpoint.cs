@@ -6,6 +6,10 @@ namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Transactions;
 
 public sealed class GetTransactionTypesEndpoint : BaseEndpoint
 {
+    /// <summary>
+    /// Returns a dictionary of transaction types.
+    /// This is so that any client can have access to the transaction types.
+    /// </summary>
     public sealed class Endpoint : ICarterModule
     {
         public void AddRoutes(IEndpointRouteBuilder app)
@@ -16,7 +20,7 @@ public sealed class GetTransactionTypesEndpoint : BaseEndpoint
                         return TransactionEnums.ToDictionary();
                     })
                 .Produces<Dictionary<int, string>>((int)HttpStatusCode.OK)
-                .Produces<string>((int)HttpStatusCode.BadRequest)
+                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
                 .Produces((int)HttpStatusCode.NotFound)
                 .WithDisplayName("Get Transaction Types")
                 .WithName("GetTransactionTypes")

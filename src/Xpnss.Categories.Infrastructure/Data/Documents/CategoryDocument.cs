@@ -1,5 +1,6 @@
 using Habanerio.Core.Dbs.MongoDb;
 using Habanerio.Core.Dbs.MongoDb.Attributes;
+using Habanerio.Xpnss.Domain.Types;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -12,10 +13,14 @@ public class CategoryDocument : MongoDocument
     public ObjectId UserId { get; set; }
 
     [BsonElement("category_name")]
-    public string Name { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
+
+    [BsonElement("category_type")]
+    [BsonRepresentation(BsonType.String)]
+    public CategoryGroupEnums.CategoryKeys CategoryType { get; set; }
 
     [BsonElement("description")]
-    public string Description { get; set; } = "";
+    public string Description { get; set; } = string.Empty;
 
     [BsonElement("sort_order")]
     public int SortOrder { get; set; }
@@ -45,10 +50,14 @@ public class SubCategoryDocument : MongoDocument
     public ObjectId UserId { get; set; }
 
     [BsonElement("subCategory_Name")]
-    public string Name { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
+
+    [BsonElement("subCategory_type")]
+    [BsonRepresentation(BsonType.String)]
+    public CategoryGroupEnums.CategoryKeys CategoryType { get; set; }
 
     [BsonElement("description")]
-    public string Description { get; set; } = "";
+    public string Description { get; set; } = string.Empty;
 
     [BsonElement("parent_id")]
     public ObjectId ParentId { get; set; }

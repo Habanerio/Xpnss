@@ -3,25 +3,27 @@ using System.Text.Json.Serialization;
 
 namespace Habanerio.Xpnss.Application.Requests;
 
-public record GetTransactionsRequest
+public record SearchTransactionsApiRequest
 {
     [Required]
     public string UserId { get; set; }
 
     public string AccountId { get; set; }
 
+    public string CategoryId { get; set; }
+
     //[Range(1, int.MaxValue, ErrorMessage = "Please select a category.")]
     public DateTime? FromDate { get; set; }
 
     public DateTime? ToDate { get; set; }
 
-    public string TimeZone { get; set; } = "";
+    public string TimeZone { get; set; } = string.Empty;
 
     [JsonConstructor]
-    public GetTransactionsRequest() { }
+    public SearchTransactionsApiRequest() { }
 
 
-    public GetTransactionsRequest(string userId, string accountId)
+    public SearchTransactionsApiRequest(string userId, string accountId)
     {
         UserId = userId;
         AccountId = accountId;

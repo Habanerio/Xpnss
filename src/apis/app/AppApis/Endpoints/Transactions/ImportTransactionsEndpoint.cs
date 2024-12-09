@@ -19,17 +19,17 @@
 //                    async (
 //                        HttpRequest httpRequest,
 //                        [FromRoute] string userId,
-//                        [FromBody] ImportTransactionsRequest request,
+//                        [FromBody] ImportTransactionsRequest apiRequest,
 //                        [FromServices] ITransactionsService transactionsService,
 //                        [FromServices] IPayerPayeesService payerPayeesService,
 //                        CancellationToken cancellationToken) =>
 //                    {
 //                        var userTimeZone = httpRequest.Headers["X-User-Timezone"].FirstOrDefault() ?? string.Empty;
 
-//                        return await HandleAsync(userId, request, userTimeZone, transactionsService, payerPayeesService, cancellationToken);
+//                        return await HandleAsync(userId, apiRequest, userTimeZone, transactionsService, payerPayeesService, cancellationToken);
 //                    })
 //                .Produces<ApiResponse<IEnumerable<TransactionDto>>>((int)HttpStatusCode.OK)
-//                .Produces<string>((int)HttpStatusCode.BadRequest)
+//                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
 //                .Produces((int)HttpStatusCode.NotFound)
 //                .WithDisplayName("Import Transactions")
 //                .WithName("ImportTransactions")

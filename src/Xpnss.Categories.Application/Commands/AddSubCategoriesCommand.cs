@@ -1,8 +1,10 @@
 using FluentResults;
 using FluentValidation;
 using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Application.Requests;
 using Habanerio.Xpnss.Categories.Application.Mappers;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
+using Habanerio.Xpnss.Categories.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.Domain.ValueObjects;
 using MediatR;
 
@@ -13,8 +15,7 @@ namespace Habanerio.Xpnss.Categories.Application.Commands;
 /// </summary>
 public record AddSubCategoriesCommand(
     string UserId,
-    string ParentCategoryId,
-    IEnumerable<SubCategoryDto> SubCategories) :
+    AddSubCategoriesApiRequest Request) :
     ICategoriesCommand<Result<CategoryDto>>, IRequest
 { }
 
@@ -25,9 +26,11 @@ public class AddSubCategoriesCommandHandler(ICategoriesRepository repository) :
           throw new ArgumentNullException(nameof(repository));
 
     public async Task<Result<CategoryDto>> Handle(
-        AddSubCategoriesCommand request,
+        AddSubCategoriesCommand command,
         CancellationToken cancellationToken)
     {
+        var request = command.Request;
+
         var validator = new Validator();
 
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
@@ -39,22 +42,25 @@ public class AddSubCategoriesCommandHandler(ICategoriesRepository repository) :
             request.UserId, request.ParentCategoryId, cancellationToken);
 
         if (parentCatResult.IsFailed || parentCatResult.ValueOrDefault is null)
-            return Result.Fail(parentCatResult.Errors[0].Message ?? "Could not find the Parent Category");
+            return Result.Fail(parentCatResult.Errors[0].Message ??
+                               "Could not find the Parent Category");
 
         var parentCatDoc = parentCatResult.ValueOrDefault;
 
-        var subCatDtos = request.SubCategories.ToArray();
+        var subCatItems = request.SubCategories.ToArray();
 
-        for (var i = 0; i < subCatDtos.Length; i++)
+        for (var i = 0; i < subCatItems.Length; i++)
         {
-            var subCatDto = subCatDtos[i];
+            var subCatDto = subCatItems[i];
 
             var subCatValidator = new SubCategoryValidator();
 
-            var subCategoryValidationResult = await subCatValidator.ValidateAsync(subCatDto, cancellationToken);
+            var subCategoryValidationResult = await subCatValidator.ValidateAsync(
+                subCatDto, cancellationToken);
 
             if (!subCategoryValidationResult.IsValid)
-                return Result.Fail($"SubCategory at index {i} had errors: {subCategoryValidationResult.Errors[0].ErrorMessage}");
+                return Result.Fail($"SubCategory at index {i} had errors: " +
+                                   $"{subCategoryValidationResult.Errors[0].ErrorMessage}");
 
             parentCatDoc.AddSubCategory(
                 new CategoryName(subCatDto.Name),
@@ -70,12 +76,13 @@ public class AddSubCategoriesCommandHandler(ICategoriesRepository repository) :
         var parentCategoryDto = ApplicationMapper.Map(parentCatDoc);
 
         if (parentCategoryDto is null)
-            return Result.Fail<CategoryDto>("Failed to map CategoryDocument to CategoryDto");
+            throw new InvalidCastException($"{GetType()}: " +
+                $"Failed to map {typeof(CategoryDocument)} to {typeof(CategoryDto)}");
 
         return parentCategoryDto;
     }
 
-    public class Validator : AbstractValidator<AddSubCategoriesCommand>
+    public class Validator : AbstractValidator<AddSubCategoriesApiRequest>
     {
         public Validator()
         {
@@ -85,7 +92,7 @@ public class AddSubCategoriesCommandHandler(ICategoriesRepository repository) :
         }
     }
 
-    public class SubCategoryValidator : AbstractValidator<SubCategoryDto>
+    public class SubCategoryValidator : AbstractValidator<AddSubCategoriesRequestItem>
     {
         public SubCategoryValidator()
         {

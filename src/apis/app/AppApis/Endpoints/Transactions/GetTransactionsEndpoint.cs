@@ -20,7 +20,7 @@ public sealed class GetTransactionsEndpoint : BaseEndpoint
                     async (
                         HttpRequest httpRequest,
                         [FromRoute] string userId,
-                        [FromBody] GetTransactionsRequest request,
+                        [FromBody] SearchTransactionsApiRequest request,
                         [FromServices] IAccountsService accountsService,
                         [FromServices] ITransactionsService transactionsService,
                         [FromServices] IPayerPayeesService payerPayeesService,
@@ -38,7 +38,7 @@ public sealed class GetTransactionsEndpoint : BaseEndpoint
                             cancellationToken);
                     })
                 .Produces<IEnumerable<TransactionDto>>((int)HttpStatusCode.OK)
-                .Produces<string>((int)HttpStatusCode.BadRequest)
+                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
                 .Produces((int)HttpStatusCode.NotFound)
                 .WithDisplayName("Get User Transactions")
                 .WithName("GetUserTransactions")
@@ -49,7 +49,7 @@ public sealed class GetTransactionsEndpoint : BaseEndpoint
 
     public static async Task<IResult> HandleAsync(
         string userId,
-        GetTransactionsRequest request,
+        SearchTransactionsApiRequest request,
         string userTimeZone,
         IAccountsService accountsService,
         ITransactionsService transactionsService,

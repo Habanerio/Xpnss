@@ -50,42 +50,44 @@ public class AccountDtoConverters : JsonConverter<AccountDto>
     }
 }
 
-public class AccountRequestJsonConverter : JsonConverter<CreateAccountRequest>
+public class AccountRequestJsonConverter : JsonConverter<CreateAccountApiRequest>
 {
-    public override CreateAccountRequest? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override CreateAccountApiRequest? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         //TODO: Look at how I did it in TransactionCommandHandler
         using (var jsonDoc = JsonDocument.ParseValue(ref reader))
         {
             if (!(jsonDoc.RootElement.TryGetProperty("AccountType", out var accountTypeProp) &&
                 jsonDoc.RootElement.TryGetProperty("BankAccountType", out var bankTypeProp) &&
+                jsonDoc.RootElement.TryGetProperty("InvestmentAccountType", out var investmentTypeProp) &&
                 jsonDoc.RootElement.TryGetProperty("LoanAccountType", out var loanTypeProp)))
             {
                 throw new JsonException();
             }
 
-            var accountType = accountTypeProp.GetString();
-            var bankType = bankTypeProp.GetString();
-            var loanType = loanTypeProp.GetString();
+            var accountType = accountTypeProp.GetInt32();
+            var bankType = bankTypeProp.GetInt32();
+            var investmentType = investmentTypeProp.GetInt32();
+            var loanType = loanTypeProp.GetInt32();
 
-            if (accountType == nameof(AccountEnums.AccountKeys.CASH))
+            if (accountType == (int)AccountEnums.AccountKeys.CASH)
             {
                 return JsonSerializer.Deserialize<CreateCashAccountRequest>(jsonDoc.RootElement.GetRawText(), options);
             }
 
-            if (accountType == nameof(AccountEnums.AccountKeys.BANK))
+            if (accountType == (int)AccountEnums.AccountKeys.BANK)
             {
-                if (bankType == nameof(BankAccountEnums.BankAccountKeys.CHECKING))
+                if (bankType == (int)BankAccountEnums.BankAccountKeys.CHECKING)
                 {
                     return JsonSerializer.Deserialize<CreateCheckingAccountRequest>(jsonDoc.RootElement.GetRawText(), options);
                 }
 
-                if (bankType == nameof(BankAccountEnums.BankAccountKeys.SAVINGS))
+                if (bankType == (int)BankAccountEnums.BankAccountKeys.SAVINGS)
                 {
                     return JsonSerializer.Deserialize<CreateSavingsAccountRequest>(jsonDoc.RootElement.GetRawText(), options);
                 }
 
-                if (bankType == nameof(BankAccountEnums.BankAccountKeys.CREDITLINE))
+                if (bankType == (int)BankAccountEnums.BankAccountKeys.CREDITLINE)
                 {
                     return JsonSerializer.Deserialize<CreateCreditLineAccountRequest>(jsonDoc.RootElement.GetRawText(), options);
                 }
@@ -93,13 +95,13 @@ public class AccountRequestJsonConverter : JsonConverter<CreateAccountRequest>
                 throw new InvalidOperationException();
             }
 
-            if (accountType == nameof(AccountEnums.AccountKeys.CREDITCARD))
+            if (accountType == (int)AccountEnums.AccountKeys.CREDITCARD)
             {
                 return JsonSerializer.Deserialize<CreateCreditCardAccountRequest>(jsonDoc.RootElement.GetRawText(), options);
             }
 
 
-            if (accountType == nameof(AccountEnums.AccountKeys.LOAN))
+            if (accountType == (int)AccountEnums.AccountKeys.LOAN)
             {
                 return JsonSerializer.Deserialize<CreateLoanAccountRequest>(jsonDoc.RootElement.GetRawText(), options);
             }
@@ -108,7 +110,7 @@ public class AccountRequestJsonConverter : JsonConverter<CreateAccountRequest>
         }
     }
 
-    public override void Write(Utf8JsonWriter writer, CreateAccountRequest value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, CreateAccountApiRequest value, JsonSerializerOptions options)
     {
         var type = value.GetType();
         JsonSerializer.Serialize(writer, value, type, options);

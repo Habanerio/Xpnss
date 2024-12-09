@@ -12,10 +12,15 @@ internal static partial class InfrastructureMapper
         if (document is null)
             return default;
 
-        return MonthlyTotal.Load(
+        return Domain.Entities.MonthlyTotal.Load(
             new EntityObjectId(document.Id),
             new UserId(document.UserId),
-            document.EntityId != null ? new EntityObjectId(document.EntityId.Value) : null,
+            document.EntityId != null ?
+                new EntityObjectId(document.EntityId.Value) :
+                EntityObjectId.Empty,
+            document.SubEntityId != null ?
+                new EntityObjectId(document.SubEntityId.Value) :
+                EntityObjectId.Empty,
             document.EntityType,
             document.Year,
             document.Month,
@@ -46,6 +51,9 @@ internal static partial class InfrastructureMapper
             UserId = entity.UserId,
             EntityId = entity.EntityId?.Value is not null ?
                 ObjectId.Parse(entity.EntityId.Value) :
+                null,
+            SubEntityId = entity.SubEntityId?.Value is not null ?
+                ObjectId.Parse(entity.SubEntityId.Value) :
                 null,
             EntityType = entity.EntityType,
             Year = entity.Year,

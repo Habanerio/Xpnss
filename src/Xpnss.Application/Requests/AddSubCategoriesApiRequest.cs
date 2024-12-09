@@ -1,0 +1,35 @@
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+
+namespace Habanerio.Xpnss.Application.Requests;
+
+public record AddSubCategoriesApiRequest : UserRequiredApiRequest
+{
+    [Required]
+    public string ParentCategoryId { get; set; } = string.Empty;
+
+    [Required]
+    public IEnumerable<AddSubCategoriesRequestItem> SubCategories { get; set; } = [];
+
+    [JsonConstructor]
+    public AddSubCategoriesApiRequest() { }
+
+    public AddSubCategoriesApiRequest(
+        string userId,
+        string parentCategoryId,
+        IEnumerable<AddSubCategoriesRequestItem> subCategories)
+    {
+        UserId = userId;
+        ParentCategoryId = parentCategoryId;
+        SubCategories = subCategories;
+    }
+}
+
+public record AddSubCategoriesRequestItem
+{
+    public string Name { get; set; } = string.Empty;
+
+    public string Description { get; set; } = string.Empty;
+
+    public int SortOrder { get; set; } = 999;
+}

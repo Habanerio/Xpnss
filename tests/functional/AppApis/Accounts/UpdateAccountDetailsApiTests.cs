@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using Habanerio.Xpnss.Accounts.Application.Commands.UpdateAccountDetails;
 using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Application.Requests;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis.Accounts;
@@ -25,7 +25,7 @@ public class UpdateAccountDetailsApiTests(WebApplicationFactory<Apis.App.AppApis
         var newDisplayColor = "#f0f0f0";
 
         // Arrange
-        var updateAccountDetailsRequest = new UpdateAccountDetailsCommand(
+        var updateAccountDetailsRequest = new UpdateAccountDetailsApiRequest(
             account.UserId.ToString(),
             account.Id.ToString(),
             newName,

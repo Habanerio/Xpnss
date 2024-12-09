@@ -29,6 +29,7 @@ public sealed class CreditLineAccount :
         PercentageRate interestRate,
         string bankName,
         string extAcctId,
+        bool isDefault,
         int? sortOrder) :
         base(
             userId,
@@ -37,6 +38,7 @@ public sealed class CreditLineAccount :
             displayColor,
             bankName,
             extAcctId,
+            isDefault,
             sortOrder)
     {
         CreditLimit = creditLimit;
@@ -95,6 +97,7 @@ public sealed class CreditLineAccount :
         PercentageRate interestRate,
         string bankName = "",
         string extAcctId = "",
+        bool isDefault = false,
         int? sortOrder = null)
     {
         return new CreditLineAccount(
@@ -106,6 +109,7 @@ public sealed class CreditLineAccount :
             interestRate,
             bankName,
             extAcctId,
+            isDefault,
             sortOrder);
     }
 

@@ -10,39 +10,49 @@ public interface IMonthlyTotalsRepository
         MonthlyTotal monthlyTotal,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Gets a single Monthly Total for a given user, entity, year, and month.
+    /// </summary>
+    /// <returns></returns>
     Task<Result<MonthlyTotal?>> GetAsync(
         string userId,
         string entityId,
-        EntityTypes.Keys? entityType,
+        string subEntityId,
+        EntityEnums.Keys entityType,
         int year,
         int month,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Gets a List of Monthly Totals for a given user, entity, and year.
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="entityId"></param>
+    /// <param name="entityType"></param>
+    /// <param name="year"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task<Result<IEnumerable<MonthlyTotal>>> ListAsync(
         string userId,
         string entityId,
-        EntityTypes.Keys? entityType,
-        CancellationToken cancellationToken = default);
-
-    Task<Result<IEnumerable<MonthlyTotal>>> ListAsync(
-        string userId,
-        string entityId,
-        EntityTypes.Keys? entityType,
+        EntityEnums.Keys entityType,
         int year,
         CancellationToken cancellationToken = default);
 
-    Task<Result<IEnumerable<MonthlyTotal>>> ListAsync(
+    /// <summary>
+    /// Gets a List of Monthly Totals for a given user, entity, and year/month range.
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="entityId"></param>
+    /// <param name="entityType"></param>
+    /// <param name="startMonth"></param>
+    /// <param name="endMonth"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Result<IEnumerable<MonthlyTotal>>> RangeAsync(
         string userId,
         string entityId,
-        EntityTypes.Keys? entityType,
-        int year,
-        int month,
-        CancellationToken cancellationToken = default);
-
-    Task<Result<IEnumerable<MonthlyTotal>>> ListAsync(
-        string userId,
-        string entityId,
-        EntityTypes.Keys? entityType,
+        EntityEnums.Keys entityType,
         (int Year, int Month) startMonth,
         (int Year, int Month) endMonth,
         CancellationToken cancellationToken = default);

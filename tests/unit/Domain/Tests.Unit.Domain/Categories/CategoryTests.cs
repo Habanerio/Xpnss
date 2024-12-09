@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using AutoFixture;
 using Habanerio.Xpnss.Categories.Domain.Entities;
+using Habanerio.Xpnss.Domain.Types;
 using Habanerio.Xpnss.Domain.ValueObjects;
 using MongoDB.Bson;
 
@@ -15,6 +16,7 @@ public class CategoryTests : TestsBase
         var id = AutoFixture.Create<CategoryId>();
         var userId = AutoFixture.Create<UserId>();
         var name = AutoFixture.Create<CategoryName>();
+        var categoryType = AutoFixture.Create<CategoryGroupEnums.CategoryKeys>();
         var description = AutoFixture.Create<string>();
         var sortOrder = AutoFixture.Create<int>();
         var subCategories = new List<SubCategory>
@@ -33,6 +35,7 @@ public class CategoryTests : TestsBase
             id,
             userId,
             name,
+            categoryType,
             description,
             sortOrder,
             subCategories,
@@ -48,6 +51,7 @@ public class CategoryTests : TestsBase
         var id = AutoFixture.Create<CategoryId>();
         var userId = AutoFixture.Create<UserId>();
         var name = AutoFixture.Create<CategoryName>();
+        var categoryType = AutoFixture.Create<CategoryGroupEnums.CategoryKeys>();
         var description = AutoFixture.Create<string>();
         var sortOrder = AutoFixture.Create<int>();
         var subCategories = new List<SubCategory>
@@ -67,6 +71,7 @@ public class CategoryTests : TestsBase
             id,
             userId,
             name,
+            categoryType,
             description,
             sortOrder,
             subCategories,
@@ -96,6 +101,7 @@ public class CategoryTests : TestsBase
                 null,
                 AutoFixture.Create<UserId>(),
                 AutoFixture.Create<CategoryName>(),
+                AutoFixture.Create<CategoryGroupEnums.CategoryKeys>(),
                 AutoFixture.Create<string>(),
                 AutoFixture.Create<int>(),
                 AutoFixture.Create<IEnumerable<SubCategory>>(),
@@ -108,6 +114,7 @@ public class CategoryTests : TestsBase
                 default(CategoryId),
                 AutoFixture.Create<UserId>(),
                 AutoFixture.Create<CategoryName>(),
+                AutoFixture.Create<CategoryGroupEnums.CategoryKeys>(),
                 AutoFixture.Create<string>(),
                 AutoFixture.Create<int>(),
                 AutoFixture.Create<IEnumerable<SubCategory>>(),
@@ -120,6 +127,7 @@ public class CategoryTests : TestsBase
                 new CategoryId(ObjectId.Empty),
                 AutoFixture.Create<UserId>(),
                 AutoFixture.Create<CategoryName>(),
+                AutoFixture.Create<CategoryGroupEnums.CategoryKeys>(),
                 AutoFixture.Create<string>(),
                 AutoFixture.Create<int>(),
                 AutoFixture.Create<IEnumerable<SubCategory>>(),
@@ -132,6 +140,7 @@ public class CategoryTests : TestsBase
                 new CategoryId(string.Empty),
                 AutoFixture.Create<UserId>(),
                 AutoFixture.Create<CategoryName>(),
+                AutoFixture.Create<CategoryGroupEnums.CategoryKeys>(),
                 AutoFixture.Create<string>(),
                 AutoFixture.Create<int>(),
                 AutoFixture.Create<IEnumerable<SubCategory>>(),
@@ -148,6 +157,7 @@ public class CategoryTests : TestsBase
                 AutoFixture.Create<CategoryId>(),
                 default(UserId),
                 AutoFixture.Create<CategoryName>(),
+                AutoFixture.Create<CategoryGroupEnums.CategoryKeys>(),
                 AutoFixture.Create<string>(),
                 AutoFixture.Create<int>(),
                 AutoFixture.Create<IEnumerable<SubCategory>>(),
@@ -164,6 +174,7 @@ public class CategoryTests : TestsBase
                 AutoFixture.Create<CategoryId>(),
                 AutoFixture.Create<UserId>(),
                 AutoFixture.Create<CategoryName>(),
+                AutoFixture.Create<CategoryGroupEnums.CategoryKeys>(),
                 AutoFixture.Create<string>(),
                 AutoFixture.Create<int>(),
                 default(IEnumerable<SubCategory>),
@@ -183,6 +194,7 @@ public class CategoryTests : TestsBase
                 AutoFixture.Create<CategoryId>(),
                 AutoFixture.Create<UserId>(),
                 AutoFixture.Create<CategoryName>(),
+                AutoFixture.Create<CategoryGroupEnums.CategoryKeys>(),
                 value,
                 AutoFixture.Create<int>(),
                 AutoFixture.Create<IEnumerable<SubCategory>>(),
@@ -198,11 +210,12 @@ public class CategoryTests : TestsBase
         // Arrange
         var userId = AutoFixture.Create<UserId>();
         var name = AutoFixture.Create<CategoryName>();
+        var categoryType = AutoFixture.Create<CategoryGroupEnums.CategoryKeys>();
         var description = AutoFixture.Create<string>();
         var sortOrder = AutoFixture.Create<int>();
 
         // Act
-        var result = Category.New(userId, name, description, sortOrder);
+        var result = Category.New(userId, name, categoryType, description, sortOrder);
 
         // Assert
         Assert.NotNull(result);
@@ -220,6 +233,7 @@ public class CategoryTests : TestsBase
             Category.New(
                 default(UserId),
                 AutoFixture.Create<CategoryName>(),
+                AutoFixture.Create<CategoryGroupEnums.CategoryKeys>(),
                 AutoFixture.Create<string>(),
                 AutoFixture.Create<int>()));
     }
@@ -234,6 +248,7 @@ public class CategoryTests : TestsBase
             Category.New(
                 AutoFixture.Create<UserId>(),
                 AutoFixture.Create<CategoryName>(),
+                AutoFixture.Create<CategoryGroupEnums.CategoryKeys>(),
                 value,
                 AutoFixture.Create<int>()));
     }
@@ -272,6 +287,7 @@ public class CategoryTests : TestsBase
         var id = AutoFixture.Create<CategoryId>();
         var userId = AutoFixture.Create<UserId>();
         var name = AutoFixture.Create<CategoryName>();
+        var categoryType = AutoFixture.Create<CategoryGroupEnums.CategoryKeys>();
         var description = AutoFixture.Create<string>();
         var sortOrder = AutoFixture.Create<int>();
         var subCategories = new List<SubCategory>
@@ -291,6 +307,7 @@ public class CategoryTests : TestsBase
             id,
             userId,
             name,
+            categoryType,
             description,
             sortOrder,
             subCategories,

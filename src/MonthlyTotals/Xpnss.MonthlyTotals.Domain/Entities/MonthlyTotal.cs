@@ -15,11 +15,13 @@ public class MonthlyTotal : AggregateRoot<EntityObjectId>
     /// </summary>
     public EntityObjectId? EntityId { get; init; }
 
+    public EntityObjectId? SubEntityId { get; init; }
+
     /// <summary>
     /// EntityType is the type of the entity that this MonthlyTotal is for.
     /// Eg: Account, Category, etc.
     /// </summary>
-    public EntityTypes.Keys EntityType { get; init; }
+    public EntityEnums.Keys EntityType { get; init; }
 
     public int Month { get; set; }
 
@@ -49,7 +51,8 @@ public class MonthlyTotal : AggregateRoot<EntityObjectId>
     private MonthlyTotal(
         UserId userId,
         EntityObjectId entityId,
-        EntityTypes.Keys entityType,
+        EntityObjectId subEntityId,
+        EntityEnums.Keys entityType,
         int year,
         int month,
         Money creditTotalAmount,
@@ -60,6 +63,7 @@ public class MonthlyTotal : AggregateRoot<EntityObjectId>
             EntityObjectId.New,
             userId,
             entityId,
+            subEntityId,
             entityType,
             year,
             month,
@@ -78,7 +82,8 @@ public class MonthlyTotal : AggregateRoot<EntityObjectId>
         EntityObjectId id,
         UserId userId,
         EntityObjectId entityId,
-        EntityTypes.Keys entityType,
+        EntityObjectId subEntityId,
+        EntityEnums.Keys entityType,
         int year,
         int month,
         Money creditTotalAmount,
@@ -100,6 +105,7 @@ public class MonthlyTotal : AggregateRoot<EntityObjectId>
         UserId = userId;
 
         EntityId = entityId;
+        SubEntityId = subEntityId;
         EntityType = entityType;
 
         Month = month;
@@ -119,7 +125,8 @@ public class MonthlyTotal : AggregateRoot<EntityObjectId>
         EntityObjectId id,
         UserId userId,
         EntityObjectId entityId,
-        EntityTypes.Keys entityType,
+        EntityObjectId subEntityId,
+        EntityEnums.Keys entityType,
         int year,
         int month,
         Money creditTotalAmount,
@@ -134,6 +141,7 @@ public class MonthlyTotal : AggregateRoot<EntityObjectId>
             id,
             userId,
             entityId,
+            subEntityId,
             entityType,
             year,
             month,
@@ -149,7 +157,8 @@ public class MonthlyTotal : AggregateRoot<EntityObjectId>
     public static MonthlyTotal New(
         UserId userId,
         EntityObjectId entityId,
-        EntityTypes.Keys entityType,
+        EntityObjectId subEntityId,
+        EntityEnums.Keys entityType,
         int year,
         int month,
         bool isCredit,
@@ -158,6 +167,7 @@ public class MonthlyTotal : AggregateRoot<EntityObjectId>
         return new MonthlyTotal(
             userId,
             entityId,
+            subEntityId,
             entityType,
             year,
             month,

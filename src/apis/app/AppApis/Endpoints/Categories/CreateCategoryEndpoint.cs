@@ -2,6 +2,7 @@ using System.Net;
 using Carter;
 using FluentValidation;
 using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Application.Requests;
 using Habanerio.Xpnss.Categories.Application.Commands;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -17,14 +18,14 @@ public class CreateCategoryEndpoint : BaseEndpoint
             app.MapPost("/api/v1/users/{userId}/categories",
                 async (
                     [FromRoute] string userId,
-                    [FromBody] CreateCategoryCommand command,
+                    [FromBody] CreateCategoryApiRequest request,
                     [FromServices] ICategoriesService service,
                     CancellationToken cancellationToken) =>
                 {
-                    return await HandleAsync(userId, command, service, cancellationToken);
+                    return await HandleAsync(userId, request, service, cancellationToken);
                 })
                 .Produces<CategoryDto>((int)HttpStatusCode.OK)
-                .Produces<string>((int)HttpStatusCode.BadRequest)
+                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
                 .WithDisplayName("Create New Category")
                 .WithName("CreateCategory")
                 .WithTags("Categories")
@@ -34,21 +35,23 @@ public class CreateCategoryEndpoint : BaseEndpoint
 
     public static async Task<IResult> HandleAsync(
         string userId,
-        CreateCategoryCommand command,
+        CreateCategoryApiRequest request,
         ICategoriesService service,
         CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(service);
 
         if (string.IsNullOrWhiteSpace(userId))
             return BadRequestWithErrors("User Id is required");
 
         var validator = new Validator();
-        var validationResult = await validator.ValidateAsync(command, cancellationToken);
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
             return BadRequestWithErrors(validationResult.Errors);
+
+        var command = new CreateCategoryCommand(userId, request);
 
         var result = await service.CommandAsync(command, cancellationToken);
 
@@ -58,7 +61,7 @@ public class CreateCategoryEndpoint : BaseEndpoint
         return Results.Ok(result.Value);
     }
 
-    public class Validator : AbstractValidator<CreateCategoryCommand>
+    public class Validator : AbstractValidator<CreateCategoryApiRequest>
     {
         public Validator()
         {

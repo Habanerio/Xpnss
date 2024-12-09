@@ -48,7 +48,8 @@ public sealed class GetUserProfileByExtIdQueryHandler(
         var dto = ApplicationMapper.Map(docResult.Value);
 
         if (dto is null)
-            throw new InvalidCastException("Failed to map UserProfile to UserProfileDto");
+            throw new InvalidCastException(
+                $"{nameof(GetType)}: Failed to map UserProfile to UserProfileDto");
 
         return dto;
     }

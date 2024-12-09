@@ -1,3 +1,6 @@
+using System.Text.Json.Serialization;
+using Habanerio.Xpnss.Domain.Types;
+
 namespace Habanerio.Xpnss.Application.DTOs;
 
 public sealed record CategoryDto
@@ -8,7 +11,13 @@ public sealed record CategoryDto
 
     public string Name { get; set; }
 
-    public string Description { get; set; } = "";
+    [JsonPropertyName("CategoryType")]
+    [JsonConverter(typeof(JsonNumberEnumConverter<CategoryGroupEnums.CategoryKeys>))]
+    public CategoryGroupEnums.CategoryKeys CategoryType { get; set; } = CategoryGroupEnums.CategoryKeys.EXPENSE;
+
+    public string CategoryTypeString => CategoryType.ToString();
+
+    public string Description { get; set; } = string.Empty;
 
     public int SortOrder { get; set; } = 999;
 

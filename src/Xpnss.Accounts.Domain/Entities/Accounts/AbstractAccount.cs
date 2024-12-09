@@ -38,9 +38,15 @@ public abstract class AbstractAccountBase :
 
     public abstract bool IsCredit { get; }
 
-    public bool IsDefault { get; }
+    /// <summary>
+    /// Use UpdateDetails to change the Account's IsDefault
+    /// </summary>
+    public bool IsDefault { get; private set; }
 
-    public int SortOrder { get; }
+    /// <summary>
+    /// Use UpdateDetails to change the Account's SortOrder
+    /// </summary>
+    public int SortOrder { get; private set; }
 
     public IReadOnlyCollection<TransactionEnums.TransactionKeys> CreditTransactionTypes =>
         IsCredit ? TransactionEnums.CreditTransactionKeys
@@ -57,6 +63,7 @@ public abstract class AbstractAccountBase :
         AccountName accountName,
         string description,
         string displayColor,
+        bool isDefault = false,
         int? sortOrder = null) :
         base(AccountId.New)
     {
@@ -68,7 +75,7 @@ public abstract class AbstractAccountBase :
         DisplayColor = displayColor?.Trim() ?? string.Empty;
         Description = description?.Trim() ?? string.Empty;
         DateCreated = DateTime.UtcNow;
-
+        IsDefault = isDefault;
         SortOrder = sortOrder.GetValueOrDefault(-1) < 0 ? 999 : sortOrder!.Value;
 
         // Add `AccountCreated` Domain Event
@@ -124,16 +131,59 @@ public abstract class AbstractAccountBase :
         Money amount,
         TransactionEnums.TransactionKeys transactionType);
 
-    public void UpdateDetails(string accountName, string description, string displayColour)
+    /// <summary>
+    /// Values will only be updated if they are not null.
+    /// </summary>
+    /// <param name="accountName"></param>
+    /// <param name="description"></param>
+    /// <param name="displayColor"></param>
+    /// <param name="isDefault"></param>
+    /// <param name="sortOrder"></param>
+    /// <exception cref="InvalidOperationException"></exception>
+    public void UpdateDetails(
+        string? accountName = null,
+        string? description = null,
+        string? displayColor = null,
+        bool? isDefault = null,
+        int? sortOrder = null)
     {
         if (IsDeleted)
             throw new InvalidOperationException("Cannot update a deleted Account");
 
-        Name = !string.IsNullOrWhiteSpace(accountName) ? new AccountName(accountName) : Name;
-        Description = description;
-        DisplayColor = displayColour;
+        var isDirty = false;
 
-        DateUpdated = DateTime.UtcNow;
+        if (!string.IsNullOrWhiteSpace(accountName) && !Name.Value.Equals(accountName))
+        {
+            Name = new AccountName(accountName);
+            isDirty = true;
+        }
+
+        if (!string.IsNullOrWhiteSpace(description) && !Description.Equals(description))
+        {
+            Description = new AccountName(description);
+            isDirty = true;
+        }
+
+        if (!string.IsNullOrWhiteSpace(displayColor) && !DisplayColor.Equals(displayColor))
+        {
+            DisplayColor = displayColor;
+            isDirty = true;
+        }
+
+        if (isDefault is not null && IsDefault != isDefault)
+        {
+            IsDefault = isDefault!.Value;
+            isDirty = true;
+        }
+
+        if (sortOrder is not null && SortOrder != sortOrder && SortOrder > 0)
+        {
+            SortOrder = sortOrder!.Value;
+            isDirty = true;
+        }
+
+        if (isDirty)
+            DateUpdated = DateTime.UtcNow;
     }
 }
 
@@ -157,12 +207,14 @@ public abstract class AbstractAccount : AbstractAccountBase
         string description,
         string displayColor,
         string extAcctId,
+        bool isDefault,
         int? sortOrder) :
         base(
             userId,
             accountName,
             description,
             displayColor,
+            isDefault,
             sortOrder)
     {
         ExtAcctId = extAcctId;

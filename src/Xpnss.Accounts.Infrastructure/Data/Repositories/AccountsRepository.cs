@@ -53,6 +53,11 @@ public sealed class AccountsRepository(IMongoDatabase mongoDb) :
         }
     }
 
+    /// <summary>
+    /// Gets a single Account for a User by its Id.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="InvalidCastException"></exception>
     public async Task<Result<AbstractAccountBase?>> GetAsync(
         string userId,
         string accountId,
@@ -82,6 +87,11 @@ public sealed class AccountsRepository(IMongoDatabase mongoDb) :
         return Result.Ok<AbstractAccountBase?>(account);
     }
 
+    /// <summary>
+    /// Gets a single Account for a User by its Id.
+    /// </summary>
+    /// <typeparam name="TType">The Type of the Account to be returned as</typeparam>
+    /// <returns></returns>
     public async Task<Result<TType?>> GetAsync<TType>(
         string userId,
         string accountId,
@@ -98,6 +108,9 @@ public sealed class AccountsRepository(IMongoDatabase mongoDb) :
         return Result.Ok((TType?)result.Value);
     }
 
+    /// <summary>
+    /// Gets a IEnumerable of Accounts for a User, ordered by SortOrder and then by Name.
+    /// </summary>
     public async Task<Result<IEnumerable<AbstractAccountBase>>> ListAsync(
         string userId,
         CancellationToken cancellationToken = default)
@@ -107,7 +120,10 @@ public sealed class AccountsRepository(IMongoDatabase mongoDb) :
             return Result.Fail($"Invalid UserId: `{userId}`");
 
         var docs = (await FindDocumentsAsync(a =>
-            a.UserId == userObjectId, cancellationToken))?.ToList() ?? [];
+            a.UserId == userObjectId, cancellationToken))?
+            .OrderBy(a => a.SortOrder)
+            .ThenBy(a => a.Name)
+            .ToList() ?? [];
 
         if (!docs.Any())
             return Result.Ok(Enumerable.Empty<AbstractAccountBase>());

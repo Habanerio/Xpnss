@@ -95,7 +95,7 @@ public static class LoanAccountEnums
 
 public static class AllAccountEnums
 {
-    public enum Keys
+    public enum AllAccountKeys
     {
         CASH = 0,
         CHECKING,
@@ -108,13 +108,44 @@ public static class AllAccountEnums
         UNKNOWN = 999
     }
 
+    public static AllAccountEnums.AllAccountKeys GetAllAccountEnumType(
+        AccountEnums.AccountKeys account,
+        BankAccountEnums.BankAccountKeys bank,
+        InvestmentAccountEnums.InvestmentAccountKeys investment,
+        LoanAccountEnums.LoanAccountKeys loan)
+    {
+        if (account is AccountEnums.AccountKeys.CASH)
+            return AllAccountKeys.CASH;
+
+        if (account is AccountEnums.AccountKeys.CREDITCARD)
+            return AllAccountKeys.CREDITCARD;
+
+        if (account is AccountEnums.AccountKeys.INVESTMENT)
+            return AllAccountKeys.INVESTMENT;
+
+        if (account is AccountEnums.AccountKeys.LOAN)
+            return AllAccountKeys.LOAN;
+
+        if (account is AccountEnums.AccountKeys.BANK)
+            if (bank is BankAccountEnums.BankAccountKeys.CHECKING)
+                return AllAccountKeys.CHECKING;
+            else if (bank is BankAccountEnums.BankAccountKeys.SAVINGS)
+                return AllAccountKeys.SAVINGS;
+            else if (bank is BankAccountEnums.BankAccountKeys.CREDITLINE)
+                return AllAccountKeys.CREDITLINE;
+            else
+                return AllAccountKeys.UNKNOWN;
+
+        return AllAccountKeys.UNKNOWN;
+    }
+
     public static
         (AccountEnums.AccountKeys AccountType,
         BankAccountEnums.BankAccountKeys BankType,
         InvestmentAccountEnums.InvestmentAccountKeys InvestmentType,
-        LoanAccountEnums.LoanAccountKeys LoanType) GetTypes(Keys key)
+        LoanAccountEnums.LoanAccountKeys LoanType) GetTypes(AllAccountKeys allAccountKey)
     {
-        if (key == Keys.CASH)
+        if (allAccountKey == AllAccountKeys.CASH)
         {
             return (
                 AccountEnums.AccountKeys.CASH,
@@ -123,7 +154,7 @@ public static class AllAccountEnums
                 LoanAccountEnums.LoanAccountKeys.NA);
         }
 
-        if (key == Keys.CHECKING)
+        if (allAccountKey == AllAccountKeys.CHECKING)
         {
             return (
                 AccountEnums.AccountKeys.BANK,
@@ -132,7 +163,7 @@ public static class AllAccountEnums
                 LoanAccountEnums.LoanAccountKeys.NA);
         }
 
-        if (key == Keys.SAVINGS)
+        if (allAccountKey == AllAccountKeys.SAVINGS)
         {
             return (
                 AccountEnums.AccountKeys.BANK,
@@ -141,7 +172,7 @@ public static class AllAccountEnums
                 LoanAccountEnums.LoanAccountKeys.NA);
         }
 
-        if (key == Keys.CREDITLINE)
+        if (allAccountKey == AllAccountKeys.CREDITLINE)
         {
             return (
                 AccountEnums.AccountKeys.BANK,
@@ -150,7 +181,7 @@ public static class AllAccountEnums
                 LoanAccountEnums.LoanAccountKeys.NA);
         }
 
-        if (key == Keys.CREDITCARD)
+        if (allAccountKey == AllAccountKeys.CREDITCARD)
         {
             return (
                 AccountEnums.AccountKeys.CREDITCARD,
@@ -159,7 +190,7 @@ public static class AllAccountEnums
                 LoanAccountEnums.LoanAccountKeys.NA);
         }
 
-        if (key == Keys.INVESTMENT)
+        if (allAccountKey == AllAccountKeys.INVESTMENT)
         {
             return (
                 AccountEnums.AccountKeys.INVESTMENT,
@@ -168,7 +199,7 @@ public static class AllAccountEnums
                 LoanAccountEnums.LoanAccountKeys.NA);
         }
 
-        if (key == Keys.LOAN)
+        if (allAccountKey == AllAccountKeys.LOAN)
         {
             return (
                 AccountEnums.AccountKeys.LOAN,
@@ -177,13 +208,13 @@ public static class AllAccountEnums
                 LoanAccountEnums.LoanAccountKeys.UNKNOWN);
         }
 
-        throw new InvalidOperationException($"'{key}' is an unknown type");
+        throw new InvalidOperationException($"'{allAccountKey}' is an unknown type");
     }
 
     // Could make this a generic
     public static Dictionary<int, string> ToDictionary()
     {
-        return Enum.GetValues<AllAccountEnums.Keys>()
+        return Enum.GetValues<AllAccountKeys>()
             .ToDictionary(k => (int)k, v => v.ToString());
     }
 }

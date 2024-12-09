@@ -8,7 +8,7 @@ using MediatR;
 
 namespace Habanerio.Xpnss.Transactions.Application.Queries.GetTransactions;
 
-public sealed record GetTransactionsQuery(GetTransactionsRequest Request) :
+public sealed record GetTransactionsQuery(SearchTransactionsApiRequest Request) :
     ITransactionsQuery<Result<IEnumerable<TransactionDto>>>;
 
 public class GetTransactionsHandler(ITransactionsRepository repository) :

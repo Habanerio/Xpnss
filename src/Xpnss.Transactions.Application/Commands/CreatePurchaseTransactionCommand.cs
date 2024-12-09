@@ -12,7 +12,8 @@ using MediatR;
 
 namespace Habanerio.Xpnss.Transactions.Application.Commands;
 
-public sealed record CreatePurchaseTransactionCommand(CreatePurchaseTransactionRequest Request) :
+public sealed record CreatePurchaseTransactionCommand(
+    CreatePurchaseTransactionApiRequest ApiRequest) :
     ITransactionsCommand<Result<PurchaseTransactionDto>>;
 
 public sealed class CreatePurchaseTransactionHandler(
@@ -41,7 +42,7 @@ public sealed class CreatePurchaseTransactionHandler(
         if (!validationResult.IsValid)
             return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
-        var transactionRequest = command.Request;
+        var transactionRequest = command.ApiRequest;
 
         var transactionDoc = PurchaseTransaction.New(
             new UserId(transactionRequest.UserId),
@@ -72,7 +73,8 @@ public sealed class CreatePurchaseTransactionHandler(
         if (ApplicationMapper.Map(result.Value) is not PurchaseTransactionDto purchaseTransactionDto)
             throw new InvalidCastException("Failed to map PurchaseTransaction to PurchaseTransactionDto");
 
-        // Iterate over all PurchaseTransaction Items and publish TransactionCreatedIntegrationEvent for category/amount
+        // Iterate over all PurchaseTransaction Items and publish
+        // TransactionCreatedIntegrationEvent for category/amount
         foreach (var transactionItem in purchaseTransaction.Items)
         {
             var transactionCreatedIntegrationEvent = new TransactionCreatedIntegrationEvent(
@@ -81,12 +83,14 @@ public sealed class CreatePurchaseTransactionHandler(
                 purchaseTransaction.AccountId,
                 // transactionItem
                 transactionItem.CategoryId,
+                transactionItem.SubCategoryId,
                 purchaseTransaction.PayerPayeeId,
                 purchaseTransaction.TransactionType,
                 // transactionItem
                 transactionItem.Amount,
 
-                // Use transactionRequest.TransactionDate and not transaction.TransactionDate (as it's Utc) ??
+                // Use transactionApiRequest.TransactionDate and not
+                // transaction.TransactionDate (as it's Utc) ??
                 transactionRequest.TransactionDate);
 
             await _mediator.Publish(transactionCreatedIntegrationEvent, cancellationToken);
@@ -99,12 +103,12 @@ public sealed class CreatePurchaseTransactionHandler(
     {
         public Validator()
         {
-            RuleFor(x => x.Request.UserId).NotEmpty();
-            RuleFor(x => x.Request.AccountId).NotEmpty();
-            RuleFor(x => x.Request.TransactionDate).NotEmpty();
-            RuleFor(x => x.Request.TransactionType).NotNull();
-            RuleFor(x => x.Request.Items).NotEmpty();
-            RuleFor(x => x.Request.Items
+            RuleFor(x => x.ApiRequest.UserId).NotEmpty();
+            RuleFor(x => x.ApiRequest.AccountId).NotEmpty();
+            RuleFor(x => x.ApiRequest.TransactionDate).NotEmpty();
+            RuleFor(x => x.ApiRequest.TransactionType).NotNull();
+            RuleFor(x => x.ApiRequest.Items).NotEmpty();
+            RuleFor(x => x.ApiRequest.Items
                     .TrueForAll(i => i.Amount >= 0))
                 .Equal(true);
         }

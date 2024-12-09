@@ -49,8 +49,8 @@ public sealed class GetUserProfileByIdQueryHandler(
 
         if (dto is null)
         {
-            _logger.LogError("Failed to map UserProfile {Id} ({Email}) to UserProfileDto",
-                docsResult.ValueOrDefault.Id, docsResult.ValueOrDefault.Email);
+            _logger.LogError("{GetType}: Failed to map UserProfile {Id} ({Email}) to UserProfileDto",
+                nameof(GetType), docsResult.ValueOrDefault.Id, docsResult.ValueOrDefault.Email);
 
             return Result.Ok<UserProfileDto?>(default);
         }

@@ -10,7 +10,7 @@ public class MongoDbSettings : DbSettings
     /// <value>
     /// The name of the database.
     /// </value>
-    public virtual string DatabaseName { get; set; } = "";
+    public virtual string DatabaseName { get; set; } = string.Empty;
 
     public virtual bool EnableSensitiveDataLogging { get; set; } = false;
 

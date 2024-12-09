@@ -14,7 +14,7 @@ public sealed class GetTransactionEndpoint : BaseEndpoint
     {
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.MapPost("/api/v1/users/{userId}/transactions/{transactionId}",
+            app.MapGet("/api/v1/users/{userId}/transactions/{transactionId}",
                     async (
                         HttpRequest httpRequest,
                         [FromRoute] string userId,
@@ -28,7 +28,7 @@ public sealed class GetTransactionEndpoint : BaseEndpoint
                         return await HandleAsync(userId, transactionId, userTimeZone, transactionsService, payerPayeesService, cancellationToken);
                     })
                 .Produces<IEnumerable<TransactionDto>>((int)HttpStatusCode.OK)
-                .Produces<string>((int)HttpStatusCode.BadRequest)
+                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
                 .Produces((int)HttpStatusCode.NotFound)
                 .WithDisplayName("Get User Transaction")
                 .WithName("GetUserTransaction")

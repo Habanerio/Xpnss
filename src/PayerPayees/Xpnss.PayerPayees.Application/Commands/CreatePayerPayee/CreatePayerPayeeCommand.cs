@@ -11,9 +11,7 @@ namespace Habanerio.Xpnss.PayerPayees.Application.Commands.CreatePayerPayee;
 
 public sealed record CreatePayerPayeeCommand(
     string UserId,
-    string Name,
-    string Description,
-    string Location) :
+    string Name) :
     IPayerPayeesCommand<Result<PayerPayeeDto?>>;
 
 /// <summary>
@@ -55,9 +53,7 @@ public class CreatePayerPayeeCommandHandler(IPayerPayeesRepository repository) :
 
         payerPayee = PayerPayee.New(
             new UserId(command.UserId),
-            new PayerPayeeName(command.Name),
-            command.Description,
-            command.Location);
+            new PayerPayeeName(command.Name));
 
         var newResult = await _repository.AddAsync(payerPayee, cancellationToken);
 
@@ -67,7 +63,8 @@ public class CreatePayerPayeeCommandHandler(IPayerPayeesRepository repository) :
         var payerPayeeDto = ApplicationMapper.Map(payerPayee);
 
         if (payerPayeeDto is null)
-            throw new InvalidCastException("Failed to map PayerPayeeDocument to PayerPayeeDto");
+            throw new InvalidCastException(
+                $"{nameof(GetType)}: Failed to map PayerPayeeDocument to PayerPayeeDto");
 
         return Result.Ok<PayerPayeeDto?>(payerPayeeDto);
     }

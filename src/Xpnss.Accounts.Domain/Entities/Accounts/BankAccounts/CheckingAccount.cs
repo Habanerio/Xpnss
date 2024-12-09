@@ -25,6 +25,7 @@ public sealed class CheckingAccount :
         Money overDraftLimit = default,
         string bankName = "",
         string extAcctId = "",
+        bool isDefault = false,
         int? sortOrder = null) :
         base(
             userId,
@@ -33,6 +34,7 @@ public sealed class CheckingAccount :
             displayColor,
             bankName,
             extAcctId,
+            isDefault,
             sortOrder)
     {
         OverdraftLimit = overDraftLimit;
@@ -87,6 +89,7 @@ public sealed class CheckingAccount :
         Money overDraftLimit = default,
         string bankName = "",
         string extAcctId = "",
+        bool isDefault = false,
         int? sortOrder = null)
 
     {
@@ -101,6 +104,7 @@ public sealed class CheckingAccount :
             overDraftLimit,
             bankName,
             extAcctId,
+            isDefault,
             sortOrder);
     }
 

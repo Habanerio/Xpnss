@@ -2,7 +2,6 @@ using Habanerio.Xpnss.Apis.App.AppApis;
 using Habanerio.Xpnss.Application.Requests;
 using Habanerio.Xpnss.Domain.Types;
 using Microsoft.AspNetCore.Mvc.Testing;
-using MongoDB.Bson;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis.Transactions;
 
@@ -10,6 +9,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
     CreateTransactionBaseApiTests(factory)
 {
     private const TransactionEnums.TransactionKeys TRANSACTION_TYPE = TransactionEnums.TransactionKeys.PURCHASE;
+
 
     /// <summary>
     /// Tests that a Transaction can be created with an existing PayerPayee
@@ -30,6 +30,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
         foreach (var existingAccount in existingAccounts)
         {
             var transactionDate = GetRandomPastDate;
+            var category = await GetPersonalExpensesCategoryAsync();
 
             var existingPayerPayees =
                 (await PayerPayeeDocumentsRepository
@@ -45,12 +46,9 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
                         .Next(0, existingPayerPayees.Count - 1)] :
                 default;
 
-            var payerPayee = new PayerPayeeRequest
+            var payerPayee = new PayerPayeeApiRequest
             {
-                Id = existingPayerPayee?.Id ?? string.Empty,
-                Name = existingPayerPayee?.Name ?? string.Empty,
-                Description = existingPayerPayee?.Description ?? string.Empty,
-                Location = existingPayerPayee?.Location ?? string.Empty
+                Name = GetRandomMerchant()
             };
 
             var transactionDescription = existingPayerPayee is null ?
@@ -59,7 +57,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
                 $"{existingPayerPayee.Id} - {existingPayerPayee.Name}";
 
             // Arrange
-            var createTransactionRequest = new CreatePurchaseTransactionRequest
+            var createTransactionRequest = new CreatePurchaseTransactionApiRequest
             {
                 UserId = testUserId.ToString(),
                 AccountId = existingAccount.Id.ToString(),
@@ -68,14 +66,16 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
                     new()
                     {
                         Amount = GetRandomAmount(100, 150),
-                        CategoryId = ObjectId.GenerateNewId().ToString(),
+                        CategoryId = category.Id.ToString(),
+                        SubCategoryId = category.SubCategories[4].Id.ToString(),
                         Description = "Transaction Item 1 Description"
                     },
 
                     new()
                     {
                         Amount = GetRandomAmount(1, 250),
-                        CategoryId = ObjectId.GenerateNewId().ToString(),
+                        CategoryId = category.Id.ToString(),
+                        SubCategoryId = category.SubCategories[6].Id.ToString(),
                         Description = "Transaction Item 2 Description"
                     }
                 ],
@@ -107,6 +107,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
             Assert.Fail("Need to add accounts before running this test");
 
         var transactionDate = GetRandomPastDate;
+        var category = await GetPersonalExpensesCategoryAsync();
 
         var existingPayerPayees =
             (await PayerPayeeDocumentsRepository
@@ -123,12 +124,9 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
                     .Next(0, existingPayerPayees.Count - 1)] :
             default;
 
-        var payerPayee = new PayerPayeeRequest
+        var payerPayee = new PayerPayeeApiRequest
         {
-            Id = existingPayerPayee?.Id ?? string.Empty,
-            Name = existingPayerPayee?.Name ?? string.Empty,
-            Description = existingPayerPayee?.Description ?? string.Empty,
-            Location = existingPayerPayee?.Location ?? string.Empty
+            Name = GetRandomMerchant()
         };
 
         var transactionDescription = existingPayerPayee is null ?
@@ -137,21 +135,24 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
                 $"{existingPayerPayee.Id} - {existingPayerPayee.Name}";
 
         // Arrange
-        var createTransactionRequest = new CreatePurchaseTransactionRequest
+        var createTransactionRequest = new CreatePurchaseTransactionApiRequest
         {
             UserId = testUserId.ToString(),
             AccountId = existingAccount.Id.ToString(),
-            Items = new List<PurchaseTransactionItemRequest>
+            Items = new List<TransactionApiRequestItem>
             {
                 new()
                 {
                     Amount = 250,
+                    CategoryId = category.Id.ToString(),
+                    SubCategoryId = category.SubCategories[0].Id.ToString(),
                     Description = "Transaction Item 1 Description"
                 },
                 new()
                 {
                     Amount = 20,
-                    CategoryId = ObjectId.GenerateNewId().ToString(),
+                    CategoryId = category.Id.ToString().ToString(),
+                    SubCategoryId = category.SubCategories[2].Id.ToString(),
                     Description = "Transaction Item 2 Description"
                 }
             },
@@ -183,6 +184,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
             Assert.Fail("Need to add accounts before running this test");
 
         var transactionDate = GetRandomPastDate;
+        var category = await GetHomeExpensesCategoryAsync();
 
         var existingPayerPayees =
             (await PayerPayeeDocumentsRepository
@@ -198,12 +200,9 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
                     .Next(0, existingPayerPayees.Count - 1)] :
             default;
 
-        var payerPayee = new PayerPayeeRequest
+        var payerPayee = new PayerPayeeApiRequest
         {
-            Id = existingPayerPayee?.Id ?? string.Empty,
-            Name = existingPayerPayee?.Name ?? string.Empty,
-            Description = existingPayerPayee?.Description ?? string.Empty,
-            Location = existingPayerPayee?.Location ?? string.Empty
+            Name = GetRandomMerchant()
         };
 
         var transactionDescription = existingPayerPayee is null ?
@@ -212,7 +211,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
                 $"{existingPayerPayee.Id} - {existingPayerPayee.Name}";
 
         // Arrange
-        var createTransactionRequest = new CreatePurchaseTransactionRequest
+        var createTransactionRequest = new CreatePurchaseTransactionApiRequest
         {
             UserId = testUserId.ToString(),
             AccountId = existingAccount.Id.ToString(),
@@ -221,14 +220,16 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
                 new()
                 {
                     Amount = 10,
-                    CategoryId = ObjectId.GenerateNewId().ToString(),
+                    CategoryId = category.Id.ToString(),
+                    SubCategoryId = category.SubCategories[2].Id.ToString(),
                     Description = "Transaction Item 1 Description"
                 },
 
                 new()
                 {
                     Amount = 123,
-                    CategoryId = ObjectId.GenerateNewId().ToString(),
+                    CategoryId = category.SubCategories[2].Id.ToString(),
+                    SubCategoryId = category.SubCategories[4].Id.ToString(),
                     Description = "Transaction Item 2 Description"
                 }
             ],
@@ -250,33 +251,36 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
     {
         var testUserId = await GetTestUserObjectIdAsync();
 
-        var existingAccount = await AccountDocumentsRepository.FirstOrDefaultDocumentAsync(a =>
+        var existingAccount = await AccountDocumentsRepository
+            .FirstOrDefaultDocumentAsync(a =>
             a.UserId == testUserId);
 
         if (existingAccount is null)
             Assert.Fail("Need to add accounts before running this test");
 
         var transactionDate = GetRandomPastDate;
-
+        var category = await GetPersonalExpensesCategoryAsync();
         var payerPayeeRandom = DateTime.Now.Ticks;
 
         // Arrange
-        var createTransactionRequest = new CreatePurchaseTransactionRequest
+        var createTransactionRequest = new CreatePurchaseTransactionApiRequest
         {
             UserId = testUserId.ToString(),
             AccountId = existingAccount.Id.ToString(),
-            Items = new List<PurchaseTransactionItemRequest>
+            Items = new List<TransactionApiRequestItem>
             {
                 new()
                 {
                     Amount = 100,
-                    CategoryId = ObjectId.GenerateNewId().ToString(),
+                    CategoryId = category.Id.ToString(),
+                    SubCategoryId = category.SubCategories[0].Id.ToString(),
                     Description = "Transaction Item 1 Description"
                 },
                 new()
                 {
                     Amount = 200,
-                    CategoryId = ObjectId.GenerateNewId().ToString(),
+                    CategoryId = category.Id.ToString(),
+                    SubCategoryId = category.SubCategories[2].Id.ToString(),
                     Description = "Transaction Item 2 Description"
                 }
             },
@@ -284,7 +288,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
             Description = $"Purchase Transaction Description - Expecting PayerPayee `{payerPayeeRandom}`",
 
             // New PayerPayee
-            PayerPayee = new PayerPayeeRequest()
+            PayerPayee = new PayerPayeeApiRequest()
             {
                 Id = string.Empty,
                 Name = $"New PayerPayee {payerPayeeRandom}",
@@ -311,24 +315,27 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
             Assert.Fail("Need to add accounts before running this test");
 
         var transactionDate = GetRandomPastDate;
+        var category = await GetHomeExpensesCategoryAsync();
 
         // Arrange
-        var createTransactionRequest = new CreatePurchaseTransactionRequest
+        var createTransactionRequest = new CreatePurchaseTransactionApiRequest
         {
             UserId = testUserId.ToString(),
             AccountId = existingAccount.Id.ToString(),
-            Items = new List<PurchaseTransactionItemRequest>
+            Items = new List<TransactionApiRequestItem>
             {
                 new()
                 {
                     Amount = 100,
-                    CategoryId = ObjectId.GenerateNewId().ToString(),
+                    CategoryId = category.Id.ToString(),
+                    SubCategoryId = category.SubCategories[2].Id.ToString(),
                     Description = "Transaction Item 1 Description"
                 },
                 new()
                 {
                     Amount = 200,
-                    CategoryId = ObjectId.GenerateNewId().ToString(),
+                    CategoryId = category.Id.ToString(),
+                    SubCategoryId = category.SubCategories[5].Id.ToString(),
                     Description = "Transaction Item 2 Description"
                 }
             },

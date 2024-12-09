@@ -62,11 +62,13 @@ public class TransactionUpdatedIntegrationEventHandler(
         {
             await _accountsRepository.UpdateAsync(account, cancellationToken);
 
-            _logger.LogInformation(@event.Id.ToString(), "A '{@transactionType}' Transaction {@transactionId} was added to Account {@accountId}", @event.TransactionType, @event.TransactionId, @event.AccountId);
+            _logger.LogInformation(@event.Id.ToString(), "A '{@transactionType}' Transaction {@transactionId} was added to Account {@accountId}",
+                @event.TransactionType, @event.TransactionId, @event.AccountId);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "An error occurred while trying to update Account '{@accountId}' for User '{@userId}'", @event.AccountId, @event.UserId);
+            _logger.LogError(e, "An error occurred while trying to update Account '{AccountId}' for User '{UserId}'",
+                @event.AccountId, @event.UserId);
             throw;
         }
 

@@ -27,6 +27,7 @@ public sealed class SavingsAccount :
         PercentageRate interestRate,
         string bankName = "",
         string extAcctId = "",
+        bool isDefault = false,
         int? sortOrder = null) :
         base(
             userId,
@@ -35,6 +36,7 @@ public sealed class SavingsAccount :
             displayColor,
             bankName,
             extAcctId,
+            isDefault,
             sortOrder)
     {
         InterestRate = interestRate;
@@ -90,6 +92,7 @@ public sealed class SavingsAccount :
         PercentageRate interestRate,
         string bankName = "",
         string extAcctId = "",
+        bool isDefault = false,
         int? sortOrder = null)
     {
         return new SavingsAccount(
@@ -100,6 +103,7 @@ public sealed class SavingsAccount :
             interestRate,
             bankName,
             extAcctId,
+            isDefault,
             sortOrder);
     }
 

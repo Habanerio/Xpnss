@@ -1,6 +1,7 @@
 using FluentResults;
 using FluentValidation;
 using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Application.Requests;
 using Habanerio.Xpnss.Categories.Application.Mappers;
 using Habanerio.Xpnss.Categories.Domain.Entities;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
@@ -11,9 +12,7 @@ namespace Habanerio.Xpnss.Categories.Application.Commands;
 
 public sealed record CreateCategoryCommand(
     string UserId,
-    string Name,
-    string Description,
-    IEnumerable<SubCategoryDto>? SubCategories = null) :
+    CreateCategoryApiRequest Request) :
     ICategoriesCommand<Result<CategoryDto>>;
 
 public class CreateCategoryCommandHandler(
@@ -27,30 +26,32 @@ public class CreateCategoryCommandHandler(
         CreateCategoryCommand command,
         CancellationToken cancellationToken)
     {
+        var request = command.Request;
+
         var validator = new Validator();
 
-        var validationResult = await validator.ValidateAsync(command, cancellationToken);
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
             return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
         // Check if it exists, and if so, return the existing Category
         var doesCategoryExistResult = await _repository.ExistsAsync(
-            new UserId(command.UserId),
-            new CategoryName(command.Name),
+            new UserId(request.UserId),
+            new CategoryName(request.Name),
             cancellationToken);
 
         if (doesCategoryExistResult.Value)
         {
             var existingCategory = await _repository.GetAsync(
-                new UserId(command.UserId),
-                new CategoryName(command.Name),
+                new UserId(request.UserId),
+                new CategoryName(request.Name),
                 cancellationToken);
 
             var existingCategoryDto = ApplicationMapper.Map(existingCategory.ValueOrDefault);
 
             if (existingCategoryDto is null)
-                return Result.Fail($"Category '{command.Name}' already exists, " +
+                return Result.Fail($"Category '{request.Name}' already exists, " +
                                    $"but failed to map the existing CategoryDocument to CategoryDto");
 
             return existingCategoryDto;
@@ -58,30 +59,16 @@ public class CreateCategoryCommandHandler(
 
         var category = Category.New(
             new UserId(command.UserId),
-            new CategoryName(command.Name),
-            command.Description, 99);
+            new CategoryName(request.Name),
+            request.CategoryType,
+            request.Description, 99);
 
         var result = await _repository.AddAsync(category, cancellationToken);
 
         if (result.IsFailed || result.ValueOrDefault is null)
             return Result.Fail(result.Errors[0].Message ?? "Could not save the Category");
 
-        var subCategoryDtos = command.SubCategories?.ToArray() ?? [];
-
-        if (subCategoryDtos.Any())
-        {
-            var sortOrder = 1;
-            foreach (var subCategoryDto in subCategoryDtos)
-            {
-                category.AddSubCategory(
-                    new CategoryName(subCategoryDto.Name), category.Description, sortOrder);
-
-                var updateResult = await _repository.UpdateAsync(command.UserId, category, cancellationToken);
-
-                sortOrder++;
-            }
-        }
-
+        // Resort them
         var allCategoriesResult = await _repository.ListAsync(command.UserId, cancellationToken);
 
         if (!allCategoriesResult.Value.Any())
@@ -110,7 +97,7 @@ public class CreateCategoryCommandHandler(
         return categoryDto;
     }
 
-    public class Validator : AbstractValidator<CreateCategoryCommand>
+    public class Validator : AbstractValidator<CreateCategoryApiRequest>
     {
         public Validator()
         {

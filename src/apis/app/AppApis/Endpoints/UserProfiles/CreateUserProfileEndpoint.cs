@@ -2,6 +2,7 @@ using System.Net;
 using Carter;
 using FluentValidation;
 using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Application.Requests;
 using Habanerio.Xpnss.UserProfiles.Application.Commands;
 using Habanerio.Xpnss.UserProfiles.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -16,14 +17,14 @@ public sealed class CreateUserProfileEndpoint : BaseEndpoint
         {
             app.MapPost("/api/v1/users/create",
                     async (
-                        [FromBody] CreateUserProfileCommand command,
+                        [FromBody] CreateUserProfileApiRequest request,
                         [FromServices] IUserProfilesService service,
                         CancellationToken cancellationToken) =>
                     {
-                        return await HandleAsync(command, service, cancellationToken);
+                        return await HandleAsync(request, service, cancellationToken);
                     })
                 .Produces<UserProfileDto>((int)HttpStatusCode.OK)
-                .Produces<string>((int)HttpStatusCode.BadRequest)
+                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
                 .WithDisplayName("Create User Profile")
                 .WithName("CreateUserProfile")
                 .WithTags("UserProfiles")
@@ -31,18 +32,14 @@ public sealed class CreateUserProfileEndpoint : BaseEndpoint
         }
 
         public static async Task<IResult> HandleAsync(
-            CreateUserProfileCommand command,
+            CreateUserProfileApiRequest request,
             IUserProfilesService service,
             CancellationToken cancellationToken)
         {
-            ArgumentNullException.ThrowIfNull(command);
+            ArgumentNullException.ThrowIfNull(request);
             ArgumentNullException.ThrowIfNull(service);
 
-            var validator = new Validator();
-            var validationResult = await validator.ValidateAsync(command, cancellationToken);
-
-            if (!validationResult.IsValid)
-                return BadRequestWithErrors(validationResult.Errors);
+            var command = new CreateUserProfileCommand(request);
 
             var result = await service.CommandAsync(command, cancellationToken);
 
@@ -50,15 +47,6 @@ public sealed class CreateUserProfileEndpoint : BaseEndpoint
                 return BadRequestWithErrors(result.Errors);
 
             return Results.Ok(result.Value);
-        }
-
-        public sealed class Validator : AbstractValidator<CreateUserProfileCommand>
-        {
-            public Validator()
-            {
-                RuleFor(x => x.FirstName).NotEmpty();
-                RuleFor(x => x.Email).NotEmpty().EmailAddress();
-            }
         }
     }
 }

@@ -11,12 +11,12 @@ namespace Habanerio.Xpnss.Accounts.Application.Mappers;
 
 internal static partial class ApplicationMapper
 {
-    public static AccountDto? Map(AbstractAccountBase? entity, IEnumerable<MonthlyTotalDto>? monthlyTotals = null)
+    public static AccountDto? Map(AbstractAccountBase? entity)
     {
         if (entity is null)
             return default;
 
-        var accountDto = PopulateCommonDtoProperties(entity, monthlyTotals);
+        var accountDto = PopulateCommonDtoProperties(entity);
 
         var accountType = entity.AccountType;
 
@@ -28,6 +28,7 @@ internal static partial class ApplicationMapper
 
             accountDto.AccountType = AccountEnums.AccountKeys.CASH;
             accountDto.BankAccountType = BankAccountEnums.BankAccountKeys.NA;
+            accountDto.InvestmentAccountType = InvestmentAccountEnums.InvestmentAccountKeys.NA;
             accountDto.LoanAccountType = LoanAccountEnums.LoanAccountKeys.NA;
 
             return accountDto;
@@ -41,6 +42,7 @@ internal static partial class ApplicationMapper
 
             accountDto.AccountType = AccountEnums.AccountKeys.BANK;
             accountDto.BankAccountType = bankAccountEntity.BankAccountType;
+            accountDto.InvestmentAccountType = InvestmentAccountEnums.InvestmentAccountKeys.NA;
             accountDto.LoanAccountType = LoanAccountEnums.LoanAccountKeys.NA;
 
             accountDto.ClosedDate = bankAccountEntity.ClosedDate;
@@ -93,6 +95,7 @@ internal static partial class ApplicationMapper
 
             accountDto.AccountType = AccountEnums.AccountKeys.CREDITCARD;
             accountDto.BankAccountType = BankAccountEnums.BankAccountKeys.NA;
+            accountDto.InvestmentAccountType = InvestmentAccountEnums.InvestmentAccountKeys.NA;
             accountDto.LoanAccountType = LoanAccountEnums.LoanAccountKeys.NA;
 
             accountDto.ClosedDate = ccAccount.ClosedDate;
@@ -116,6 +119,7 @@ internal static partial class ApplicationMapper
 
             accountDto.AccountType = AccountEnums.AccountKeys.LOAN;
             accountDto.BankAccountType = BankAccountEnums.BankAccountKeys.NA;
+            accountDto.InvestmentAccountType = InvestmentAccountEnums.InvestmentAccountKeys.NA;
             accountDto.LoanAccountType = LoanAccountEnums.LoanAccountKeys.NA;
 
             accountDto.ClosedDate = investmentAccount.ClosedDate;
@@ -131,6 +135,7 @@ internal static partial class ApplicationMapper
 
             accountDto.AccountType = AccountEnums.AccountKeys.LOAN;
             accountDto.BankAccountType = BankAccountEnums.BankAccountKeys.NA;
+            accountDto.InvestmentAccountType = InvestmentAccountEnums.InvestmentAccountKeys.NA;
             accountDto.LoanAccountType = LoanAccountEnums.LoanAccountKeys.NA;
 
             accountDto.ClosedDate = loanAccount.ClosedDate;
@@ -153,12 +158,12 @@ internal static partial class ApplicationMapper
             return Enumerable.Empty<AccountDto>();
 
         return entitiesArray.Select(a =>
-            Map(a, null))
+            Map(a))
             .Where(x => x is not null)
             .Cast<AccountDto>();
     }
 
-    private static AccountDto PopulateCommonDtoProperties(AbstractAccountBase entity, IEnumerable<MonthlyTotalDto>? monthlyTotals = null)
+    private static AccountDto PopulateCommonDtoProperties(AbstractAccountBase entity)
     {
         var accountDto = new AccountDto()
         {
@@ -170,7 +175,8 @@ internal static partial class ApplicationMapper
             Description = entity.Description,
             DisplayColor = entity.DisplayColor,
             IsCredit = entity.IsCredit,
-            MonthlyTotals = monthlyTotals ?? [],
+            IsDefault = entity.IsDefault,
+            SortOrder = entity.SortOrder,
             DateCreated = entity.DateCreated,
             DateUpdated = entity.DateUpdated,
             DateDeleted = entity.DateDeleted

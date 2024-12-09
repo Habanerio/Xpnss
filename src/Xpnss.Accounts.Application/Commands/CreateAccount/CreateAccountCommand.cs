@@ -1,7 +1,7 @@
 using FluentResults;
 
 using FluentValidation;
-
+using Habanerio.Xpnss.Accounts.Application.Commands.UpdateAccountDetails;
 using Habanerio.Xpnss.Accounts.Application.Mappers;
 using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts;
 using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts.BankAccounts;
@@ -26,12 +26,15 @@ namespace Habanerio.Xpnss.Accounts.Application.Commands.CreateAccount;
 /// </remarks>
 public record CreateAccountCommand(
     string UserId,
-    CreateAccountRequest Request) :
+    CreateAccountApiRequest Request) :
     IAccountsCommand<Result<AccountDto>>;
 
-public sealed class CreateAccountCommandHandler(IAccountsRepository repository) :
+public sealed class CreateAccountCommandHandler(IAccountsRepository repository, IMediator mediator) :
     IRequestHandler<CreateAccountCommand, Result<AccountDto>>
 {
+    private readonly IMediator _mediator = mediator ??
+        throw new ArgumentNullException(nameof(mediator));
+
     private readonly IAccountsRepository _repository = repository ??
         throw new ArgumentNullException(nameof(repository));
 
@@ -57,6 +60,39 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository) 
         if (accountDto is null)
             throw new InvalidCastException("Failed to map AccountDocument to AccountDto");
 
+        // Undefault any/all other accounts
+        if (account.IsDefault)
+        {
+            var allAccounts =
+                (await _repository.ListAsync(command.UserId, cancellationToken)).ValueOrDefault?.ToList() ?? [];
+
+            var otherDefaultAccounts = allAccounts.Where(a =>
+                a.Id != account.Id.Value)
+                .OrderBy(a => a.SortOrder)
+                .ThenBy(a => a.Name.Value)
+                .ToList();
+
+            // Start at 2 because the first account is already set to 1
+            var sortOrder = 2;
+
+            foreach (var otherDefaultAccount in otherDefaultAccounts)
+            {
+                var updateDetailsCommand = new UpdateAccountDetailsCommand(
+                    command.Request.UserId,
+                    new UpdateAccountDetailsApiRequest
+                    {
+                        UserId = command.UserId,
+                        AccountId = otherDefaultAccount.Id,
+                        IsDefault = false,
+                        SortOrder = sortOrder
+                    });
+
+                sortOrder++;
+
+                await _mediator.Send(updateDetailsCommand, cancellationToken);
+            }
+        }
+
         return Result.Ok(accountDto);
     }
 
@@ -67,14 +103,16 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository) 
     /// <param name="request"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    private static AbstractAccountBase GetAccountFromRequest(string userId, CreateAccountRequest request)
+    private static AbstractAccountBase GetAccountFromRequest(string userId, CreateAccountApiRequest request)
     {
         if (request.AccountType is AccountEnums.AccountKeys.CASH)
             return CashAccount.New(
                 new UserId(userId),
                 new AccountName(request.Name),
                 request.Description,
-                request.DisplayColor);
+                request.DisplayColor,
+                request.IsDefault,
+                request.IsDefault ? 1 : null);
 
         if (request.AccountType is AccountEnums.AccountKeys.BANK)
         {
@@ -84,7 +122,9 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository) 
                     new AccountName(request.Name),
                     request.Description,
                     request.DisplayColor,
-                    new Money(request.OverdraftAmount));
+                    new Money(request.OverdraftAmount),
+                isDefault: request.IsDefault,
+                    sortOrder: request.IsDefault ? 1 : null);
 
             if (request.BankAccountType is BankAccountEnums.BankAccountKeys.SAVINGS)
                 return SavingsAccount.New(
@@ -92,7 +132,9 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository) 
                     new AccountName(request.Name),
                     request.Description,
                     request.DisplayColor,
-                    new PercentageRate(request.InterestRate));
+                    new PercentageRate(request.InterestRate),
+                    isDefault: request.IsDefault,
+                    sortOrder: request.IsDefault ? 1 : null);
 
             if (request.BankAccountType is BankAccountEnums.BankAccountKeys.CREDITLINE)
                 return CreditLineAccount.New(
@@ -101,7 +143,9 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository) 
                     request.Description,
                     request.DisplayColor,
                     new Money(request.CreditLimit),
-                    new PercentageRate(request.InterestRate));
+                    new PercentageRate(request.InterestRate),
+                    isDefault: request.IsDefault,
+                    sortOrder: request.IsDefault ? 1 : null);
 
             throw new InvalidOperationException($"Bank Account Type `{request.AccountType}` is not supported");
         }
@@ -113,7 +157,9 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository) 
                 request.Description,
                 request.DisplayColor,
                 new Money(request.CreditLimit),
-                new PercentageRate(request.InterestRate));
+                new PercentageRate(request.InterestRate),
+                isDefault: request.IsDefault,
+                sortOrder: request.IsDefault ? 1 : null);
 
         if (request.AccountType is AccountEnums.AccountKeys.INVESTMENT)
             throw new InvalidOperationException("Investment Account Type not supported");
@@ -126,7 +172,9 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository) 
                 request.Description,
                 request.DisplayColor,
                 new Money(request.CreditLimit),
-                new PercentageRate(request.InterestRate));
+                new PercentageRate(request.InterestRate),
+                isDefault: request.IsDefault,
+                sortOrder: request.IsDefault ? 1 : null);
 
         throw new InvalidOperationException($"Account Type `{request.AccountType}` is unknown");
     }

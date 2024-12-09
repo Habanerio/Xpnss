@@ -27,6 +27,7 @@ public abstract class AbstractBankAccount :
         string displayColor,
         string bankName = "",
         string extAcctId = "",
+        bool isDefault = false,
         int? sortOrder = null) :
         base(
             userId,
@@ -34,6 +35,7 @@ public abstract class AbstractBankAccount :
             description,
             displayColor,
             extAcctId,
+            isDefault,
             sortOrder)
     {
         BankName = bankName;

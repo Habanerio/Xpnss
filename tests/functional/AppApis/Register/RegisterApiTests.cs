@@ -1,8 +1,11 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+
 using Habanerio.Xpnss.Application.DTOs;
 using Habanerio.Xpnss.Application.Requests;
+using Habanerio.Xpnss.Domain.Types;
 using Microsoft.AspNetCore.Mvc.Testing;
+
 using MongoDB.Bson;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis.Register;
@@ -20,11 +23,12 @@ public class RegisterApiTests(WebApplicationFactory<Apis.App.AppApis.Program> fa
         var extUserId = "test-user";
 
 
-        var createUserProfileRequest = new CreateUserProfileRequest(
+        var createUserProfileRequest = new CreateUserProfileApiRequest(
             email,
             firstName,
+            lastName,
             extUserId,
-            lastName);
+            CurrencyEnums.CurrencyKeys.USD);
 
         // Act
         var response = await HttpClient.PostAsJsonAsync(
@@ -69,7 +73,7 @@ public class RegisterApiTests(WebApplicationFactory<Apis.App.AppApis.Program> fa
         var lastName = Guid.NewGuid().ToString();
         var extUserId = Guid.NewGuid().ToString();
 
-        var createUserProfileRequest = new CreateUserProfileRequest(
+        var createUserProfileRequest = new CreateUserProfileApiRequest(
             email,
             firstName,
             extUserId,

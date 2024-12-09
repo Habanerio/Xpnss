@@ -12,12 +12,11 @@ using MongoDB.Driver;
 
 namespace Habanerio.Xpnss.MonthlyTotals.Infrastructure.Data.Repositories;
 
-//TODO: Refactor. Create a private `GetAsync` method that takes nullables.
 public class MonthlyTotalsRepository(
     IMongoDatabase mongoDb,
     ILogger<MonthlyTotalsRepository> logger,
     IMediator? mediator = null) :
-    MongoDbRepository<MonthlyTotalDocument>(new MonthlyTotalsDbContext(mongoDb)),
+    MongoDbRepository<Documents.MonthlyTotalDocument>(new MonthlyTotalsDbContext(mongoDb)),
     IMonthlyTotalsRepository
 {
     private readonly ILogger<MonthlyTotalsRepository> _logger = logger ??
@@ -30,20 +29,24 @@ public class MonthlyTotalsRepository(
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public async Task<Result<MonthlyTotal?>> AddAsync(
-        MonthlyTotal monthlyTotal,
+        Domain.Entities.MonthlyTotal monthlyTotal,
         CancellationToken cancellationToken = default)
     {
+        ObjectId? objectId = !string.IsNullOrWhiteSpace(monthlyTotal.Id?.Value) ?
+            ObjectId.Parse(monthlyTotal.Id?.Value) :
+            ObjectId.GenerateNewId();
+
         if (!ObjectId.TryParse(monthlyTotal.UserId, out var userObjectId) ||
             userObjectId.Equals(ObjectId.Empty))
             return Result.Fail($"Invalid UserId: `{monthlyTotal.UserId}`");
 
-        ObjectId? entityObjectId = string.IsNullOrWhiteSpace(monthlyTotal.EntityId?.Value) ?
-            ObjectId.Parse(monthlyTotal.EntityId?.Value) :
-            null;
+        //ObjectId? entityObjectId = !string.IsNullOrWhiteSpace(monthlyTotal.EntityId?.Value) ?
+        //    ObjectId.Parse(monthlyTotal.EntityId?.Value) :
+        //    null;
 
         var existingMonthlyTotalDoc = await FirstOrDefaultDocumentAsync(a =>
+                a.Id == objectId &&
                 a.UserId.Equals(monthlyTotal.UserId) &&
-                (entityObjectId == null || a.EntityId.Equals(entityObjectId)) &&
                 a.Year == monthlyTotal.Year &&
                 a.Month == monthlyTotal.Month,
             cancellationToken);
@@ -53,7 +56,7 @@ public class MonthlyTotalsRepository(
             var updateResult = await UpdateAsync(monthlyTotal, cancellationToken);
 
             if (updateResult.IsFailed)
-                return Result.Fail<MonthlyTotal?>("Could not update the MonthlyTotal");
+                return Result.Fail<Domain.Entities.MonthlyTotal?>("Could not update the MonthlyTotal");
 
             return updateResult!;
         }
@@ -61,7 +64,7 @@ public class MonthlyTotalsRepository(
         var monthlyTotalDoc = InfrastructureMapper.Map(monthlyTotal);
 
         if (monthlyTotalDoc is null)
-            return Result.Fail<MonthlyTotal?>("Could not map the MonthlyTotal to its Document");
+            return Result.Fail<Domain.Entities.MonthlyTotal?>("Could not map the MonthlyTotal to its Document");
 
         await AddDocumentAsync(monthlyTotalDoc, cancellationToken);
 
@@ -73,7 +76,8 @@ public class MonthlyTotalsRepository(
     public async Task<Result<MonthlyTotal?>> GetAsync(
         string userId,
         string entityId,
-        EntityTypes.Keys? entityType,
+        string subEntityId,
+        EntityEnums.Keys entityType,
         int year,
         int month,
         CancellationToken cancellationToken = default)
@@ -82,140 +86,91 @@ public class MonthlyTotalsRepository(
             userObjectId.Equals(ObjectId.Empty))
             return Result.Fail($"Invalid UserId: `{userId}`");
 
-        ObjectId? entityObjectId = string.IsNullOrWhiteSpace(entityId) ?
-            null :
-            ObjectId.Parse(entityId);
+        ObjectId? entityObjectId = !string.IsNullOrWhiteSpace(entityId) ?
+            ObjectId.Parse(entityId) :
+            null;
+
+        ObjectId? subEntityObjectId = !string.IsNullOrWhiteSpace(subEntityId) ?
+            ObjectId.Parse(subEntityId) :
+            null;
 
         //if (!ObjectId.TryParse(entityId, out var entityObjectId) ||
         //    entityObjectId.Equals(ObjectId.Empty))
         //    return Result.Fail($"Invalid EntityId: `{entityId}`");
 
-        var monthlyTotalDoc = await FirstOrDefaultDocumentAsync(t =>
-                t.UserId.Equals(userObjectId) &&
-                //t.EntityId.Equals(entityObjectId) &&
-                (entityObjectId == null || t.EntityId.Equals(entityObjectId)) &&
-                (entityType == null || t.EntityType.Equals(entityType)) &&
-                t.Year == year &&
-                t.Month == month,
-            cancellationToken);
+        MonthlyTotal? monthlyTotal = null;
 
-        if (monthlyTotalDoc is null)
-            return Result.Ok<MonthlyTotal?>(null);
+        try
+        {
+            var monthlyTotalDoc = await FirstOrDefaultDocumentAsync(t =>
+                    t.UserId.Equals(userObjectId) &&
+                    //t.EntityId.Equals(entityObjectId) &&
+                    (entityObjectId == null || t.EntityId.Equals(entityObjectId)) &&
+                    (subEntityObjectId == null || t.SubEntityId.Equals(subEntityObjectId)) &&
+                    (entityType == null || t.EntityType.Equals(entityType)) &&
+                    t.Year == year &&
+                    t.Month == month,
+                cancellationToken);
 
-        var monthlyTotal = InfrastructureMapper.Map(monthlyTotalDoc);
+            if (monthlyTotalDoc is null)
+                return Result.Ok<MonthlyTotal?>(null);
 
-        if (monthlyTotal is null)
-            return Result.Fail<MonthlyTotal?>("Could not map the MonthlyTotal Document to its Entity");
+            monthlyTotal = InfrastructureMapper.Map(monthlyTotalDoc);
 
-        return monthlyTotal;
+            if (monthlyTotal is null)
+                return Result.Fail<MonthlyTotal?>("Could not map the MonthlyTotal Document to its Entity");
+
+            return monthlyTotal;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+
     }
 
     public async Task<Result<IEnumerable<MonthlyTotal>>> ListAsync(
         string userId,
         string entityId,
-        EntityTypes.Keys? entityType,
-        CancellationToken cancellationToken = default)
-    {
-        if (!ObjectId.TryParse(userId, out var userObjectId) ||
-            userObjectId.Equals(ObjectId.Empty))
-            return Result.Fail($"Invalid UserId: `{userId}`");
-
-        ObjectId? entityObjectId = string.IsNullOrWhiteSpace(entityId) ?
-            null :
-            ObjectId.Parse(entityId);
-
-        //if (!ObjectId.TryParse(entityId, out var entityObjectId) ||
-        //    entityObjectId.Equals(ObjectId.Empty))
-        //    return Result.Fail($"Invalid EntityId: `{entityId}`");
-
-        var monthlyTotalDocs = (await FindDocumentsAsync(t =>
-                t.UserId.Equals(userObjectId) &&
-                (entityObjectId == null || t.EntityId.Equals(entityObjectId)) &&
-                (entityType == null || t.EntityType.Equals(entityType)),
-            cancellationToken)).ToList();
-
-        if (monthlyTotalDocs.Count == 0)
-            return Result.Ok(Enumerable.Empty<MonthlyTotal>());
-
-        var monthlyTotals = InfrastructureMapper.Map(monthlyTotalDocs);
-
-        return Result.Ok(monthlyTotals);
-    }
-
-    public async Task<Result<IEnumerable<MonthlyTotal>>> ListAsync(
-        string userId,
-        string entityId,
-        EntityTypes.Keys? entityType,
+        EntityEnums.Keys entityType,
         int year,
         CancellationToken cancellationToken = default)
     {
-        if (!ObjectId.TryParse(userId, out var userObjectId) ||
-            userObjectId.Equals(ObjectId.Empty))
-            return Result.Fail($"Invalid UserId: `{userId}`");
+        var results = await RangeAsync(userId, entityId, entityType, (year, 1), (year, 12), cancellationToken);
 
-        ObjectId? entityObjectId = string.IsNullOrWhiteSpace(entityId) ?
-            null :
-            ObjectId.Parse(entityId);
+        return results;
 
-        //if (!ObjectId.TryParse(entityId, out var entityObjectId) ||
-        //    entityObjectId.Equals(ObjectId.Empty))
-        //    return Result.Fail($"Invalid EntityId: `{entityId}`");
+        //if (!ObjectId.TryParse(userId, out var userObjectId) ||
+        //    userObjectId.Equals(ObjectId.Empty))
+        //    return Result.Fail($"Invalid UserId: `{userId}`");
 
-        var monthlyTotalDocs = (await FindDocumentsAsync(t =>
-                t.UserId.Equals(userObjectId) &&
-                (entityObjectId == null || t.EntityId.Equals(entityObjectId)) &&
-                (entityType == null || t.EntityType.Equals(entityType)) &&
-                t.Year.Equals(year),
-            cancellationToken)).ToList();
+        //ObjectId? entityObjectId = string.IsNullOrWhiteSpace(entityId) ?
+        //    null :
+        //    ObjectId.Parse(entityId);
 
-        if (monthlyTotalDocs.Count == 0)
-            return Result.Ok(Enumerable.Empty<MonthlyTotal>());
+        //var monthlyTotalDocs = (await FindDocumentsAsync(t =>
+        //        t.UserId.Equals(userObjectId) &&
+        //        (entityObjectId == null || t.EntityId.Equals(entityObjectId)) &&
+        //        (entityType == null || t.EntityType.Equals(entityType)) &&
+        //        t.Year.Equals(year),
+        //    cancellationToken)).ToList();
 
-        var monthlyTotals = InfrastructureMapper.Map(monthlyTotalDocs);
+        //if (monthlyTotalDocs.Count == 0)
+        //    return Result.Ok(Enumerable.Empty<MonthlyTotal>());
 
-        return Result.Ok(monthlyTotals);
+        //var monthlyTotals = InfrastructureMapper.Map(monthlyTotalDocs);
+
+        //if (monthlyTotals is null)
+        //    throw new InvalidCastException($"{GetType()}: Failed to map MonthlyTotalDocument to MonthlyTotal");
+
+        //return Result.Ok(monthlyTotals);
     }
 
-    public async Task<Result<IEnumerable<MonthlyTotal>>> ListAsync(
+    public async Task<Result<IEnumerable<MonthlyTotal>>> RangeAsync(
         string userId,
         string entityId,
-        EntityTypes.Keys? entityType,
-        int year,
-        int month,
-        CancellationToken cancellationToken = default)
-    {
-        if (!ObjectId.TryParse(userId, out var userObjectId) ||
-            userObjectId.Equals(ObjectId.Empty))
-            return Result.Fail($"Invalid UserId: `{userId}`");
-
-        ObjectId? entityObjectId = string.IsNullOrWhiteSpace(entityId) ?
-            null :
-            ObjectId.Parse(entityId);
-
-        //if (!ObjectId.TryParse(entityId, out var entityObjectId) ||
-        //    entityObjectId.Equals(ObjectId.Empty))
-        //    return Result.Fail($"Invalid EntityId: `{entityId}`");
-
-        var monthlyTotalDocs = (await FindDocumentsAsync(t =>
-                t.UserId.Equals(userObjectId) &&
-                (entityObjectId == null || t.EntityId.Equals(entityObjectId)) &&
-                (entityType == null || t.EntityType.Equals(entityType)) &&
-                t.Year.Equals(year) &&
-                t.Month.Equals(month),
-            cancellationToken)).ToList();
-
-        if (monthlyTotalDocs.Count == 0)
-            return Result.Ok(Enumerable.Empty<MonthlyTotal>());
-
-        var monthlyTotals = InfrastructureMapper.Map(monthlyTotalDocs);
-
-        return Result.Ok(monthlyTotals);
-    }
-
-    public async Task<Result<IEnumerable<MonthlyTotal>>> ListAsync(
-        string userId,
-        string entityId,
-        EntityTypes.Keys? entityType,
+        EntityEnums.Keys entityType,
         (int Year, int Month) startMonth,
         (int Year, int Month) endMonth,
         CancellationToken cancellationToken = default)
@@ -231,6 +186,8 @@ public class MonthlyTotalsRepository(
         //if (!ObjectId.TryParse(entityId, out var entityObjectId) ||
         //    entityObjectId.Equals(ObjectId.Empty))
         //    return Result.Fail($"Invalid EntityId: `{entityId}`");
+
+
 
         var monthlyTotalDocs = (await FindDocumentsAsync(t =>
                 t.UserId.Equals(userObjectId) &&
@@ -257,7 +214,7 @@ public class MonthlyTotalsRepository(
     /// </summary>
     /// <returns></returns>
     private async Task<Result<MonthlyTotal>> UpdateAsync(
-        MonthlyTotal monthlyTotal,
+        Domain.Entities.MonthlyTotal monthlyTotal,
         CancellationToken cancellationToken = default)
     {
         var monthlyTotalDoc = InfrastructureMapper.Map(monthlyTotal);

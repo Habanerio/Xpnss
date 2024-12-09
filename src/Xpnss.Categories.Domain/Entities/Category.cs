@@ -1,4 +1,5 @@
 using Habanerio.Xpnss.Domain.Entities;
+using Habanerio.Xpnss.Domain.Types;
 using Habanerio.Xpnss.Domain.ValueObjects;
 
 namespace Habanerio.Xpnss.Categories.Domain.Entities;
@@ -8,6 +9,11 @@ public class Category : AggregateRoot<CategoryId>
     private readonly List<SubCategory> _subCategories;
 
     public UserId UserId { get; private set; }
+
+    /// <summary>
+    /// Income, Debt, Expense, etc.
+    /// </summary>
+    public CategoryGroupEnums.CategoryKeys CategoryType { get; set; }
 
     public CategoryName Name { get; private set; }
 
@@ -22,6 +28,7 @@ public class Category : AggregateRoot<CategoryId>
     private Category(
         UserId userId,
         CategoryName name,
+        CategoryGroupEnums.CategoryKeys categoryType,
         string description,
         int sortOrder,
         IEnumerable<SubCategory> subCategories
@@ -29,6 +36,7 @@ public class Category : AggregateRoot<CategoryId>
             CategoryId.New,
             userId,
             name,
+            categoryType,
             description,
             sortOrder,
             subCategories,
@@ -44,6 +52,7 @@ public class Category : AggregateRoot<CategoryId>
         CategoryId id,
         UserId userId,
         CategoryName name,
+        CategoryGroupEnums.CategoryKeys categoryType,
         string description,
         int sortOrder,
         IEnumerable<SubCategory> subCategories,
@@ -66,6 +75,7 @@ public class Category : AggregateRoot<CategoryId>
         Id = id;
         UserId = userId;
         Name = name;
+        CategoryType = categoryType;
         Description = description;
         SortOrder = sortOrder < 0 ? 99 : sortOrder;
         DateCreated = dateCreated;
@@ -81,6 +91,7 @@ public class Category : AggregateRoot<CategoryId>
         CategoryId id,
         UserId userId,
         CategoryName name,
+        CategoryGroupEnums.CategoryKeys categoryType,
         string description,
         int sortOrder,
         IEnumerable<SubCategory> subCategories,
@@ -92,6 +103,7 @@ public class Category : AggregateRoot<CategoryId>
             id,
             userId,
             name,
+            categoryType,
             description,
             sortOrder,
             subCategories,
@@ -103,12 +115,14 @@ public class Category : AggregateRoot<CategoryId>
     public static Category New(
         UserId userId,
         CategoryName name,
+        CategoryGroupEnums.CategoryKeys categoryType,
         string description,
         int sortOrder = 99)
     {
         return new Category(
             userId,
             name,
+            categoryType,
             description,
             sortOrder,
             []);
@@ -160,9 +174,13 @@ public class Category : AggregateRoot<CategoryId>
             return;
         }
 
+        var parentId = Id;
+        var parentCategoryType = CategoryType;
+
         var newSubCategory = new SubCategory(
-            Id,
+            parentId,
             subCategoryName,
+            parentCategoryType,
             subCategoryDescription,
             sortOrder);
 
@@ -222,6 +240,8 @@ public class SubCategory : Entity<SubCategoryId>
 {
     public CategoryName Name { get; internal set; }
 
+    public CategoryGroupEnums.CategoryKeys CategoryType { get; }
+
     public string Description { get; internal set; }
 
     public CategoryId ParentId { get; }
@@ -229,9 +249,15 @@ public class SubCategory : Entity<SubCategoryId>
     public int SortOrder { get; internal set; }
 
     // New SubCategories
-    internal SubCategory(CategoryId parentId, CategoryName name, string description, int sortOrder) :
+    internal SubCategory(
+        CategoryId parentId,
+        CategoryName name,
+        CategoryGroupEnums.CategoryKeys categoryType,
+        string description,
+        int sortOrder) :
         base(SubCategoryId.New)
     {
+        CategoryType = categoryType;
         Name = name;
         Description = description;
         ParentId = parentId;
@@ -243,11 +269,13 @@ public class SubCategory : Entity<SubCategoryId>
         SubCategoryId id,
         CategoryId parentId,
         CategoryName name,
+        CategoryGroupEnums.CategoryKeys categoryType,
         string description,
         int sortOrder,
         DateTime dateCreated, DateTime? dateUpdated, DateTime? dateDeleted) :
         base(id)
     {
+        CategoryType = categoryType;
         Name = name;
         Description = description;
         ParentId = parentId;
@@ -261,6 +289,7 @@ public class SubCategory : Entity<SubCategoryId>
         SubCategoryId id,
         CategoryId parentId,
         CategoryName name,
+        CategoryGroupEnums.CategoryKeys categoryType,
         string description,
         int sortOrder,
         DateTime dateCreated,
@@ -271,6 +300,7 @@ public class SubCategory : Entity<SubCategoryId>
             id,
             parentId,
             name,
+            categoryType,
             description,
             sortOrder,
             dateCreated, dateUpdated, dateDeleted);
