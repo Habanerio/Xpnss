@@ -38,7 +38,7 @@ public record CreateTransactionApiRequest : UserRequiredApiRequest
 
     [Required]
     [JsonPropertyName("TransactionType")]
-    [JsonConverter(typeof(JsonStringEnumConverter))]
+    [JsonConverter(typeof(JsonNumberEnumConverter<TransactionEnums.TransactionKeys>))]
     public TransactionEnums.TransactionKeys TransactionType { get; set; }
 
 

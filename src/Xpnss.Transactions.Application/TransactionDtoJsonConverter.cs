@@ -65,10 +65,10 @@ public class CreateTransactionRequestsJsonConverter : JsonConverter<CreateTransa
             throw new JsonException();
         }
 
-        var type = typeProp.GetString();
+        var type = typeProp.GetInt32();
         switch (type)
         {
-            case nameof(TransactionEnums.TransactionKeys.DEPOSIT):
+            case (int)TransactionEnums.TransactionKeys.DEPOSIT:
                 {
                     var deposit =
                         JsonSerializer.Deserialize<CreateDepositTransactionApiRequest>(
@@ -77,7 +77,7 @@ public class CreateTransactionRequestsJsonConverter : JsonConverter<CreateTransa
                     return deposit;
                 }
 
-            case nameof(TransactionEnums.TransactionKeys.PURCHASE):
+            case (int)TransactionEnums.TransactionKeys.PURCHASE:
                 {
                     var purchase =
                         JsonSerializer.Deserialize<CreatePurchaseTransactionApiRequest>(
@@ -87,7 +87,7 @@ public class CreateTransactionRequestsJsonConverter : JsonConverter<CreateTransa
                 }
 
             default:
-                return JsonSerializer.Deserialize<CreateTransactionApiRequest?>(jsonDoc.RootElement.GetRawText(), options);
+                throw new InvalidOperationException($"Transaction Type '{type}' is not yet supported");
         }
     }
 

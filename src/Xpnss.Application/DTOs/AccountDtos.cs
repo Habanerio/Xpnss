@@ -1,5 +1,7 @@
+using System.Security.Principal;
 using System.Text.Json.Serialization;
 using Habanerio.Xpnss.Domain.Types;
+using MongoDB.Driver;
 
 namespace Habanerio.Xpnss.Application.DTOs;
 
@@ -11,17 +13,35 @@ public sealed record AccountDto
 
     public string UserId { get; set; }
 
+    [JsonPropertyName("AccountType")]
+    [JsonConverter(typeof(JsonNumberEnumConverter<AccountEnums.AccountKeys>))]
     public AccountEnums.AccountKeys AccountType { get; set; } =
         AccountEnums.AccountKeys.UNKNOWN;
 
+    [JsonPropertyName("BankAccountType")]
+    [JsonConverter(typeof(JsonNumberEnumConverter<BankAccountEnums.BankAccountKeys>))]
     public BankAccountEnums.BankAccountKeys BankAccountType { get; set; } =
         BankAccountEnums.BankAccountKeys.NA;
 
+    [JsonPropertyName("InvestmentAccountType")]
+    [JsonConverter(typeof(JsonNumberEnumConverter<InvestmentAccountEnums.InvestmentAccountKeys>))]
     public InvestmentAccountEnums.InvestmentAccountKeys InvestmentAccountType { get; set; } =
         InvestmentAccountEnums.InvestmentAccountKeys.NA;
 
+    [JsonPropertyName("LoanAccountType")]
+    [JsonConverter(typeof(JsonNumberEnumConverter<LoanAccountEnums.LoanAccountKeys>))]
     public LoanAccountEnums.LoanAccountKeys LoanAccountType { get; set; } =
         LoanAccountEnums.LoanAccountKeys.NA;
+
+
+    public string AccountTypeString => AccountType.ToString();
+
+    public string BankAccountTypeString => BankAccountType.ToString();
+
+    public string InvestmentAccountTypeString => InvestmentAccountType.ToString();
+
+    public string LoanAccountTypeString => LoanAccountType.ToString();
+
 
     public string Name { get; set; }
 

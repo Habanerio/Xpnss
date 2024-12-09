@@ -21,4 +21,9 @@ public static class CategoryGroupEnums
         /// </summary>
         EXPENSE,
     }
+
+    public static Dictionary<int, string> ToDictionary()
+    {
+        return Enum.GetValues<CategoryKeys>().ToDictionary(k => (int)k, v => v.ToString());
+    }
 }

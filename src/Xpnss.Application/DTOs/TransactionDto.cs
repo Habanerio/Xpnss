@@ -28,8 +28,10 @@ public record TransactionDto
     public DateTime TransactionDate { get; set; }
 
     [JsonPropertyName("TransactionType")]
-    [JsonConverter(typeof(JsonStringEnumConverter))]
+    [JsonConverter(typeof(JsonNumberEnumConverter<TransactionEnums.TransactionKeys>))]
     public TransactionEnums.TransactionKeys TransactionType { get; set; }
+
+    public string TransactionTypeString => TransactionType.ToString();
 
     [JsonConstructor]
     public TransactionDto() { }

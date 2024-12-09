@@ -13,7 +13,8 @@ public record CreateUserProfileApiRequest
 
     public string ExtUserId { get; set; } = string.Empty;
 
-    [JsonConverter(typeof(JsonStringEnumConverter))]
+    [JsonPropertyName("DefaultCurrency")]
+    [JsonConverter(typeof(JsonNumberEnumConverter<CurrencyEnums.CurrencyKeys>))]
     public CurrencyEnums.CurrencyKeys DefaultCurrency { get; set; } = CurrencyEnums.CurrencyKeys.CAD;
 
     [JsonConstructor]

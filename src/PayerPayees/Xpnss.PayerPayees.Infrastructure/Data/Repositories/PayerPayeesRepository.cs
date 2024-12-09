@@ -103,7 +103,7 @@ public class PayerPayeesRepository(
     public async Task<Result<PayerPayee?>> GetByNameAsync(
         string userId,
         string name,
-        CancellationToken cancellation = default)
+        CancellationToken cancellationToken = default)
     {
         if (!ObjectId.TryParse(userId, out var userObjectId) ||
             userObjectId.Equals(ObjectId.Empty))
@@ -117,7 +117,7 @@ public class PayerPayeesRepository(
         var payerPayeeDoc = await FirstOrDefaultDocumentAsync(a =>
                 a.UserId.Equals(userObjectId) &&
                 a.Name.Equals(name),
-            cancellation);
+            cancellationToken);
 
         if (payerPayeeDoc is null)
             return Result.Ok<PayerPayee?>(default);

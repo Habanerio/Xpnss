@@ -5,25 +5,27 @@ namespace Habanerio.Xpnss.Application.Requests;
 
 public record CreateAccountApiRequest : UserRequiredApiRequest
 {
+
     [JsonPropertyName("AccountType")]
-    [JsonConverter(typeof(JsonStringEnumConverter))]
+    [JsonConverter(typeof(JsonNumberEnumConverter<AccountEnums.AccountKeys>))]
     public AccountEnums.AccountKeys AccountType { get; set; } =
         AccountEnums.AccountKeys.UNKNOWN;
 
     [JsonPropertyName("BankAccountType")]
-    [JsonConverter(typeof(JsonStringEnumConverter))]
+    [JsonConverter(typeof(JsonNumberEnumConverter<BankAccountEnums.BankAccountKeys>))]
     public BankAccountEnums.BankAccountKeys BankAccountType { get; set; } =
         BankAccountEnums.BankAccountKeys.NA;
 
     [JsonPropertyName("InvestmentAccountType")]
-    [JsonConverter(typeof(JsonStringEnumConverter))]
+    [JsonConverter(typeof(JsonNumberEnumConverter<InvestmentAccountEnums.InvestmentAccountKeys>))]
     public InvestmentAccountEnums.InvestmentAccountKeys InvestmentAccountType { get; set; } =
         InvestmentAccountEnums.InvestmentAccountKeys.NA;
 
     [JsonPropertyName("LoanAccountType")]
-    [JsonConverter(typeof(JsonStringEnumConverter))]
+    [JsonConverter(typeof(JsonNumberEnumConverter<LoanAccountEnums.LoanAccountKeys>))]
     public LoanAccountEnums.LoanAccountKeys LoanAccountType { get; set; } =
         LoanAccountEnums.LoanAccountKeys.NA;
+
 
     public string Name { get; set; }
 
@@ -72,6 +74,7 @@ public record CreateAccountApiRequest : UserRequiredApiRequest
 
         AccountType = accountType;
         BankAccountType = bankAccountType;
+        InvestmentAccountType = investmentAccountType;
         LoanAccountType = loanAccountType;
 
         Name = name;

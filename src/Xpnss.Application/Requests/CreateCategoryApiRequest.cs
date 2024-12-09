@@ -8,7 +8,7 @@ public sealed record CreateCategoryApiRequest : UserRequiredApiRequest
     public string Name { get; set; } = string.Empty;
 
     [JsonPropertyName("CategoryType")]
-    [JsonConverter(typeof(JsonStringEnumConverter))]
+    [JsonConverter(typeof(JsonNumberEnumConverter<CategoryGroupEnums.CategoryKeys>))]
     public CategoryGroupEnums.CategoryKeys CategoryType { get; set; } = CategoryGroupEnums.CategoryKeys.EXPENSE;
 
     public string Description { get; set; } = string.Empty;
