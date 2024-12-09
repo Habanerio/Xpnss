@@ -40,9 +40,9 @@ public class GetAccountsQueryHandler(IAccountsRepository repository) :
             if (docsResult.ValueOrDefault is null || !docsResult.Value.Any())
                 return Result.Ok(Enumerable.Empty<AccountDto>());
 
-            var dtos = ApplicationMapper.Map(docsResult.Value);
+            var accountDtos = ApplicationMapper.Map(docsResult.Value);
 
-            return Result.Ok(dtos);
+            return Result.Ok(accountDtos);
         }
         catch (Exception e)
         {

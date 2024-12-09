@@ -55,6 +55,10 @@ public sealed record AccountDto
 
     public bool IsCredit { get; set; }
 
+    public bool IsDefault { get; set; }
+
+    public int SortOrder { get; set; }
+
     #endregion
 
     #region - Bank Account Properties -
@@ -79,8 +83,6 @@ public sealed record AccountDto
 
     public bool IsOverLimit { get; set; }
 
-
-    public IEnumerable<MonthlyTotalDto> MonthlyTotals { get; set; } = [];
 
 
     public DateTime DateCreated { get; set; }

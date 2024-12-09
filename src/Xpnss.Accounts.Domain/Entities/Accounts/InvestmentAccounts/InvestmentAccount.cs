@@ -34,6 +34,7 @@ public class InvestmentAccount :
         string displayColor,
         string extAcctId,
         string institutionName,
+        bool isDefault,
         int? sortOrder) :
         base(
             userId,
@@ -41,6 +42,7 @@ public class InvestmentAccount :
             description,
             displayColor,
             extAcctId,
+            isDefault,
             sortOrder)
     {
         InstitutionName = institutionName;
@@ -88,6 +90,7 @@ public class InvestmentAccount :
         string displayColor,
         string extAcctId = "",
         string institutionName = "",
+        bool isDefault = false,
         int? sortOrder = null)
     {
         return new InvestmentAccount(
@@ -97,6 +100,7 @@ public class InvestmentAccount :
             displayColor,
             extAcctId,
             institutionName,
+            isDefault,
             sortOrder);
     }
 

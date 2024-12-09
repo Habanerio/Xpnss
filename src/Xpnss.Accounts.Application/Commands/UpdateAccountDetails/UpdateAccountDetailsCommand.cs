@@ -44,7 +44,7 @@ public sealed class UpdateAccountDetails(IAccountsRepository repository) :
             return Result.Fail("Could not find the Account");
 
         var account = accountResult.Value;
-        account.UpdateDetails(request.Name, request.Description, request.DisplayColor);
+        account.UpdateDetails(request.Name, request.Description, request.DisplayColor, request.IsDefault, request.SortOrder);
 
         var result = await _repository.UpdateAsync(account, cancellationToken);
 
@@ -65,7 +65,6 @@ public sealed class UpdateAccountDetails(IAccountsRepository repository) :
         {
             RuleFor(x => x.UserId).NotEmpty();
             RuleFor(x => x.AccountId).NotEmpty();
-            RuleFor(x => x.Name).NotEmpty();
         }
     }
 }

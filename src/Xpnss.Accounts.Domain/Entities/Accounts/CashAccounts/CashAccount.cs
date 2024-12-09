@@ -28,12 +28,14 @@ public sealed class CashAccount : AbstractAccountBase
         AccountName accountName,
         string description,
         string displayColor,
+        bool isDefault,
         int? sortOrder) :
         base(
             userId,
             accountName,
             description,
             displayColor,
+            isDefault,
             sortOrder)
     { }
 
@@ -69,6 +71,7 @@ public sealed class CashAccount : AbstractAccountBase
         AccountName accountName,
         string description,
         string displayColor,
+        bool isDefault = false,
         int? sortOrder = null)
     {
         return new CashAccount(
@@ -76,6 +79,7 @@ public sealed class CashAccount : AbstractAccountBase
             accountName,
             description,
             displayColor,
+            isDefault,
             sortOrder);
     }
 

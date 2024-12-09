@@ -66,10 +66,6 @@ public class CreateAccountEndpoint : BaseEndpoint
         if (userResult.Value is null)
             return Results.Unauthorized();
 
-        //apiRequest = apiRequest with { UserId = userId };
-
-
-
         if (!validationResult.IsValid)
             return BadRequestWithErrors(validationResult.Errors);
 

@@ -77,6 +77,7 @@ public class LoanAccount :
         PercentageRate interestRate,
         string institutionName,
         string loanAcctId,
+        bool isDefault,
         int? sortOrder) :
         base(
             userId,
@@ -84,6 +85,7 @@ public class LoanAccount :
             description,
             displayColor,
             loanAcctId,
+            isDefault,
             sortOrder)
     {
         LoanAccountType = loanAcctType;
@@ -145,6 +147,7 @@ public class LoanAccount :
         PercentageRate interestRate,
         string institutionName = "",
         string loanAcctId = "",
+        bool isDefault = false,
         int? sortOrder = null)
     {
         return new LoanAccount(
@@ -157,6 +160,7 @@ public class LoanAccount :
             interestRate,
             institutionName,
             loanAcctId,
+            isDefault,
             sortOrder);
     }
 

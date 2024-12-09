@@ -38,6 +38,8 @@ public record CreateAccountApiRequest : UserRequiredApiRequest
 
     public decimal InterestRate { get; set; }
 
+    public bool IsDefault { get; set; }
+
     public decimal OverdraftAmount { get; set; }
 
     [JsonConstructor]
@@ -48,7 +50,8 @@ public record CreateAccountApiRequest : UserRequiredApiRequest
         AllAccountEnums.AllAccountKeys accountType,
         string name,
         string description,
-        string displayColor) :
+        string displayColor,
+        bool isDefault = false) :
         this(
             userId,
             AllAccountEnums.GetTypes(accountType).AccountType,
@@ -57,7 +60,8 @@ public record CreateAccountApiRequest : UserRequiredApiRequest
             AllAccountEnums.GetTypes(accountType).LoanType,
             name,
             description,
-            displayColor)
+            displayColor,
+            isDefault)
     { }
 
     protected CreateAccountApiRequest(
@@ -68,7 +72,8 @@ public record CreateAccountApiRequest : UserRequiredApiRequest
         LoanAccountEnums.LoanAccountKeys loanAccountType,
         string name,
         string description,
-        string displayColor)
+        string displayColor,
+        bool isDefault = false)
     {
         UserId = userId;
 
@@ -80,6 +85,7 @@ public record CreateAccountApiRequest : UserRequiredApiRequest
         Name = name;
         Description = description;
         DisplayColor = displayColor;
+        IsDefault = isDefault;
     }
 }
 
@@ -98,13 +104,14 @@ public record CreateCashAccountRequest : CreateAccountApiRequest
         string userId,
         string name,
         string description,
-        string displayColor) :
+        string displayColor,
+        bool isDefault = false) :
         base(userId,
             AccountEnums.AccountKeys.CASH,
             BankAccountEnums.BankAccountKeys.NA,
             InvestmentAccountEnums.InvestmentAccountKeys.NA,
             LoanAccountEnums.LoanAccountKeys.NA,
-            name, description, displayColor)
+            name, description, displayColor, isDefault)
     { }
 }
 
@@ -124,14 +131,15 @@ public abstract record CreateBankAccountRequest : CreateAccountApiRequest
         BankAccountEnums.BankAccountKeys bankAccountType,
         string name,
         string description,
-        string displayColor) :
+        string displayColor,
+        bool isDefault = false) :
         base(
             userId,
             AccountEnums.AccountKeys.BANK,
             bankAccountType,
             InvestmentAccountEnums.InvestmentAccountKeys.NA,
             LoanAccountEnums.LoanAccountKeys.NA,
-            name, description, displayColor)
+            name, description, displayColor, isDefault)
     { }
 }
 
@@ -148,11 +156,12 @@ public record CreateCheckingAccountRequest : CreateBankAccountRequest
         string name,
         string description,
         string displayColor,
-        decimal overdraft) :
+        decimal overdraft,
+        bool isDefault = false) :
         base(
             userId,
             BankAccountEnums.BankAccountKeys.CHECKING,
-            name, description, displayColor)
+            name, description, displayColor, isDefault)
     {
         OverdraftAmount = overdraft;
     }
@@ -171,11 +180,12 @@ public record CreateSavingsAccountRequest : CreateBankAccountRequest
         string name,
         string description,
         string displayColor,
-        decimal interestRate) :
+        decimal interestRate,
+        bool isDefault = false) :
         base(
             userId,
             BankAccountEnums.BankAccountKeys.SAVINGS,
-            name, description, displayColor)
+            name, description, displayColor, isDefault)
     {
         InterestRate = interestRate;
     }
@@ -195,11 +205,12 @@ public record CreateCreditLineAccountRequest : CreateBankAccountRequest
         string description,
         string displayColor,
         decimal creditLimit,
-        decimal interestRate) :
+        decimal interestRate,
+        bool isDefault = false) :
         base(
             userId,
             BankAccountEnums.BankAccountKeys.CREDITLINE,
-            name, description, displayColor)
+            name, description, displayColor, isDefault)
     {
         CreditLimit = creditLimit;
         InterestRate = interestRate;
@@ -223,14 +234,15 @@ public record CreateCreditCardAccountRequest : CreateAccountApiRequest
         string description,
         string displayColor,
         decimal creditLimit,
-        decimal interestRate) :
+        decimal interestRate,
+        bool isDefault = false) :
         base(
             userId,
             AccountEnums.AccountKeys.CREDITCARD,
             BankAccountEnums.BankAccountKeys.NA,
             InvestmentAccountEnums.InvestmentAccountKeys.NA,
             LoanAccountEnums.LoanAccountKeys.NA,
-            name, description, displayColor)
+            name, description, displayColor, isDefault)
     {
         CreditLimit = creditLimit;
         InterestRate = interestRate;
@@ -255,14 +267,15 @@ public record CreateLoanAccountRequest : CreateAccountApiRequest
         string displayColor,
         LoanAccountEnums.LoanAccountKeys loanAccountType,
         decimal creditLimit,
-        decimal interestRate) :
+        decimal interestRate,
+        bool isDefault = false) :
         base(
             userId,
             AccountEnums.AccountKeys.LOAN,
             BankAccountEnums.BankAccountKeys.NA,
             InvestmentAccountEnums.InvestmentAccountKeys.NA,
             loanAccountType,
-            name, description, displayColor)
+            name, description, displayColor, isDefault)
     {
         CreditLimit = creditLimit;
         InterestRate = interestRate;
