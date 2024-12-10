@@ -1,6 +1,6 @@
 using System.Net;
 using System.Text.Json;
-using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Shared.DTOs;
 using Microsoft.AspNetCore.Mvc.Testing;
 using MongoDB.Bson;
 

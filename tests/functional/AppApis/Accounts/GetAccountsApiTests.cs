@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Habanerio.Xpnss.Application.DTOs;
+using Habanerio.Xpnss.Shared.DTOs;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis.Accounts;

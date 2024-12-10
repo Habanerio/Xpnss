@@ -1,0 +1,75 @@
+using Habanerio.Xpnss.Accounts.Domain.Interfaces;
+using Habanerio.Xpnss.Shared.IntegrationEvents.Transactions;
+using Habanerio.Xpnss.Shared.ValueObjects;
+using Microsoft.Extensions.Logging;
+
+namespace Habanerio.Xpnss.Accounts.Infrastructure.IntegrationEvents.EventHandlers;
+
+/// <summary>
+/// Responsible for handling the 'TransactionUpdatedIntegrationEventHandler'
+/// and updating the Account's Balance accordingly.
+/// </summary>
+/// <param name="repository"></param>
+/// <param name="logger"></param>
+public class TransactionUpdatedIntegrationEventHandler(
+    IAccountsRepository repository,
+    ILogger<TransactionUpdatedIntegrationEventHandler> logger) :
+    IIntegrationEventHandler<TransactionUpdatedIntegrationEvent>
+{
+    private readonly IAccountsRepository _accountsRepository = repository ??
+        throw new ArgumentNullException(nameof(repository));
+
+    private readonly ILogger<TransactionUpdatedIntegrationEventHandler> _logger = logger ??
+        throw new ArgumentNullException(nameof(logger));
+
+    public async Task Handle(TransactionUpdatedIntegrationEvent @event, CancellationToken cancellationToken)
+    {
+        var accountResult = await _accountsRepository.GetAsync(@event.UserId, @event.AccountId, cancellationToken);
+
+        if (accountResult.IsFailed)
+            throw new InvalidOperationException(accountResult.Errors[0]?.Message ??
+                                                $"An error occurred while trying to retrieve Account '{@event.AccountId}' for User '{@event.UserId}'");
+
+        if (accountResult.Value is null)
+            throw new InvalidOperationException($"Account '{@event.AccountId}' could not be found for user '{@event.UserId}'");
+
+        var account = accountResult.Value;
+
+        // If @event.NewAmount is 0, then Transaction is considered deleted?
+        // If so, it should have been validated prior, and not reach this point.
+        account.AddTransactionAmount(new Money(@event.Difference), @event.TransactionType);
+
+        //var isCreditTransaction = TransactionEnums.DoesBalanceIncrease(accountBase.AccountType, TransactionEnums.ToTransactionType(@event.TransactionType));
+
+        //// TODO: This should be handled within the Account itself.
+        //if (accountBase is BaseCreditAccount creditAccount)
+        //{
+        //    if (isCreditTransaction)
+        //        creditAccount.AddDeposit(@event.DateOfTransactionUtc, new Money(@event.Difference));
+        //    else
+        //        creditAccount.AddWithdrawal(@event.DateOfTransactionUtc, new Money(@event.Difference));
+        //}
+        //else
+        //{
+        //    if (isCreditTransaction)
+        //        accountBase.AddDeposit(@event.DateOfTransactionUtc, new Money(@event.Difference));
+        //    else
+        //        accountBase.AddWithdrawal(@event.DateOfTransactionUtc, new Money(@event.Difference));
+        //}
+
+        try
+        {
+            await _accountsRepository.UpdateAsync(account, cancellationToken);
+
+            _logger.LogInformation(@event.Id.ToString(), "A '{@transactionType}' Transaction {@transactionId} was added to Account {@accountId}",
+                @event.TransactionType, @event.TransactionId, @event.AccountId);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "An error occurred while trying to update Account '{AccountId}' for User '{UserId}'",
+                @event.AccountId, @event.UserId);
+            throw;
+        }
+
+    }
+}
