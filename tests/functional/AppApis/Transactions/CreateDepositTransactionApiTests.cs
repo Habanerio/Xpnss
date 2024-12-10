@@ -8,7 +8,8 @@ namespace Habanerio.Xpnss.Tests.Functional.AppApis.Transactions;
 public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> factory) :
     CreateTransactionBaseApiTests(factory)
 {
-    private const TransactionEnums.TransactionKeys TRANSACTION_TYPE = TransactionEnums.TransactionKeys.DEPOSIT;
+    private const TransactionEnums.TransactionKeys TRANSACTION_TYPE =
+        TransactionEnums.TransactionKeys.DEPOSIT;
 
     /// <summary>
     /// Tests that a Transaction can be created with an existing PayerPayee
@@ -57,7 +58,7 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
             var transactionDescription = existingPayerPayee is null ?
                 "Deposit Transaction Description - No PayerPayee" :
                 $"Deposit Transaction Description with PayerPayee: " +
-                $"{existingPayerPayee.Id} - {existingPayerPayee.Name}";
+                $"{existingPayerPayee.Id.Value} - {existingPayerPayee.Name.Value}";
 
             // Arrange
             var createTransactionRequest = new CreateDepositTransactionApiRequest
@@ -263,110 +264,4 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
         // Assert
         await AssertTransactionAsync(testUserId, existingAccount, createTransactionRequest, TRANSACTION_TYPE);
     }
-
-    ///// <summary>
-    ///// Helper for Asserting the tests
-    ///// </summary>
-    ///// <param name="existingAccountDoc"></param>
-    ///// <param name="createTransactionRequest"></param>
-    ///// <returns></returns>
-    //private async Task AssertTransactionAsync(
-    //    AccountDocument? existingAccountDoc,
-    //    CreateDepositTransactionApiRequest createTransactionRequest)
-    //{
-    //    var USER_ID = await GetTestUserObjectIdAsync();
-
-    //    if (existingAccountDoc is null)
-    //        Assert.Fail("Need to add accounts before running this test");
-
-    //    var previousAccountBalance = existingAccountDoc.Balance;
-
-    //    // Act
-    //    var createTransactionResponse = await HttpClient.PostAsJsonAsync(
-    //        ENDPOINTS_TRANSACTIONS_CREATE_TRANSACTION
-    //            .Replace("{userId}", USER_ID.ToString()),
-    //        createTransactionRequest);
-
-    //    //createTransactionResponse.EnsureSuccessStatusCode();
-
-    //    var transactionContent = await createTransactionResponse.Content.ReadAsStringAsync();
-
-    //    if (!createTransactionResponse.IsSuccessStatusCode)
-    //        Assert.Fail(transactionContent);
-
-    //    var transactionApiResponse = JsonSerializer.Deserialize<ApiResponse<DepositTransactionDto>>(
-    //        transactionContent, JsonSerializationOptions);
-
-    //    // Assert
-    //    Assert.NotNull(transactionApiResponse);
-    //    Assert.True(transactionApiResponse.IsSuccess);
-
-    //    var actualTransactionDto = Assert.IsType<DepositTransactionDto>(transactionApiResponse.Data);
-
-    //    Assert.NotNull(actualTransactionDto);
-    //    Assert.True(!actualTransactionDto.Id.Equals(ObjectId.Empty.ToString()));
-    //    Assert.Equal(createTransactionRequest.UserId, actualTransactionDto.UserId);
-    //    Assert.Equal(createTransactionRequest.ExtAcctId, actualTransactionDto.ExtAcctId);
-    //    Assert.Equal(createTransactionRequest.TransactionDate.Date, actualTransactionDto.TransactionDate.Date);
-    //    Assert.Equal(TRANSACTION_TYPE.ToString(), actualTransactionDto.TransactionType);
-
-
-    //    // If the apiRequest has a PayerPayee Id OR a Name, then it must return an Id (whether existing or new)
-    //    if (!string.IsNullOrWhiteSpace(createTransactionRequest.PayerPayee.Id) ||
-    //        !string.IsNullOrWhiteSpace(createTransactionRequest.PayerPayee.Name))
-    //    {
-    //        Assert.NotNull(actualTransactionDto.PayerPayeeId);
-
-    //        // If the apiRequest has a PayerPayee Id, then it must match the response
-    //        if (!string.IsNullOrWhiteSpace(createTransactionRequest.PayerPayee.Id))
-    //            Assert.Equal(createTransactionRequest.PayerPayee.Id, actualTransactionDto.PayerPayeeId);
-
-    //        if (!string.IsNullOrWhiteSpace(createTransactionRequest.PayerPayee.Name))
-    //        {
-    //            Assert.NotNull(actualTransactionDto.PayerPayee);
-    //            Assert.Equal(createTransactionRequest.PayerPayee.Name, actualTransactionDto.PayerPayee.Name);
-    //            Assert.Equal(createTransactionRequest.PayerPayee.Description, actualTransactionDto.PayerPayee.Description);
-    //            Assert.Equal(createTransactionRequest.PayerPayee.Location, actualTransactionDto.PayerPayee.Location);
-    //        }
-    //    }
-
-    //    // Check that the Account Doc's Balance has been updated
-    //    var updatedAccountDoc = await AccountDocumentsRepository
-    //        .FirstOrDefaultDocumentAsync(a =>
-    //            a.Id == existingAccountDoc.Id && a.UserId == USER_ID);
-
-    //    Assert.NotNull(updatedAccountDoc);
-
-
-    //    //// DEPOSIT + CREDIT CARD = Balance (owed) Decreases (GOOD Thing)
-    //    //if (TransactionEnums.IsCreditTransaction(TRANSACTION_TYPE) && AccountEnums.CurrencyKeys.IsCreditAccount(existingAccountDoc.AccountType))
-    //    //    Assert.Equal(previousAccountBalance - createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
-
-    //    //// PURCHASE + CHECKING = Balance Decreases (BAD Thing)
-    //    //if (!TransactionEnums.IsCreditTransaction(TRANSACTION_TYPE) && !AccountEnums.CurrencyKeys.IsCreditAccount(existingAccountDoc.AccountType))
-    //    //    Assert.Equal(previousAccountBalance - createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
-
-
-    //    //// PURCHASE + CREDIT CARD = Balance (owed) Increases (BAD Thing)
-    //    //if (!TransactionEnums.IsCreditTransaction(TRANSACTION_TYPE) && AccountEnums.CurrencyKeys.IsCreditAccount(existingAccountDoc.AccountType))
-    //    //    Assert.Equal(previousAccountBalance + createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
-
-    //    //// DEPOSIT + CHECKING = Balance Increases (GOOD Thing)
-    //    //if (TransactionEnums.IsCreditTransaction(TRANSACTION_TYPE) && !AccountEnums.CurrencyKeys.IsCreditAccount(existingAccountDoc.AccountType))
-    //    //    Assert.Equal(previousAccountBalance + createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
-
-
-    //    var doesBalanceIncrease = TransactionEnums.DoesBalanceIncrease(existingAccountDoc.AccountType, TRANSACTION_TYPE);
-
-    //    if (doesBalanceIncrease)
-    //        Assert.Equal(previousAccountBalance + createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
-    //    else
-    //        Assert.Equal(previousAccountBalance - createTransactionRequest.TotalAmount, updatedAccountDoc.Balance);
-
-
-    //    //Assert.NotEmpty(actualAccount.MonthlyTotals);
-
-    //    //Assert.NotNull(actualAccount.MonthlyTotals.Find(t =>
-    //    //    t.Year == transactionDate.Year && t.Month == transactionDate.Month));
-    //}
 }

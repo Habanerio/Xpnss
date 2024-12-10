@@ -1,16 +1,12 @@
 using System.Net;
-
 using Carter;
-
 using FluentValidation;
-
-using Habanerio.Xpnss.Shared.DTOs;
-using Habanerio.Xpnss.Shared.Requests;
 using Habanerio.Xpnss.PayerPayees.Application.Commands.CreatePayerPayee;
 using Habanerio.Xpnss.PayerPayees.Domain.Interfaces;
+using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.Requests;
 using Habanerio.Xpnss.Transactions.Application.Commands;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
-
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Transactions;
@@ -114,7 +110,7 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
         }
         catch (Exception e)
         {
-            logger.LogCritical(e, "An error occurred while trying to create a new Transaction:" +
+            logger.LogCritical(e, $"An error occurred while trying to create a new Transaction:" +
                                     "\r\n UserId: {UserId}" +
                                     "\r\n AccountId: {AccountId}" +
                                     "\r\n TransactionType: {TransactionType}" +

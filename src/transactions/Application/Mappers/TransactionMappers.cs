@@ -27,24 +27,49 @@ internal static partial class ApplicationMapper
         if (entity is null)
             return default;
 
-        if (entity is DepositTransaction depositEntity)
-            return Map(depositEntity);
-
         if (entity is PurchaseTransaction purchaseEntity)
             return Map(purchaseEntity);
+
+        if (entity is CreditTransaction creditEntity)
+            return Map(creditEntity);
+
+        if (entity is DebitTransaction debitEntity)
+            return Map(debitEntity);
 
         throw new InvalidOperationException("Invalid transaction type");
     }
 
-    public static DepositTransactionDto? Map(DepositTransaction? entity)
+    public static CreditTransactionDto? Map(CreditTransaction? entity)
     {
         if (entity is null)
             return default;
 
-        if (!entity.TransactionType.Equals(TransactionEnums.TransactionKeys.DEPOSIT))
-            throw new InvalidOperationException("Invalid transaction type");
+        if (!entity.IsCredit)
+            throw new InvalidOperationException($"{nameof(entity)} is not a valid credit transaction");
 
-        return new DepositTransactionDto()
+        return new CreditTransactionDto(entity.TransactionType)
+        {
+            Id = entity.Id,
+            UserId = entity.UserId,
+            AccountId = entity.AccountId,
+            ExtTransactionId = entity.ExtTransactionId,
+            TotalAmount = entity.TotalAmount,
+            Description = entity.Description,
+            PayerPayeeId = entity.PayerPayeeId,
+            Tags = entity.Tags.ToList(),
+            TransactionDate = entity.TransactionDate,
+        };
+    }
+
+    public static DebitTransactionDto? Map(DebitTransaction? entity)
+    {
+        if (entity is null)
+            return default;
+
+        if (entity.IsCredit)
+            throw new InvalidOperationException($"{nameof(entity)} is not a valid debit transaction");
+
+        return new DebitTransactionDto(entity.TransactionType)
         {
             Id = entity.Id,
             UserId = entity.UserId,
@@ -72,20 +97,31 @@ internal static partial class ApplicationMapper
         if (!entity.TransactionType.Equals(TransactionEnums.TransactionKeys.PURCHASE))
             throw new InvalidOperationException("Invalid transaction type");
 
-        return new PurchaseTransactionDto()
+        try
         {
-            Id = entity.Id,
-            UserId = entity.UserId,
-            AccountId = entity.AccountId,
-            Description = entity.Description,
-            Items = Map(entity.Items).ToList(),
-            PayerPayeeId = entity.PayerPayeeId.Value,
-            Tags = entity.Tags.ToList(),
-            TotalAmount = entity.TotalAmount,
-            TotalPaid = entity.TotalPaid,
-            TransactionDate = entity.TransactionDate,
-            PaidDate = entity.DatePaid,
-        };
+            return new PurchaseTransactionDto()
+            {
+                Id = entity.Id,
+                UserId = entity.UserId,
+                AccountId = entity.AccountId,
+                Description = entity.Description,
+                ExtTransactionId = entity.ExtTransactionId,
+                Items = Map(entity.Items).ToList(),
+                PayerPayeeId = entity.PayerPayeeId.Value,
+                Tags = entity.Tags.ToList(),
+                TotalAmount = entity.TotalAmount,
+                TotalPaid = entity.TotalPaid,
+                TransactionDate = entity.TransactionDate,
+                PaidDate = entity.DatePaid,
+            };
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+
+
     }
 
     public static IEnumerable<TransactionItemDto> Map(IEnumerable<TransactionItem> items)

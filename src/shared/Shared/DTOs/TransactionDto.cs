@@ -17,7 +17,7 @@ public record TransactionDto
 
     public bool IsCredit { get; protected set; }
 
-    public string? PayerPayeeId { get; set; } = string.Empty;
+    public string PayerPayeeId { get; set; } = string.Empty;
 
     public PayerPayeeDto? PayerPayee { get; set; }
 
@@ -50,11 +50,19 @@ public record TransactionDto
 /// <summary>
 /// A Credit Transaction ("CR") is a transaction that takes money from an account.
 /// </summary>
-public abstract record CreditTransactionDto : TransactionDto
+public record CreditTransactionDto : TransactionDto
 {
-    protected CreditTransactionDto(TransactionEnums.TransactionKeys transactionType) :
+    [JsonConstructor]
+    public CreditTransactionDto()
+    {
+        IsCredit = true;
+    }
+
+    public CreditTransactionDto(TransactionEnums.TransactionKeys transactionType) :
         base(true, transactionType)
-    { }
+    {
+        IsCredit = true;
+    }
 }
 
 /// <summary>
@@ -74,11 +82,13 @@ public sealed record DepositTransactionDto() :
 /// <summary>
 /// A Debit Transaction ("DR") is a transaction that adds money to an account.
 /// </summary>
-public abstract record DebitTransactionDto : TransactionDto
+public record DebitTransactionDto : TransactionDto
 {
-    protected DebitTransactionDto(TransactionEnums.TransactionKeys transactionType) :
+    public DebitTransactionDto(TransactionEnums.TransactionKeys transactionType) :
         base(false, transactionType)
-    { }
+    {
+        IsCredit = false;
+    }
 }
 
 public sealed record PurchaseTransactionDto() :

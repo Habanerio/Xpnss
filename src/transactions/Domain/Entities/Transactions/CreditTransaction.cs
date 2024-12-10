@@ -5,40 +5,72 @@ namespace Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 
 public class CreditTransaction : TransactionBase
 {
+    /// <summary>
+    /// New with one Item
+    /// </summary>
     protected CreditTransaction(
             UserId userId,
             AccountId accountId,
-            TransactionEnums.TransactionKeys transactionType,
-            PayerPayeeId payerPayeeId,
-            Money amount,
             string description,
+            string extTransactionId,
+            TransactionItem item,
+            PayerPayeeId payerPayeeId,
+            IEnumerable<string>? tags,
             DateTime transactionDate,
-            IEnumerable<string>? tags = null,
-            string extTransactionId = "") :
+            TransactionEnums.TransactionKeys transactionType) :
         base(
             userId,
             accountId,
-            transactionType,
-            true,
-            payerPayeeId,
-            amount,
             description,
-            transactionDate,
+            extTransactionId,
+            isCredit: true,
+            item,
+            payerPayeeId,
             tags,
-            extTransactionId)
+            transactionDate,
+            transactionType)
     { }
 
+    ///// <summary>
+    ///// New with multiple Items
+    ///// </summary>
+    //protected CreditTransaction(
+    //    UserId userId,
+    //    AccountId accountId,
+    //    string description,
+    //    string extTransactionId,
+    //    IEnumerable<TransactionItem> items,
+    //    PayerPayeeId payerPayeeId,
+    //    IEnumerable<string>? tags,
+    //    DateTime transactionDate,
+    //    TransactionEnums.TransactionKeys transactionType) :
+    //    base(
+    //        userId,
+    //        accountId,
+    //        description,
+    //        extTransactionId,
+    //        isCredit: true,
+    //        items,
+    //        payerPayeeId,
+    //        tags,
+    //        transactionDate,
+    //        transactionType)
+    //{ }
+
+    /// <summary>
+    /// Existing with a single Item
+    /// </summary>
     protected CreditTransaction(
             TransactionId id,
             UserId userId,
             AccountId accountId,
-            TransactionEnums.TransactionKeys transactionType,
-            PayerPayeeId payerPayeeId,
-            Money amount,
             string description,
-            DateTime transactionDate,
+            string extTransactionId,
+            TransactionItem item,
+            PayerPayeeId payerPayeeId,
             IEnumerable<string>? tags,
-            string externalTransactionId,
+            DateTime transactionDate,
+            TransactionEnums.TransactionKeys transactionType,
             DateTime dateCreated,
             DateTime? dateUpdated = null,
             DateTime? dateDeleted = null) :
@@ -46,15 +78,92 @@ public class CreditTransaction : TransactionBase
             id,
             userId,
             accountId,
-            transactionType, true,
-            payerPayeeId,
-            amount,
             description,
-            transactionDate,
+            extTransactionId,
+            isCredit: true,
+            item,
+            payerPayeeId,
             tags,
-            externalTransactionId,
+            transactionDate,
+            transactionType,
             dateCreated,
             dateUpdated,
             dateDeleted)
     { }
+
+    public static CreditTransaction NewDeposit(
+        UserId userId,
+        AccountId accountId,
+        Money amount,
+        string description,
+        PayerPayeeId payerPayeeId,
+        DateTime transactionDate,
+        IEnumerable<string>? tags = null,
+        string extTransactionId = "")
+    {
+        return new CreditTransaction(
+            userId,
+            accountId,
+            description,
+            extTransactionId,
+            TransactionItem.New(new Money(amount), CategoryId.Empty, SubCategoryId.Empty, description),
+            payerPayeeId,
+            tags,
+            transactionDate,
+            TransactionEnums.TransactionKeys.DEPOSIT);
+    }
+
+    public static CreditTransaction NewPayment(
+        UserId userId,
+        AccountId accountId,
+        string description,
+        TransactionItem item,
+        PayerPayeeId payerPayeeId,
+        DateTime transactionDate,
+        IEnumerable<string>? tags = null,
+        string extTransactionId = "")
+    {
+        return new CreditTransaction(
+            userId,
+            accountId,
+            description,
+            extTransactionId,
+            item,
+            payerPayeeId,
+            tags,
+            transactionDate,
+            TransactionEnums.TransactionKeys.PAYMENT_OUT);
+    }
+
+    public static CreditTransaction Load(
+        TransactionId id,
+        UserId userId,
+        AccountId accountId,
+        string description,
+        string extTransactionId,
+        TransactionItem item,
+        PayerPayeeId payerPayeeId,
+        IEnumerable<string>? tags,
+        DateTime transactionDate,
+        TransactionEnums.TransactionKeys transactionType,
+        DateTime dateCreated,
+        DateTime? dateUpdated,
+        DateTime? dateDeleted)
+    {
+        return new CreditTransaction(
+            id,
+            userId,
+            accountId,
+            description,
+            extTransactionId,
+            item,
+            payerPayeeId,
+            tags,
+            transactionDate,
+            transactionType,
+            dateCreated,
+            dateUpdated,
+            dateDeleted);
+    }
+
 }

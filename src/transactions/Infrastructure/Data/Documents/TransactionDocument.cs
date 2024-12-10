@@ -19,12 +19,14 @@ public class TransactionDocument : MongoDocument
     [BsonRepresentation(BsonType.String)]
     public TransactionEnums.TransactionKeys TransactionType { get; set; }
 
-
     [BsonElement("description")]
-    public string Description { get; set; }
+    public string Description { get; set; } = "";
 
     [BsonElement("ext_transaction_id")]
-    public string ExtTransactionId { get; set; }
+    public string ExtTransactionId { get; set; } = "";
+
+    [BsonElement("is_credit")]
+    public bool IsCredit { get; set; }
 
     [BsonElement("is_deleted")]
     public bool IsDeleted { get; set; }
@@ -33,7 +35,7 @@ public class TransactionDocument : MongoDocument
     public bool IsPaid => PaidDate.HasValue;
 
     [BsonElement("items")]
-    public List<TransactionDocumentItem> Items { get; set; }
+    public List<TransactionDocumentItem> Items { get; set; } = [];
 
     [BsonElement("payerpayee_id")]
     public ObjectId? PayerPayeeId { get; set; }
@@ -42,16 +44,16 @@ public class TransactionDocument : MongoDocument
     public List<TransactionDocumentPayment> Payments { get; set; }
 
     [BsonElement("tags")]
-    public List<string> Tags { get; set; }
+    public List<string> Tags { get; set; } = [];
 
     [BsonElement("total_amount")]
-    public decimal TotalAmount { get; set; }
+    public decimal TotalAmount => Items.Sum(i => i.Amount);
 
     [BsonElement("total_owing")]
-    public decimal TotalOwing { get; set; }
+    public decimal TotalOwing => TotalAmount - TotalPaid;
 
     [BsonElement("total_paid")]
-    public decimal TotalPaid { get; set; }
+    public decimal TotalPaid => Payments.Sum(p => p.Amount);
 
     [BsonElement("transaction_date")]
     [BsonDateTimeOptions(DateOnly = true)]
@@ -59,7 +61,7 @@ public class TransactionDocument : MongoDocument
 
     [BsonElement("paid_date")]
     [BsonDateTimeOptions(DateOnly = true)]
-    public DateTime? PaidDate { get; set; }
+    public DateTime? PaidDate { get; set; } = null;
 
 
     [BsonElement("date_created")]
@@ -68,11 +70,11 @@ public class TransactionDocument : MongoDocument
 
     [BsonElement("date_updated")]
     [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
-    public DateTime? DateUpdated { get; set; }
+    public DateTime? DateUpdated { get; set; } = null;
 
     [BsonElement("date_deleted")]
     [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
-    public DateTime? DateDeleted { get; set; }
+    public DateTime? DateDeleted { get; set; } = null;
 
     public TransactionDocument()
     {
@@ -82,24 +84,49 @@ public class TransactionDocument : MongoDocument
     }
 }
 
-public class DepositTransactionDocument : TransactionDocument
+// Credits
+public class CreditTransactionDocument :
+    TransactionDocument
 {
-    public DepositTransactionDocument()
+    public CreditTransactionDocument(TransactionEnums.TransactionKeys transactionType)
     {
-        TransactionType = TransactionEnums.TransactionKeys.DEPOSIT;
+        IsCredit = true;
+        TransactionType = transactionType;
     }
 }
+
+public class DepositTransactionDocument :
+    CreditTransactionDocument
+{
+    public DepositTransactionDocument() : base(TransactionEnums.TransactionKeys.DEPOSIT)
+    {
+        IsCredit = true;
+    }
+}
+
+
+// Debits
+public class DebitTransactionDocument :
+    TransactionDocument
+{
+    public DebitTransactionDocument(TransactionEnums.TransactionKeys transactionType)
+    {
+        IsCredit = false;
+        TransactionType = transactionType;
+    }
+}
+
+public class PaymentTransactionDocument() :
+    CreditTransactionDocument(TransactionEnums.TransactionKeys.PAYMENT);
 
 /// <summary>
 /// For when the Account purchases something from a "Merchant"
 /// </summary>
-public class PurchaseTransactionDocument : TransactionDocument
-{
-    public PurchaseTransactionDocument()
-    {
-        TransactionType = TransactionEnums.TransactionKeys.PURCHASE;
-    }
-}
+public class PurchaseTransactionDocument() :
+    DebitTransactionDocument(TransactionEnums.TransactionKeys.PURCHASE);
+
+public class WithdrawalTransactionDocument() :
+    DebitTransactionDocument(TransactionEnums.TransactionKeys.WITHDRAWAL);
 
 
 public sealed record TransactionDocumentItem

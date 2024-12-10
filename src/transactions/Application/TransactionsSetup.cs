@@ -40,9 +40,10 @@ public static class TransactionsSetup
             cm.SetIgnoreExtraElements(true);
         });
 
-
-        BsonClassMap.RegisterClassMap<PurchaseTransactionDocument>();
         BsonClassMap.RegisterClassMap<DepositTransactionDocument>();
+        BsonClassMap.RegisterClassMap<PaymentTransactionDocument>();
+        BsonClassMap.RegisterClassMap<PurchaseTransactionDocument>();
+        BsonClassMap.RegisterClassMap<WithdrawalTransactionDocument>();
 
         return services;
     }

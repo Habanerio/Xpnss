@@ -52,7 +52,8 @@ public class TransactionCreatedIntegrationEventHandler(
 
         if (accountResult.IsFailed)
             throw new InvalidOperationException(accountResult.Errors[0]?.Message ??
-                $"An error occurred while trying to retrieve Account '{@event.AccountId}' for User '{@event.UserId}'");
+                $"An error occurred while trying to retrieve Account " +
+                $"'{@event.AccountId}' for User '{@event.UserId}'");
 
         if (accountResult.Value is null)
             throw new InvalidOperationException(
@@ -70,7 +71,8 @@ public class TransactionCreatedIntegrationEventHandler(
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "Error occurred while trying to update the Balance for Account '{ExtAcctId}'", @event.AccountId);
+            _logger.LogCritical(e, "Error occurred while trying to update the Balance for Account " +
+                                   "'{ExtAcctId}'", @event.AccountId);
         }
     }
 }

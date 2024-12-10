@@ -48,7 +48,7 @@ public sealed class CreatePurchaseTransactionHandler(
             new UserId(transactionRequest.UserId),
             new AccountId(transactionRequest.AccountId),
             transactionRequest.Description,
-            new PayerPayeeId(transactionRequest.PayerPayee.Id),
+            transactionRequest.ExtTransactionId,
             transactionRequest.Items
                 .Select(i =>
                     TransactionItem.New(
@@ -57,8 +57,9 @@ public sealed class CreatePurchaseTransactionHandler(
                         new SubCategoryId(i.SubCategoryId),
                         i.Description)
                 ).ToList(),
-            transactionRequest.TransactionDate,
-            transactionRequest.Tags);
+            new PayerPayeeId(transactionRequest.PayerPayee.Id),
+            transactionRequest.Tags,
+            transactionRequest.TransactionDate);
 
         var result = await _repository.AddAsync(transactionDoc, cancellationToken);
 

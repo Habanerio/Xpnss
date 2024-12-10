@@ -54,7 +54,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
             var transactionDescription = existingPayerPayee is null ?
                 "Purchase Transaction Description - No PayerPayee" :
                 $"Purchase Transaction Description with PayerPayee: " +
-                $"{existingPayerPayee.Id} - {existingPayerPayee.Name}";
+                $"{existingPayerPayee.Id.Value} - {existingPayerPayee.Name.Value}";
 
             // Arrange
             var createTransactionRequest = new CreatePurchaseTransactionApiRequest
@@ -132,7 +132,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
         var transactionDescription = existingPayerPayee is null ?
             "Deposit Transaction Description - No PayerPayee" :
             $"Deposit Transaction Description with PayerPayee: " +
-                $"{existingPayerPayee.Id} - {existingPayerPayee.Name}";
+                $"{existingPayerPayee.Id.Value} - {existingPayerPayee.Name.Value}";
 
         // Arrange
         var createTransactionRequest = new CreatePurchaseTransactionApiRequest
@@ -208,7 +208,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
         var transactionDescription = existingPayerPayee is null ?
             "Deposit Transaction Description - No PayerPayee" :
             $"Deposit Transaction Description with PayerPayee: " +
-                $"{existingPayerPayee.Id} - {existingPayerPayee.Name}";
+                $"{existingPayerPayee.Id.Value} - {existingPayerPayee.Name.Value}";
 
         // Arrange
         var createTransactionRequest = new CreatePurchaseTransactionApiRequest

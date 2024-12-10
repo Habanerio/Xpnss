@@ -36,7 +36,7 @@ public sealed class CreateWithdrawalCommandHandler(
         if (!validationResult.IsValid)
             return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
-        var withdrawalDoc = WithdrawalTransaction.New(
+        var withdrawalDoc = DebitTransaction.NewWithdrawal(
             new UserId(command.Request.UserId),
             new AccountId(command.Request.AccountId),
             new Money(command.Request.TotalAmount),
