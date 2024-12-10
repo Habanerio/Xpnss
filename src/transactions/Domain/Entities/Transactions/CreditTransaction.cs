@@ -113,27 +113,7 @@ public class CreditTransaction : TransactionBase
             TransactionEnums.TransactionKeys.DEPOSIT);
     }
 
-    public static CreditTransaction NewPayment(
-        UserId userId,
-        AccountId accountId,
-        string description,
-        TransactionItem item,
-        PayerPayeeId payerPayeeId,
-        DateTime transactionDate,
-        IEnumerable<string>? tags = null,
-        string extTransactionId = "")
-    {
-        return new CreditTransaction(
-            userId,
-            accountId,
-            description,
-            extTransactionId,
-            item,
-            payerPayeeId,
-            tags,
-            transactionDate,
-            TransactionEnums.TransactionKeys.PAYMENT_OUT);
-    }
+
 
     public static CreditTransaction Load(
         TransactionId id,

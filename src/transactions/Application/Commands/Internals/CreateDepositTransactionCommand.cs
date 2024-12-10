@@ -9,9 +9,9 @@ using Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using MediatR;
 
-namespace Habanerio.Xpnss.Transactions.Application.Commands;
+namespace Habanerio.Xpnss.Transactions.Application.Commands.Internals;
 
-public sealed record CreateDepositTransactionCommand(
+internal sealed record CreateDepositTransactionCommand(
     CreateDepositTransactionApiRequest ApiRequest) :
     ITransactionsCommand<Result<CreditTransactionDto>>;
 
@@ -19,7 +19,7 @@ public sealed record CreateDepositTransactionCommand(
 /// Handles the creation of a Deposit transaction
 /// </summary>
 /// <param name="repository"></param>
-public sealed class CreateDepositTransactionCommandHandler(
+internal sealed class CreateDepositTransactionCommandHandler(
     ITransactionsRepository repository,
     IMediator mediator) :
     IRequestHandler<CreateDepositTransactionCommand,

@@ -10,13 +10,13 @@ using Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using MediatR;
 
-namespace Habanerio.Xpnss.Transactions.Application.Commands;
+namespace Habanerio.Xpnss.Transactions.Application.Commands.Internals;
 
-public sealed record CreatePurchaseTransactionCommand(
+internal sealed record CreatePurchaseTransactionCommand(
     CreatePurchaseTransactionApiRequest ApiRequest) :
     ITransactionsCommand<Result<PurchaseTransactionDto>>;
 
-public sealed class CreatePurchaseTransactionHandler(
+internal sealed class CreatePurchaseTransactionHandler(
     ITransactionsRepository repository,
     IMediator mediator) :
     IRequestHandler<CreatePurchaseTransactionCommand, Result<PurchaseTransactionDto>>
@@ -44,7 +44,7 @@ public sealed class CreatePurchaseTransactionHandler(
 
         var transactionRequest = command.ApiRequest;
 
-        var transactionDoc = PurchaseTransaction.New(
+        var transactionEntity = PurchaseTransaction.New(
             new UserId(transactionRequest.UserId),
             new AccountId(transactionRequest.AccountId),
             transactionRequest.Description,
@@ -61,7 +61,7 @@ public sealed class CreatePurchaseTransactionHandler(
             transactionRequest.Tags,
             transactionRequest.TransactionDate);
 
-        var result = await _repository.AddAsync(transactionDoc, cancellationToken);
+        var result = await _repository.AddAsync(transactionEntity, cancellationToken);
 
         if (result.IsFailed)
             return Result.Fail(result.Errors?[0].Message ?? "Could not save the Purchase Transaction");

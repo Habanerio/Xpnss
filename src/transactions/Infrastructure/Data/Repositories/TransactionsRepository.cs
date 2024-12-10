@@ -16,7 +16,9 @@ public class TransactionsRepository(IMongoDatabase mongoDb)
     : MongoDbRepository<TransactionDocument>(new TransactionsDbContext(mongoDb)),
         ITransactionsRepository
 {
-    public async Task<Result<TransactionBase>> AddAsync(TransactionBase transaction, CancellationToken cancellationToken = default)
+    public async Task<Result<TransactionBase>> AddAsync(
+        TransactionBase? transaction,
+        CancellationToken cancellationToken = default)
     {
         if (transaction is null)
             return Result.Fail("Transaction cannot be null");
@@ -116,7 +118,7 @@ public class TransactionsRepository(IMongoDatabase mongoDb)
         var transaction = InfrastructureMapper.Map(doc);
 
         if (transaction is null)
-            return Result.Fail("Could not map the Transaction");
+            throw new InvalidOperationException($"{nameof(GetType)}: Could not map the transaction from a Document to an Entity");
 
         return Result.Ok<TransactionBase?>(transaction);
     }

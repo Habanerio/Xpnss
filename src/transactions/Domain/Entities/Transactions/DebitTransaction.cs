@@ -147,6 +147,28 @@ public class DebitTransaction : TransactionBase
             TransactionEnums.TransactionKeys.WITHDRAWAL);
     }
 
+    public static DebitTransaction NewPayment(
+        UserId userId,
+        AccountId accountId,
+        string description,
+        TransactionItem item,
+        PayerPayeeId payerPayeeId,
+        DateTime transactionDate,
+        IEnumerable<string>? tags = null,
+        string extTransactionId = "")
+    {
+        return new DebitTransaction(
+            userId,
+            accountId,
+            description,
+            extTransactionId,
+            item,
+            payerPayeeId,
+            tags,
+            transactionDate,
+            TransactionEnums.TransactionKeys.PAYMENT_OUT);
+    }
+
     public static DebitTransaction Load(
         TransactionId id,
         UserId userId,

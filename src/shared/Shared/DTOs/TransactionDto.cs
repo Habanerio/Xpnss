@@ -29,14 +29,14 @@ public record TransactionDto
 
     [JsonPropertyName("TransactionType")]
     [JsonConverter(typeof(JsonNumberEnumConverter<TransactionEnums.TransactionKeys>))]
-    public TransactionEnums.TransactionKeys TransactionType { get; set; }
+    public TransactionEnums.TransactionKeys TransactionType { get; protected set; }
 
     public string TransactionTypeString => TransactionType.ToString();
 
-    [JsonConstructor]
-    public TransactionDto() { }
+    //[JsonConstructor]
+    //public TransactionDto() { }
 
-    protected TransactionDto(
+    public TransactionDto(
         bool isCredit,
         TransactionEnums.TransactionKeys transactionType)
     {
@@ -52,11 +52,11 @@ public record TransactionDto
 /// </summary>
 public record CreditTransactionDto : TransactionDto
 {
-    [JsonConstructor]
-    public CreditTransactionDto()
-    {
-        IsCredit = true;
-    }
+    //[JsonConstructor]
+    //public CreditTransactionDto()
+    //{
+    //    IsCredit = true;
+    //}
 
     public CreditTransactionDto(TransactionEnums.TransactionKeys transactionType) :
         base(true, transactionType)
@@ -112,7 +112,7 @@ public sealed record PurchaseTransactionDto() :
 /// such as a withdrawal from a checking account.
 /// </summary>
 public sealed record WithdrawalTransactionDto() :
-    CreditTransactionDto(TransactionEnums.TransactionKeys.WITHDRAWAL)
+    DebitTransactionDto(TransactionEnums.TransactionKeys.WITHDRAWAL)
 {
     /// <summary>
     /// The Id of the underlying account that the withdrawal was made FROM.
