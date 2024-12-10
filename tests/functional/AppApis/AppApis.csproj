@@ -30,6 +30,7 @@
         </PackageReference>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.10" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+        <PackageReference Include="MongoDB.Driver" Version="3.0.0" />
         <PackageReference Include="SonarAnalyzer.CSharp" Version="10.3.0.106239">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -46,9 +47,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\src\apis\app\AppApis\AppApis.csproj" />
-      <ProjectReference Include="..\..\..\src\UserProfiles\Xpnss.UserProfiles.Infrastructure\Xpnss.UserProfiles.Infrastructure.csproj" />
-      <ProjectReference Include="..\..\..\src\Xpnss.Accounts.Application\Xpnss.Accounts.Application.csproj" />
+      <ProjectReference Include="..\..\..\src\accounts\Infrastructure\Infrastructure.csproj" />
+      <ProjectReference Include="..\..\..\src\apis\app\AppApis.csproj" />
+      <ProjectReference Include="..\..\..\src\categories\Infrastructure\Infrastructure.csproj" />
+      <ProjectReference Include="..\..\..\src\payerpayees\Infrastructure\Infrastructure.csproj" />
+      <ProjectReference Include="..\..\..\src\totals\Infrastructure\Infrastructure.csproj" />
+      <ProjectReference Include="..\..\..\src\transactions\Infrastructure\Infrastructure.csproj" />
+      <ProjectReference Include="..\..\..\src\userprofiles\Infrastructure\Infrastructure.csproj" />
     </ItemGroup>
 
     <ItemGroup>

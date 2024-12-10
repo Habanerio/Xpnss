@@ -26,7 +26,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\hidden\website\XpnssWeb\XpnssWeb.csproj" />
-        <ProjectReference Include="..\..\apis\app\AppApis\AppApis.csproj" />
+        <ProjectReference Include="..\..\apis\app\AppApis.csproj" />
     </ItemGroup>
 
 </Project>

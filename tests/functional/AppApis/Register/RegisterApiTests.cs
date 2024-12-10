@@ -1,9 +1,9 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 
-using Habanerio.Xpnss.Application.DTOs;
-using Habanerio.Xpnss.Application.Requests;
-using Habanerio.Xpnss.Domain.Types;
+using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.Requests;
+using Habanerio.Xpnss.Shared.Types;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 using MongoDB.Bson;

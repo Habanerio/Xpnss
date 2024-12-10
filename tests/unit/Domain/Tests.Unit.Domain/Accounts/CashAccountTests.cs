@@ -1,7 +1,7 @@
 using AutoFixture;
 using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts.CashAccounts;
-using Habanerio.Xpnss.Domain.Types;
-using Habanerio.Xpnss.Domain.ValueObjects;
+using Habanerio.Xpnss.Shared.Types;
+using Habanerio.Xpnss.Shared.ValueObjects;
 
 namespace Habanerio.Xpnss.Tests.Unit.Domain.Accounts;
 

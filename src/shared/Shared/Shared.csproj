@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <AssemblyName>Habanerio.Xpnss.Shared</AssemblyName>
+        <RootNamespace>Habanerio.Xpnss.Shared</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MediatR" Version="12.4.1" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+      <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
+      <PackageReference Include="MongoDB.Bson" Version="3.0.0" />
+      <PackageReference Include="MongoDB.Driver" Version="3.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\libraries\habanerio\Habanerio.Core.Dbs\Habanerio.Core.Dbs.MongoDb\Habanerio.Core.Dbs.MongoDb.csproj" />
+    </ItemGroup>
+
+</Project>

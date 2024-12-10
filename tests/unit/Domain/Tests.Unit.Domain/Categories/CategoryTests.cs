@@ -1,8 +1,8 @@
 using System.Collections.ObjectModel;
 using AutoFixture;
 using Habanerio.Xpnss.Categories.Domain.Entities;
-using Habanerio.Xpnss.Domain.Types;
-using Habanerio.Xpnss.Domain.ValueObjects;
+using Habanerio.Xpnss.Shared.Types;
+using Habanerio.Xpnss.Shared.ValueObjects;
 using MongoDB.Bson;
 
 namespace Habanerio.Xpnss.Tests.Unit.Domain.Categories;

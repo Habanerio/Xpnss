@@ -1,6 +1,6 @@
 using Habanerio.Xpnss.Apis.App.AppApis;
-using Habanerio.Xpnss.Application.Requests;
-using Habanerio.Xpnss.Domain.Types;
+using Habanerio.Xpnss.Shared.Requests;
+using Habanerio.Xpnss.Shared.Types;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis.Transactions;

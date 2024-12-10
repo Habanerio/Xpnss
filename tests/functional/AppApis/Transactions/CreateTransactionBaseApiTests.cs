@@ -3,11 +3,10 @@ using System.Text.Json;
 
 using Habanerio.Xpnss.Accounts.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.Apis.App.AppApis;
-using Habanerio.Xpnss.Application.DTOs;
-using Habanerio.Xpnss.Application.Requests;
-using Habanerio.Xpnss.Domain.Types;
-using Habanerio.Xpnss.MonthlyTotals.Infrastructure.Data.Documents;
-
+using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.Requests;
+using Habanerio.Xpnss.Shared.Types;
+using Habanerio.Xpnss.Totals.Infrastructure.Data.Documents;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 using MongoDB.Bson;

@@ -1,3 +1,5 @@
+using Projects;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 // https://learn.microsoft.com/en-us/dotnet/aspire/caching/stackexchange-redis-integration?tabs=dotnet-cli&pivots=redis
@@ -11,10 +13,10 @@ var redis_api = builder
     .WithRedisCommander();
 
 var api = builder
-    .AddProject<Projects.AppApis>("xpnss-apis")
+    .AddProject<AppApis>("xpnss-apis")
     .WithReference(redis_api);
 
-builder.AddProject<Projects.XpnssWeb>("xpnssweb")
+builder.AddProject<XpnssWeb>("xpnssweb")
     .WithReference(redis_web)
     .WithReference(api);
 

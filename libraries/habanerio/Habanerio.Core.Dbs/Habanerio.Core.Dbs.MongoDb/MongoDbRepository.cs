@@ -309,14 +309,9 @@ public abstract class MongoDbRepository<TDocument, TId> :
         int pageSize = 25,
         CancellationToken cancellationToken = default)
     {
-        if (filter is null)
-            throw new ArgumentNullException(nameof(filter));
-
-        if (pageNo < 0)
-            throw new ArgumentOutOfRangeException(nameof(pageNo));
-
-        if (pageSize < 0)
-            throw new ArgumentOutOfRangeException(nameof(pageSize));
+        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentOutOfRangeException.ThrowIfNegative(pageNo);
+        ArgumentOutOfRangeException.ThrowIfNegative(pageSize);
 
         var skip = (pageNo - 1) * pageSize;
 
