@@ -34,10 +34,12 @@ public class Transaction : AggregateRoot<TransactionId>
     public IReadOnlyCollection<TransactionItem> Items => _items.AsReadOnly();
 
     /// <summary>
-    /// The id of the person, company, or ofxAccount that is paying or receiving the money.
+    /// The id of the person, company, or Account that is paying or receiving the money.
     /// Optional
     /// </summary>
     public PayerPayeeId PayerPayeeId { get; }
+
+    public RefTransactionId RefTransactionId { get; }
 
     public IReadOnlyCollection<string> Tags => _tags.AsReadOnly();
 
@@ -73,6 +75,7 @@ public class Transaction : AggregateRoot<TransactionId>
         bool isCredit,
         TransactionItem item,
         PayerPayeeId payerPayeeId,
+        RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType) :
@@ -85,6 +88,7 @@ public class Transaction : AggregateRoot<TransactionId>
             isCredit,
             item,
             payerPayeeId,
+            refTransactionId,
             tags,
             transactionDate,
             transactionType,
@@ -111,6 +115,7 @@ public class Transaction : AggregateRoot<TransactionId>
         bool isCredit,
         IEnumerable<TransactionItem> items,
         PayerPayeeId payerPayeeId,
+        RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType) :
@@ -123,6 +128,7 @@ public class Transaction : AggregateRoot<TransactionId>
             isCredit,
             items,
             payerPayeeId,
+            refTransactionId,
             tags,
             transactionDate,
             transactionType,
@@ -149,6 +155,7 @@ public class Transaction : AggregateRoot<TransactionId>
         bool isCredit,
         TransactionItem item,
         PayerPayeeId payerPayeeId,
+        RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType,
@@ -163,6 +170,7 @@ public class Transaction : AggregateRoot<TransactionId>
         ExtTransactionId = extTransactionId;
         IsCredit = isCredit;
         PayerPayeeId = payerPayeeId;
+        RefTransactionId = refTransactionId;
         TransactionDate = transactionDate.Date;
         TransactionType = transactionType;
         DateCreated = dateCreated;
@@ -186,6 +194,7 @@ public class Transaction : AggregateRoot<TransactionId>
         bool isCredit,
         IEnumerable<TransactionItem> items,
         PayerPayeeId payerPayeeId,
+        RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType,
@@ -206,6 +215,7 @@ public class Transaction : AggregateRoot<TransactionId>
         Description = description;
         ExtTransactionId = extTransactionId;
         PayerPayeeId = payerPayeeId;
+        RefTransactionId = refTransactionId;
         TransactionDate = transactionDate.Date;
         DateCreated = dateCreated;
         DateUpdated = dateUpdated;

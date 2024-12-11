@@ -1,6 +1,7 @@
 using Habanerio.Xpnss.Accounts.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.Apis.App.AppApis;
 using Habanerio.Xpnss.Shared.Requests;
+using Habanerio.Xpnss.Shared.Requests.Transactions;
 using Habanerio.Xpnss.Shared.Types;
 using Microsoft.AspNetCore.Mvc.Testing;
 using MongoDB.Bson;
@@ -94,8 +95,6 @@ public class CreateWithdrawalTransactionApiTests(WebApplicationFactory<Program> 
 
         if (existingAccount is null)
             Assert.Fail("Need to add accounts before running this test");
-
-        var transactionDate = GetRandomPastDate;
 
         await CanCall_CreateWithdrawalTransaction_WithValidRequest_ReturnsOk(
             testUserId,

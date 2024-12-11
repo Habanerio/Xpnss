@@ -50,7 +50,7 @@ public class AddSubCategoriesApiTests(WebApplicationFactory<Apis.App.AppApis.Pro
 
         foreach (var command in addSubCategoryRequests)
         {
-            var response = await HttpClient.PostAsJsonAsync(
+            var response = await XpnssApiClient.PostAsJsonAsync(
                 ENDPOINTS_CATEGORIES_ADD_SUBCATEGORIES
                     .Replace("{userId}", userId.ToString()
                     .Replace("{categoryId}", command.ParentCategoryId)),

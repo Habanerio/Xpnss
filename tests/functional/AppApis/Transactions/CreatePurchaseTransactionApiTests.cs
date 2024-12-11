@@ -1,6 +1,7 @@
 using Habanerio.Xpnss.Accounts.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.Apis.App.AppApis;
 using Habanerio.Xpnss.Shared.Requests;
+using Habanerio.Xpnss.Shared.Requests.Transactions;
 using Habanerio.Xpnss.Shared.Types;
 using Microsoft.AspNetCore.Mvc.Testing;
 using MongoDB.Bson;
@@ -142,12 +143,14 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
         var subCategory2 = category2.SubCategories[random.Next(0, category2.SubCategories.Count - 1)];
 
         // Arrange
-        var createTransactionRequest = new CreatePurchaseTransactionApiRequest
-        {
-            UserId = testUserId.ToString(),
-            AccountId = existingAccount.Id.ToString(),
-            Items =
-            [
+        var createTransactionRequest = new CreatePurchaseTransactionApiRequest(
+            testUserId.ToString(),
+            existingAccount.Id.ToString(),
+            randomPayerPayeeRequest ?? new PayerPayeeApiRequest(),
+            transactionDescription,
+            transactionDate,
+            new List<TransactionApiRequestItem>
+            {
                 new()
                 {
                     Amount = 35,
@@ -163,11 +166,9 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
                     SubCategoryId = subCategory2.Id.ToString(),
                     Description = "Transaction Item 2 Description"
                 }
-            ],
-            TransactionDate = transactionDate,
-            Description = transactionDescription,
-            PayerPayee = randomPayerPayeeRequest ?? new PayerPayeeApiRequest()
-        };
+            },
+            new List<string> { "tag1", "tag3", "tag 7" },
+            "extTransactionId");
 
         // Assert
         await AssertTransactionAsync(testUserId, existingAccount, createTransactionRequest, TRANSACTION_TYPE);

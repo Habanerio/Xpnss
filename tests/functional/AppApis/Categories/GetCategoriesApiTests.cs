@@ -15,7 +15,7 @@ public class GetCategoriesApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         var userId = await GetTestUserObjectIdAsync();
 
         // Act
-        var response = await HttpClient.GetAsync(
+        var response = await XpnssApiClient.GetAsync(
         ENDPOINTS_CATEGORIES_GET_CATEGORIES
                 .Replace("{userId}", userId.ToString()));
 

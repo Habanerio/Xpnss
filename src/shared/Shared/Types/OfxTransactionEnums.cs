@@ -92,7 +92,7 @@ public static class OfxTransactionEnums
 
         /// <summary>
         /// Only valid in `STMTTRNP`; indicates the amount is under a hold
-        ///     Note: Depends on signage of amount and ofxAccount type
+        ///     Note: Depends on signage of amount and Account type
         /// </summary>
         HOLD,
 

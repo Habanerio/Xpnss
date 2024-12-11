@@ -4,8 +4,6 @@ namespace Habanerio.Xpnss.Shared.ValueObjects;
 
 public sealed record PayerPayeeId : EntityObjectId
 {
-    private PayerPayeeId() : this(ObjectId.Empty.ToString())
-    { }
 
     public PayerPayeeId(ObjectId? id) : this(id?.ToString())
     { }

@@ -49,12 +49,12 @@ public abstract class AbstractAccountBase :
     public int SortOrder { get; private set; }
 
     public IReadOnlyCollection<TransactionEnums.TransactionKeys> CreditTransactionTypes =>
-        IsCredit ? TransactionEnums.CreditTransactionKeys
-            : TransactionEnums.DebitTransactionKeys;
+        IsCredit ? TransactionEnums.AllCreditTransactionKeys
+            : TransactionEnums.AllDebitTransactionKeys;
 
     public IReadOnlyCollection<TransactionEnums.TransactionKeys> DebitTransactionTypes =>
-        IsCredit ? TransactionEnums.DebitTransactionKeys
-            : TransactionEnums.CreditTransactionKeys;
+        IsCredit ? TransactionEnums.AllDebitTransactionKeys
+            : TransactionEnums.AllCreditTransactionKeys;
 
     // New Accounts
     // Adds a Domain Event for the creation of a new Account
@@ -107,6 +107,8 @@ public abstract class AbstractAccountBase :
         DateUpdated = dateUpdated;
     }
 
+    //TODO: This doesn't need to be abstract.
+    // Abstract Account has IsCredit, so it can determine what to do.
     /// <summary>
     /// Applies a Transaction CreditLimit to the Account's Balance.<br />
     /// When the Transaction is a Credit, the creditLimit is added to the Balance.<br />

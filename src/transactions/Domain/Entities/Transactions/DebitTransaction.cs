@@ -15,6 +15,7 @@ public class DebitTransaction : Transaction
             string extTransactionId,
             TransactionItem item,
             PayerPayeeId payerPayeeId,
+            RefTransactionId refTransactionId,
             IEnumerable<string>? tags,
             DateTime transactionDate,
             TransactionEnums.TransactionKeys transactionType) :
@@ -26,6 +27,7 @@ public class DebitTransaction : Transaction
             isCredit: false,
             item,
             payerPayeeId,
+            refTransactionId,
             tags,
             transactionDate,
             transactionType)
@@ -41,6 +43,7 @@ public class DebitTransaction : Transaction
         string extTransactionId,
         IEnumerable<TransactionItem> items,
         PayerPayeeId payerPayeeId,
+        RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType) :
@@ -52,6 +55,7 @@ public class DebitTransaction : Transaction
             isCredit: false,
             items,
             payerPayeeId,
+            refTransactionId,
             tags,
             transactionDate,
             transactionType)
@@ -68,6 +72,7 @@ public class DebitTransaction : Transaction
             string extTransactionId,
             TransactionItem item,
             PayerPayeeId payerPayeeId,
+            RefTransactionId refTransactionId,
             IEnumerable<string>? tags,
             DateTime transactionDate,
             TransactionEnums.TransactionKeys transactionType,
@@ -83,6 +88,7 @@ public class DebitTransaction : Transaction
             isCredit: false,
             item,
             payerPayeeId,
+            refTransactionId,
             tags,
             transactionDate,
             transactionType,
@@ -102,6 +108,7 @@ public class DebitTransaction : Transaction
         string extTransactionId,
         IEnumerable<TransactionItem> items,
         PayerPayeeId payerPayeeId,
+        RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType,
@@ -117,6 +124,7 @@ public class DebitTransaction : Transaction
             isCredit: false,
             items,
             payerPayeeId,
+            refTransactionId,
             tags,
             transactionDate,
             transactionType,
@@ -131,6 +139,7 @@ public class DebitTransaction : Transaction
         Money amount,
         string description,
         PayerPayeeId payerPayeeId,
+        RefTransactionId refTransactionId,
         DateTime transactionDate,
         List<string>? tags = null,
         string extTransactionId = "")
@@ -142,19 +151,21 @@ public class DebitTransaction : Transaction
             extTransactionId,
             TransactionItem.New(amount, CategoryId.Empty, SubCategoryId.Empty, description),
             payerPayeeId,
+            refTransactionId,
             tags,
             transactionDate,
             TransactionEnums.TransactionKeys.WITHDRAWAL);
     }
 
     // Payment may be its own transaction type in the future
-    // As a payment can go from one ofxAccount to another
+    // As a payment can go from one Account to another
     public static DebitTransaction NewPayment(
         UserId userId,
         AccountId accountId,
         string description,
         TransactionItem item,
         PayerPayeeId payerPayeeId,
+        RefTransactionId refTransactionId,
         DateTime transactionDate,
         IEnumerable<string>? tags = null,
         string extTransactionId = "")
@@ -166,6 +177,7 @@ public class DebitTransaction : Transaction
             extTransactionId,
             item,
             payerPayeeId,
+            refTransactionId,
             tags,
             transactionDate,
             TransactionEnums.TransactionKeys.PAYMENT_OUT);
@@ -179,6 +191,7 @@ public class DebitTransaction : Transaction
         string extTransactionId,
         TransactionItem item,
         PayerPayeeId payerPayeeId,
+        RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType,
@@ -194,6 +207,7 @@ public class DebitTransaction : Transaction
             extTransactionId,
             item,
             payerPayeeId,
+            refTransactionId,
             tags,
             transactionDate,
             transactionType,

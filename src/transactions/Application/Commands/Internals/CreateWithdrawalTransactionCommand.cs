@@ -2,7 +2,7 @@ using FluentResults;
 using FluentValidation;
 using Habanerio.Xpnss.Shared.DTOs;
 using Habanerio.Xpnss.Shared.IntegrationEvents.Transactions;
-using Habanerio.Xpnss.Shared.Requests;
+using Habanerio.Xpnss.Shared.Requests.Transactions;
 using Habanerio.Xpnss.Shared.ValueObjects;
 using Habanerio.Xpnss.Transactions.Application.Mappers;
 using Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
@@ -49,6 +49,7 @@ internal sealed class CreateWithdrawalTransactionCommandHandler(
             new Money(transactionRequest.TotalAmount),
             transactionRequest.Description,
             new PayerPayeeId(transactionRequest.PayerPayee.Id),
+            new RefTransactionId(transactionRequest.RefTransactionId),
             transactionRequest.TransactionDate,
             transactionRequest.Tags,
             transactionRequest.ExtTransactionId);
@@ -63,6 +64,9 @@ internal sealed class CreateWithdrawalTransactionCommandHandler(
             throw new InvalidCastException($"{nameof(CreateWithdrawalTransactionCommandHandler)}: " +
                 $"Failed to map {nameof(DebitTransaction)} to {nameof(WithdrawalTransactionDto)}");
 
+        //TODO: Create a `WithdrawalTransactionCreatedIntegrationEvent`
+        // and try to update the account that the transaction was deposited into?
+        // Or should I just let the user do it?
         var transactionCreatedIntegrationEvent = new TransactionCreatedIntegrationEvent(
             transactionDto.Id,
             transactionDto.UserId,

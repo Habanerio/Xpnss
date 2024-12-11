@@ -2,9 +2,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Habanerio.Xpnss.Shared.Types;
 
-namespace Habanerio.Xpnss.Shared.Requests;
+namespace Habanerio.Xpnss.Shared.Requests.Transactions;
 
-public record CreateTransactionApiRequest : UserRequiredApiRequest
+public record CreateTransactionRequest : UserRequiredRequest
 {
     private DateTime _transactionDate;
 
@@ -18,6 +18,8 @@ public record CreateTransactionApiRequest : UserRequiredApiRequest
     public bool IsCredit { get; init; }
 
     public PayerPayeeApiRequest PayerPayee { get; init; } = new();
+
+    public string RefTransactionId { get; set; } = string.Empty;
 
     public List<string> Tags { get; init; } = [];
 
@@ -43,18 +45,18 @@ public record CreateTransactionApiRequest : UserRequiredApiRequest
 
 
     [JsonConstructor]
-    public CreateTransactionApiRequest() { }
+    public CreateTransactionRequest() { }
 
     /// <summary>
     /// JsonConstructor for the derived types
     /// </summary>
-    internal CreateTransactionApiRequest(bool isCredit, TransactionEnums.TransactionKeys transactionType)
+    internal CreateTransactionRequest(bool isCredit, TransactionEnums.TransactionKeys transactionType)
     {
         IsCredit = isCredit;
         TransactionType = transactionType;
     }
 
-    protected CreateTransactionApiRequest(
+    protected CreateTransactionRequest(
         string userId,
         TransactionEnums.TransactionKeys transactionType,
         string accountId,
@@ -62,8 +64,9 @@ public record CreateTransactionApiRequest : UserRequiredApiRequest
         string description,
         string extTransactionId,
         bool isCredit,
-        string payerPayeeName,
-        List<string>? tags,
+        PayerPayeeApiRequest payerPayee,
+        string refTransactionId,
+        IEnumerable<string>? tags,
         DateTime transactionDate)
     {
         UserId = userId;
@@ -72,11 +75,9 @@ public record CreateTransactionApiRequest : UserRequiredApiRequest
         Description = description;
         IsCredit = isCredit;
         ExtTransactionId = extTransactionId;
-        PayerPayee = new PayerPayeeApiRequest
-        {
-            Name = payerPayeeName
-        };
-        Tags = tags ?? [];
+        PayerPayee = payerPayee;
+        RefTransactionId = refTransactionId;
+        Tags = tags?.ToList() ?? [];
         TransactionDate = transactionDate;
         TransactionType = transactionType;
     }
@@ -85,23 +86,24 @@ public record CreateTransactionApiRequest : UserRequiredApiRequest
 #region - Credit Transactions -
 
 public record CreateCreditTransactionApiRequest :
-    CreateTransactionApiRequest
+    CreateTransactionRequest
 {
     [JsonConstructor]
-    protected CreateCreditTransactionApiRequest(TransactionEnums.TransactionKeys transactionType) :
+    public CreateCreditTransactionApiRequest(TransactionEnums.TransactionKeys transactionType) :
         base(true, transactionType)
     { }
 
-    protected CreateCreditTransactionApiRequest(
+    public CreateCreditTransactionApiRequest(
         string userId,
         TransactionEnums.TransactionKeys transactionType,
         string accountId,
         decimal amount,
         string description,
-        string payerPayeeName,
+        PayerPayeeApiRequest payerPayee,
         DateTime transactionDate,
-        List<string>? tags = null,
-        string extTransactionId = "") :
+        IEnumerable<string>? tags = null,
+        string extTransactionId = "",
+        string refTransactionId = "") :
         base(
             userId,
             transactionType,
@@ -110,7 +112,8 @@ public record CreateCreditTransactionApiRequest :
             description,
             extTransactionId,
             true,
-            payerPayeeName,
+            payerPayee,
+            refTransactionId,
             tags,
             transactionDate)
     { }
@@ -133,72 +136,31 @@ public sealed record CreateDepositTransactionApiRequest :
         string accountId,
         decimal amount,
         string description,
-        string payerPayeeName,
+        PayerPayeeApiRequest depositFrom,
         DateTime transactionDate,
-        List<string>? tags = null,
-        string extTransactionId = "") :
+        IEnumerable<string>? tags = null,
+        string extTransactionId = "",
+        string refTransactionId = "") :
         base(
             userId,
             TransactionEnums.TransactionKeys.DEPOSIT,
             accountId,
             amount,
             description,
-            payerPayeeName,
+            depositFrom,
             transactionDate,
             tags,
-            extTransactionId)
+            extTransactionId,
+            refTransactionId)
     { }
 }
-
-/// <summary>
-/// For refunds where there is no purchase transaction to refund against
-/// </summary>
-//public sealed record CreateRefundTransactionApiRequest :
-//    CreateCreditTransactionApiRequest
-//{
-//    [JsonConstructor]
-//    public CreateRefundTransactionApiRequest() :
-//        base(TransactionEnums.TransactionKeys.DEPOSIT)
-//    { }
-
-
-//    public CreateRefundTransactionApiRequest(
-//        string userId,
-//        string accountId,
-//        decimal amount,
-//        string description,
-//        string payerPayeeName,
-//        DateTime transactionDate,
-//        List<string>? tags = null,
-//        string extTransactionId = "") :
-//        base(
-//            userId,
-//            TransactionEnums.TransactionKeys.REFUND_REIMBURSEMENT,
-//            accountId,
-//            amount,
-//            description,
-//            payerPayeeName,
-//            transactionDate,
-//            tags,
-//            extTransactionId)
-//    { }
-//}
-
-///// <summary>
-///// For refunds where there is a purchase transaction to refund against
-///// </summary>
-//public sealed record CreateRefundPurchaseTransactionApiRequest(
-//    string PurchaseTransactionId,
-//    List<TransactionApiRequestItem> Items) :
-//    CreateCreditTransactionApiRequest(TransactionEnums.TransactionKeys.REFUND_REIMBURSEMENT)
-//{ }
 
 #endregion // Credit Transactions
 
 #region - Debit Transactions -
 
 public abstract record CreateDebitTransactionApiRequest :
-    CreateTransactionApiRequest
+    CreateTransactionRequest
 {
     protected CreateDebitTransactionApiRequest(TransactionEnums.TransactionKeys transactionType) :
         base(false, transactionType)
@@ -210,10 +172,11 @@ public abstract record CreateDebitTransactionApiRequest :
         string accountId,
         decimal amount,
         string description,
-        string payerPayeeName,
+        PayerPayeeApiRequest payerPayee,
         DateTime transactionDate,
         List<string>? tags = null,
-        string extTransactionId = "") :
+        string extTransactionId = "",
+        string refTransactionId = "") :
         base(
             userId,
             transactionType,
@@ -222,7 +185,8 @@ public abstract record CreateDebitTransactionApiRequest :
             description,
             extTransactionId,
             false,
-            payerPayeeName,
+            payerPayee,
+            refTransactionId,
             tags,
             transactionDate)
     { }
@@ -247,8 +211,9 @@ public sealed record CreatePurchaseTransactionApiRequest :
         string description,
         DateTime transactionDate,
         List<TransactionApiRequestItem> items,
-        List<string>? tags = null,
-        string extTransactionId = "") :
+        IEnumerable<string>? tags = null,
+        string extTransactionId = "",
+        string refTransactionId = "") :
         base(TransactionEnums.TransactionKeys.PURCHASE)
     {
         UserId = userId;
@@ -258,7 +223,8 @@ public sealed record CreatePurchaseTransactionApiRequest :
         ExtTransactionId = extTransactionId;
         TransactionDate = transactionDate;
         Items = items;
-        Tags = tags ?? [];
+        RefTransactionId = refTransactionId;
+        Tags = tags?.ToList() ?? [];
         TotalAmount = items.Sum(i => i.Amount);
     }
 }
@@ -282,21 +248,23 @@ public sealed record CreateWithdrawalTransactionApiRequest :
         string description,
         DateTime transactionDate,
         List<string>? tags = null,
-        string extTransactionId = "") :
+        string extTransactionId = "",
+        string refTransactionId = "") :
         base(
             userId,
             TransactionEnums.TransactionKeys.WITHDRAWAL,
             accountId,
             amount,
             description,
-            cashAccountId,
+            new PayerPayeeApiRequest() { Id = cashAccountId },
             transactionDate,
             tags,
-            extTransactionId)
+            extTransactionId,
+            refTransactionId)
     {
         if (string.IsNullOrWhiteSpace(cashAccountId))
             throw new ArgumentException("Cash Account Id is required for Withdrawal Transactions. " +
-                                        "The money has to go somewhere");
+                "The money has to go somewhere");
     }
 }
 

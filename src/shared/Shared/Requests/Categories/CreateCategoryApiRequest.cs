@@ -4,7 +4,7 @@ using Habanerio.Xpnss.Shared.Types;
 
 namespace Habanerio.Xpnss.Shared.Requests.Categories;
 
-public sealed record CreateCategoryApiRequest : UserRequiredApiRequest
+public sealed record CreateCategoryApiRequest : UserRequiredRequest
 {
     public string Name { get; set; } = string.Empty;
 

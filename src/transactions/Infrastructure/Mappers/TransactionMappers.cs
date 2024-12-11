@@ -28,11 +28,12 @@ internal static partial class InfrastructureMapper
         var transaction = CreditTransaction.Load(
             new TransactionId(document.Id.ToString()),
             new UserId(document.UserId),
-            new AccountId(document.AccountId.ToString()),
+            new AccountId(document.AccountId),
             document.Description,
             document.ExtTransactionId,
             transactionItem,
             new PayerPayeeId(document.PayerPayeeId),
+            new RefTransactionId(document.RefTransactionId),
             document.Tags,
             document.TransactionDate,
             document.TransactionType,
@@ -58,15 +59,16 @@ internal static partial class InfrastructureMapper
         var purchaseItems = Map(purchaseDocument.Items);
 
         var transaction = PurchaseTransaction.Load(
-            new TransactionId(purchaseDocument.Id.ToString()),
+            new TransactionId(purchaseDocument.Id),
             new UserId(purchaseDocument.UserId),
-            new AccountId(purchaseDocument.AccountId.ToString()),
+            new AccountId(purchaseDocument.AccountId),
             purchaseDocument.Description,
-            new PayerPayeeId(purchaseDocument.PayerPayeeId?.ToString()),
-            purchaseItems,
-            purchaseDocument.TransactionDate,
-            purchaseDocument.Tags,
             purchaseDocument.ExtTransactionId,
+            purchaseItems,
+            new PayerPayeeId(purchaseDocument.PayerPayeeId),
+            new RefTransactionId(purchaseDocument.RefTransactionId),
+            purchaseDocument.Tags,
+            purchaseDocument.TransactionDate,
             purchaseDocument.DateCreated,
             purchaseDocument.DateUpdated,
             purchaseDocument.DateDeleted);
@@ -127,9 +129,6 @@ internal static partial class InfrastructureMapper
     public static IEnumerable<TransactionPaymentItem> Map(IEnumerable<TransactionDocumentPayment> documents)
         => documents.Select(Map).Where(t => t is not null).Select(t => t!);
 
-
-
-
     public static TransactionDocument? Map(Transaction? transaction)
     {
         if (transaction is null)
@@ -173,6 +172,7 @@ internal static partial class InfrastructureMapper
             IsDeleted = transaction.IsDeleted,
             Items = Map(transaction.Items),
             PayerPayeeId = transaction.PayerPayeeId,
+            RefTransactionId = transaction.RefTransactionId,
             //PayerPayeeId = !string.IsNullOrWhiteSpace(transaction.PayerPayeeId) ?
             //    ObjectId.Parse(transaction.PayerPayeeId.Value) :
             //    null,
@@ -212,6 +212,7 @@ internal static partial class InfrastructureMapper
             IsDeleted = transaction.IsDeleted,
             Items = Map(transaction.Items),
             PayerPayeeId = transaction.PayerPayeeId,
+            RefTransactionId = transaction.RefTransactionId,
             //PayerPayeeId = !string.IsNullOrWhiteSpace(transaction.PayerPayeeId) ?
             //    ObjectId.Parse(transaction.PayerPayeeId.Value) :
             //    null,
@@ -255,6 +256,7 @@ internal static partial class InfrastructureMapper
             //    ObjectId.Parse(transaction.PayerPayeeId.Value) :
             //    null,
             Payments = Map(transaction.Payments).ToList(),
+            RefTransactionId = transaction.RefTransactionId,
             Tags = transaction.Tags.ToList(),
             TransactionDate = transaction.TransactionDate,
 

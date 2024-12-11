@@ -1,14 +1,14 @@
 using FluentResults;
 using FluentValidation;
 using Habanerio.Xpnss.Shared.DTOs;
-using Habanerio.Xpnss.Shared.Requests;
+using Habanerio.Xpnss.Shared.Requests.Transactions;
 using Habanerio.Xpnss.Transactions.Application.Mappers;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using MediatR;
 
 namespace Habanerio.Xpnss.Transactions.Application.Queries.GetTransactions;
 
-public sealed record GetTransactionsQuery(SearchTransactionsApiRequest Request) :
+public sealed record GetTransactionsQuery(SearchTransactionsRequest Request) :
     ITransactionsQuery<Result<IEnumerable<TransactionDto>>>;
 
 public class GetTransactionsHandler(ITransactionsRepository repository) :

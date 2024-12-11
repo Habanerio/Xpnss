@@ -1,14 +1,16 @@
 using FluentResults;
 using FluentValidation;
 using Habanerio.Xpnss.Shared.DTOs;
-using Habanerio.Xpnss.Shared.Requests;
+using Habanerio.Xpnss.Shared.Requests.Transactions;
 using Habanerio.Xpnss.Transactions.Application.Commands.Internals;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using MediatR;
 
 namespace Habanerio.Xpnss.Transactions.Application.Commands;
 
-public sealed record CreateTransactionCommand(CreateTransactionApiRequest Request) :
+public sealed record CreateTransactionCommand(
+    string UserId,
+    CreateTransactionRequest Request) :
     ITransactionsCommand<Result<TransactionDto>>;
 
 /// <summary>
@@ -18,13 +20,13 @@ public sealed record CreateTransactionCommand(CreateTransactionApiRequest Reques
 public sealed class CreateTransactionCommandHandler(IMediator mediator) :
     IRequestHandler<CreateTransactionCommand, Result<TransactionDto>>
 {
-    private readonly IMediator _mediator = mediator ??
-        throw new ArgumentNullException(nameof(mediator));
-
     public async Task<Result<TransactionDto>> Handle(
         CreateTransactionCommand command,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(mediator);
+
         var validator = new Validator();
 
         var validationResult = await validator.ValidateAsync(command, cancellationToken);
@@ -40,18 +42,6 @@ public sealed class CreateTransactionCommandHandler(IMediator mediator) :
                 <CreatePurchaseTransactionCommand, PurchaseTransactionDto>(
                 new CreatePurchaseTransactionCommand(purchaseRequest),
                 cancellationToken);
-
-            //var specificCommand = new CreatePurchaseTransactionCommand(purchaseRequest);
-            //var result = await _mediator.Send(specificCommand, cancellationToken);
-
-            //if (result.IsFailed || result.ValueOrDefault is null)
-            //    return Result.Fail(result.Errors?[0].Message ??
-            //                       "Failed to create the purchase transaction");
-
-            //transactionDto = result.ValueOrDefault;
-
-            //if (transactionDto is null)
-            //    throw new InvalidOperationException();
         }
         else if (command.Request is CreateDepositTransactionApiRequest depositRequest)
         {
@@ -59,18 +49,6 @@ public sealed class CreateTransactionCommandHandler(IMediator mediator) :
                 <CreateDepositTransactionCommand, DepositTransactionDto>(
                 new CreateDepositTransactionCommand(depositRequest),
                 cancellationToken);
-
-            //var specificCommand = new CreateDepositTransactionCommand(depositRequest);
-            //var result = await _mediator.Send(specificCommand, cancellationToken);
-
-            //if (result.IsFailed || result.ValueOrDefault is null)
-            //    return Result.Fail(result.Errors?[0].Message ??
-            //                       "Failed to create the deposit transaction");
-
-            //transactionDto = result.ValueOrDefault;
-
-            //if (transactionDto is null)
-            //    throw new InvalidOperationException();
         }
         else if (command.Request is CreateWithdrawalTransactionApiRequest withdrawalRequest)
         {
@@ -95,7 +73,7 @@ public sealed class CreateTransactionCommandHandler(IMediator mediator) :
         where TCommand : ITransactionsCommand<Result<TDto>>
         where TDto : TransactionDto
     {
-        var result = await _mediator.Send(command, cancellationToken);
+        var result = await mediator.Send(command, cancellationToken);
 
         if (result.IsFailed || result.ValueOrDefault is null)
             return Result.Fail(result.Errors?[0].Message ??

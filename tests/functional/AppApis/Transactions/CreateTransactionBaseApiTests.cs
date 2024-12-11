@@ -5,6 +5,7 @@ using Habanerio.Xpnss.Accounts.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.Apis.App.AppApis;
 using Habanerio.Xpnss.Shared.DTOs;
 using Habanerio.Xpnss.Shared.Requests;
+using Habanerio.Xpnss.Shared.Requests.Transactions;
 using Habanerio.Xpnss.Shared.Types;
 using Habanerio.Xpnss.Totals.Infrastructure.Data.Documents;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -28,7 +29,7 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
     protected async Task AssertTransactionAsync(
         ObjectId testUserId,
         AccountDocument? originalAccountDoc,
-        CreateTransactionApiRequest originalRequest,
+        CreateTransactionRequest originalRequest,
         TransactionEnums.TransactionKeys transactionType)
     {
         Assert.NotNull(originalRequest);
@@ -108,7 +109,7 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
         AccountDocument? originalAccountDoc,
         List<MonthlyTotalDocument>? originalMonthlyTotalDocs,
         TDto actualTransactionDto)
-        where TRequest : CreateTransactionApiRequest where TDto : TransactionDto
+        where TRequest : CreateTransactionRequest where TDto : TransactionDto
     {
         Assert.NotNull(actualTransactionDto);
 
@@ -210,7 +211,7 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
 
     protected static void AssertAccount(
         ObjectId testUserId,
-        CreateTransactionApiRequest transactionRequest,
+        CreateTransactionRequest transactionRequest,
         AccountDocument? originalAccountDoc,
         AccountDocument? updatedAccountDoc,
         TransactionDto actualTransactionDto)
@@ -306,7 +307,7 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
     /// <param name="createTransactionRequest">The apiRequest that created the transaction</param>
     /// <param name="actualTransactionDto">The transaction's dto</param>
     protected static void AssertPayerPayee(
-        CreateTransactionApiRequest createTransactionRequest,
+        CreateTransactionRequest createTransactionRequest,
         TransactionDto actualTransactionDto)
     {
 
@@ -370,10 +371,10 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
     private async Task<TDto> GetCreateTransactionFromApi<TRequest, TDto>(
         ObjectId userId,
         TRequest createTransactionRequest) where TDto :
-        TransactionDto where TRequest : CreateTransactionApiRequest
+        TransactionDto where TRequest : CreateTransactionRequest
     {
         // Act
-        var createTransactionResponse = await HttpClient.PostAsJsonAsync(
+        var createTransactionResponse = await XpnssApiClient.PostAsJsonAsync(
             ENDPOINTS_TRANSACTIONS_CREATE_TRANSACTION
                 .Replace("{userId}", userId.ToString()),
             createTransactionRequest);

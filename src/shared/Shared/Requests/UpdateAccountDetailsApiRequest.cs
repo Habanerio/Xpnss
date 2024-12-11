@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Habanerio.Xpnss.Shared.Requests;
 
-public record UpdateAccountDetailsApiRequest : UserRequiredApiRequest
+public record UpdateAccountDetailsApiRequest : UserRequiredRequest
 {
     public string AccountId { get; init; }
 

@@ -15,6 +15,7 @@ public class CreditTransaction : Transaction
             string extTransactionId,
             TransactionItem item,
             PayerPayeeId payerPayeeId,
+            RefTransactionId refTransactionId,
             IEnumerable<string>? tags,
             DateTime transactionDate,
             TransactionEnums.TransactionKeys transactionType) :
@@ -26,6 +27,7 @@ public class CreditTransaction : Transaction
             isCredit: true,
             item,
             payerPayeeId,
+            refTransactionId,
             tags,
             transactionDate,
             transactionType)
@@ -68,6 +70,7 @@ public class CreditTransaction : Transaction
             string extTransactionId,
             TransactionItem item,
             PayerPayeeId payerPayeeId,
+            RefTransactionId refTransactionId,
             IEnumerable<string>? tags,
             DateTime transactionDate,
             TransactionEnums.TransactionKeys transactionType,
@@ -83,6 +86,7 @@ public class CreditTransaction : Transaction
             isCredit: true,
             item,
             payerPayeeId,
+            refTransactionId,
             tags,
             transactionDate,
             transactionType,
@@ -96,23 +100,28 @@ public class CreditTransaction : Transaction
         AccountId accountId,
         Money amount,
         string description,
+        string extTransactionId,
         PayerPayeeId payerPayeeId,
-        DateTime transactionDate,
-        IEnumerable<string>? tags = null,
-        string extTransactionId = "")
+        RefTransactionId refTransactionId,
+        IEnumerable<string>? tags,
+        DateTime transactionDate)
     {
         return new CreditTransaction(
             userId,
             accountId,
             description,
             extTransactionId,
-            TransactionItem.New(new Money(amount), CategoryId.Empty, SubCategoryId.Empty, description),
+            TransactionItem.New(
+                new Money(amount),
+                CategoryId.Empty,
+                SubCategoryId.Empty,
+                description),
             payerPayeeId,
+            refTransactionId,
             tags,
             transactionDate,
             TransactionEnums.TransactionKeys.DEPOSIT);
     }
-
 
 
     public static CreditTransaction Load(
@@ -123,6 +132,7 @@ public class CreditTransaction : Transaction
         string extTransactionId,
         TransactionItem item,
         PayerPayeeId payerPayeeId,
+        RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType,
@@ -138,6 +148,7 @@ public class CreditTransaction : Transaction
             extTransactionId,
             item,
             payerPayeeId,
+            refTransactionId,
             tags,
             transactionDate,
             transactionType,

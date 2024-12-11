@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using Habanerio.Xpnss.Shared.DTOs;
-using Habanerio.Xpnss.Shared.Requests;
+using Habanerio.Xpnss.Shared.Requests.Transactions;
 using Habanerio.Xpnss.Shared.Types;
 
 namespace Habanerio.Xpnss.Transactions.Application;
@@ -15,7 +15,7 @@ public class TransactionDtoJsonConverter : JsonConverter<TransactionDto?>
     public override TransactionDto? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         using var jsonDoc = JsonDocument.ParseValue(ref reader);
-        if (!jsonDoc.RootElement.TryGetProperty(nameof(CreateTransactionApiRequest.TransactionType), out var typeProp))
+        if (!jsonDoc.RootElement.TryGetProperty(nameof(CreateTransactionRequest.TransactionType), out var typeProp))
         {
             throw new JsonException();
         }
@@ -23,7 +23,6 @@ public class TransactionDtoJsonConverter : JsonConverter<TransactionDto?>
         var type = typeProp.GetString();
         switch (type)
         {
-
             case nameof(TransactionEnums.TransactionKeys.DEPOSIT):
                 var deposit =
                     JsonSerializer.Deserialize<DepositTransactionDto>(
@@ -52,19 +51,22 @@ public class TransactionDtoJsonConverter : JsonConverter<TransactionDto?>
         }
     }
 
-    public override void Write(Utf8JsonWriter writer, TransactionDto value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, TransactionDto? value, JsonSerializerOptions options)
     {
-        var type = value.GetType();
-        JsonSerializer.Serialize(writer, value, type, options);
+        var type = value?.GetType();
+        if (type != null)
+        {
+            JsonSerializer.Serialize(writer, value, type, options);
+        }
     }
 }
 
 /// <summary>
 /// Used to deserialize the CreateTransactionRequest from the caller (external app), to the correct type for the Api endpoint
 /// </summary>
-public class CreateTransactionRequestsJsonConverter : JsonConverter<CreateTransactionApiRequest?>
+public class CreateTransactionRequestsJsonConverter : JsonConverter<CreateTransactionRequest?>
 {
-    public override CreateTransactionApiRequest? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override CreateTransactionRequest? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         using var jsonDoc = JsonDocument.ParseValue(ref reader);
 
@@ -75,7 +77,7 @@ public class CreateTransactionRequestsJsonConverter : JsonConverter<CreateTransa
         //    throw new JsonException();
         //}
 
-        if (!jsonDoc.RootElement.TryGetProperty(nameof(CreateTransactionApiRequest.TransactionType), out var typeProp))
+        if (!jsonDoc.RootElement.TryGetProperty(nameof(CreateTransactionRequest.TransactionType), out var typeProp))
         {
             throw new JsonException();
         }
@@ -115,7 +117,7 @@ public class CreateTransactionRequestsJsonConverter : JsonConverter<CreateTransa
         }
     }
 
-    public override void Write(Utf8JsonWriter writer, CreateTransactionApiRequest? value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, CreateTransactionRequest? value, JsonSerializerOptions options)
     {
         var type = value.GetType();
         JsonSerializer.Serialize(writer, value, type, options);

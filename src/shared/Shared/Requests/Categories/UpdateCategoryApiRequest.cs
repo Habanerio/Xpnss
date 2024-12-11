@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Habanerio.Xpnss.Shared.Requests.Categories;
 
-public sealed record UpdateCategoryApiRequest : UserRequiredApiRequest
+public sealed record UpdateCategoryApiRequest : UserRequiredRequest
 {
     public string Id { get; set; } = "";
 
@@ -31,7 +31,7 @@ public sealed record UpdateCategoryApiRequest : UserRequiredApiRequest
     }
 }
 
-public sealed record UpdateSubCategoryApiRequest : UserRequiredApiRequest
+public sealed record UpdateSubCategoryApiRequest : UserRequiredRequest
 {
     public string Id { get; set; } = "";
 

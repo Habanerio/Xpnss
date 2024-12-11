@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Habanerio.Xpnss.Shared.Requests;
+namespace Habanerio.Xpnss.Shared.Requests.Transactions;
 
-public record SearchTransactionsApiRequest
+public record SearchTransactionsRequest
 {
     [Required]
     public string UserId { get; set; }
@@ -20,10 +20,10 @@ public record SearchTransactionsApiRequest
     public string TimeZone { get; set; } = string.Empty;
 
     [JsonConstructor]
-    public SearchTransactionsApiRequest() { }
+    public SearchTransactionsRequest() { }
 
 
-    public SearchTransactionsApiRequest(string userId, string accountId)
+    public SearchTransactionsRequest(string userId, string accountId)
     {
         UserId = userId;
         AccountId = accountId;

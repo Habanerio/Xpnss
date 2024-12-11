@@ -30,7 +30,7 @@ public class CreateCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
             newCategoryDescription);
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync(
+        var response = await XpnssApiClient.PostAsJsonAsync(
             ENDPOINTS_CATEGORIES_CREATE_CATEGORY
                 .Replace("{userId}", userId.ToString()),
             request);
@@ -89,7 +89,7 @@ public class CreateCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
             newCategoryDescription);
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync(
+        var response = await XpnssApiClient.PostAsJsonAsync(
             ENDPOINTS_CATEGORIES_CREATE_CATEGORY
                 .Replace("{userId}", userId.ToString()),
             request);

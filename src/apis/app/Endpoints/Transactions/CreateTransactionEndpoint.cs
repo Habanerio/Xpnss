@@ -4,6 +4,7 @@ using Habanerio.Xpnss.PayerPayees.Application.Commands.CreatePayerPayee;
 using Habanerio.Xpnss.PayerPayees.Domain.Interfaces;
 using Habanerio.Xpnss.Shared.DTOs;
 using Habanerio.Xpnss.Shared.Requests;
+using Habanerio.Xpnss.Shared.Requests.Transactions;
 using Habanerio.Xpnss.Transactions.Application.Commands;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +20,7 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
             app.MapPost("/api/v1/users/{userId}/transactions/",
                     async (
                         [FromRoute] string userId,
-                        [FromBody] CreateTransactionApiRequest request,
+                        [FromBody] CreateTransactionRequest request,
                         [FromServices] ITransactionsService transactionsService,
                         [FromServices] IPayerPayeesService payerPayeesService,
                         [FromServices] ILogger<CreateTransactionEndpoint> logger,
@@ -39,7 +40,7 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
 
     public static async Task<IResult> HandleAsync(
         string userId,
-        CreateTransactionApiRequest request,
+        CreateTransactionRequest request,
         ITransactionsService transactionsService,
         IPayerPayeesService payerPayeesService,
         ILogger<CreateTransactionEndpoint> logger,
@@ -84,7 +85,7 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
             }
         }
 
-        var command = new CreateTransactionCommand(request);
+        var command = new CreateTransactionCommand(userId, request);
 
         try
         {

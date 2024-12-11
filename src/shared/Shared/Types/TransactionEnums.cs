@@ -29,23 +29,23 @@ public static class TransactionEnums
         /// This should be from the source of the transfer, and not the destination
         /// </summary>
         [JsonPropertyName("Balance Transfer")]
-        [Display(Name = "Balance Transfer", Description = "Specific type of transfer between two accounts. Usually from a Credit Card to some other ofxAccount")]
+        [Display(Name = "Balance Transfer", Description = "Specific type of transfer between two accounts. Usually from a Credit Card to some other Account")]
         BALANCE_TRANSFER,
 
         // Not sure if this is needed? It's just a Deposit?
         [JsonPropertyName("Balance Transfer In")]
-        [Display(Name = "Balance Transfer In", Description = "Money transferred into the ofxAccount from another ofxAccount.")]
+        [Display(Name = "Balance Transfer In", Description = "Money transferred into the Account from another Account.")]
         BALANCE_TRANSFER_IN,
 
         [JsonPropertyName("Balance Transfer Out")]
-        [Display(Name = "Balance Transfer Out", Description = "Money transferred out of the ofxAccount to another ofxAccount.")]
+        [Display(Name = "Balance Transfer Out", Description = "Money transferred out of the Account to another Account.")]
         BALANCE_TRANSFER_OUT,
 
 
         ///// <summary>
-        ///// Bonuses credited to the ofxAccount (e.g., for opening an ofxAccount).
+        ///// Bonuses credited to the Account (e.g., for opening an Account).
         ///// </summary>
-        //[Display(Name = "Bonus", Description = "Bonuses credited to the ofxAccount (e.g., for opening an ofxAccount).")]
+        //[Display(Name = "Bonus", Description = "Bonuses credited to the Account (e.g., for opening an Account).")]
         //BONUS,
 
         // Just a withdrawal?
@@ -61,30 +61,30 @@ public static class TransactionEnums
         //CREDIT,
 
         [JsonPropertyName("Deposit")]
-        [Display(Name = "Deposit", Description = "Adding money to the ofxAccount (e.g., paycheck, cash deposit).")]
+        [Display(Name = "Deposit", Description = "Adding money to the Account (e.g., paycheck, cash deposit).")]
         DEPOSIT,
 
         [JsonPropertyName("Dividend")]
-        [Display(Name = "Dividend Received", Description = "Dividend payments credited to the ofxAccount.")]
+        [Display(Name = "Dividend Received", Description = "Dividend payments credited to the Account.")]
         DIVIDEND,
 
         /// <summary>
-        /// General term for charges applied to the ofxAccount (e.g., late fees).
+        /// General term for charges applied to the Account (e.g., late fees).
         /// </summary>
         [JsonPropertyName("Fee")]
-        [Display(Name = "Fee", Description = "General term for charges applied to the ofxAccount (e.g., late fees).")]
+        [Display(Name = "Fee", Description = "General term for charges applied to the Account (e.g., late fees).")]
         CHARGE_FEE,
 
         // Can this be a Deposit on a Cash Account, and assigned to an "Income" Category?
         //[Display(Name = "Income", Description = "Money earned from doing work (or selling something)")]
         //INCOME,
         [JsonPropertyName("Interest Charge")]
-        [Display(Name = "Interest Charge", Description = "Interest charges to an ofxAccount such as a Credit Card, Line of Credit, Loan, ...")]
+        [Display(Name = "Interest Charge", Description = "Interest charges to an Account such as a Credit Card, Line of Credit, Loan, ...")]
         INTEREST_CHARGE,
 
         // Can this be a Deposit on a Savings or Investment Account, and assigned to a "Interest Earned" Category?
         [JsonPropertyName("Interest Earned")]
-        [Display(Description = "Interest credited to the ofxAccount (e.g., savings or checking ofxAccount).")]
+        [Display(Description = "Interest credited to the Account (e.g., savings or checking Account).")]
         INTEREST_EARNED,
 
         [JsonPropertyName("Other ???")]
@@ -99,11 +99,11 @@ public static class TransactionEnums
         PAYMENT,
 
         [JsonPropertyName("Payment In")]
-        [Display(Name = "Payment In", Description = "A payment made to an ofxAccount")]
+        [Display(Name = "Payment In", Description = "A payment made to an Account")]
         PAYMENT_IN,
 
         [JsonPropertyName("Payment Out")]
-        [Display(Name = "Payment Out", Description = "A payment made from an ofxAccount")]
+        [Display(Name = "Payment Out", Description = "A payment made from an Account")]
         PAYMENT_OUT,
 
         [JsonPropertyName("Purchase")]
@@ -118,17 +118,17 @@ public static class TransactionEnums
         /// This should be from the source of the transfer, and not the destination
         /// </summary>
         [JsonPropertyName("Transfer")]
-        [Display(Name = "Transfer", Description = "The action the user would take to Transfer Out of one ofxAccount and Transfer In to another ofxAccount")]
+        [Display(Name = "Transfer", Description = "The action the user would take to Transfer Out of one Account and Transfer In to another Account")]
         TRANSFER,
 
-        // This would be the actual Transfer Transaction on the ofxAccount that is receiving
+        // This would be the actual Transfer Transaction on the Account that is receiving
         [JsonPropertyName("Transfer In")]
-        [Display(Name = "Transfer In", Description = "Money transferred into the ofxAccount from another ofxAccount.")]
+        [Display(Name = "Transfer In", Description = "Money transferred into the Account from another Account.")]
         TRANSFER_IN,
 
-        // This would be the actual Transfer Transaction on the ofxAccount that is paying
+        // This would be the actual Transfer Transaction on the Account that is paying
         [JsonPropertyName("Transfer Out")]
-        [Display(Name = "Transfer Out", Description = "Money transferred out of the ofxAccount to another ofxAccount.")]
+        [Display(Name = "Transfer Out", Description = "Money transferred out of the Account to another Account.")]
         TRANSFER_OUT,
 
         /// <summary>
@@ -136,7 +136,7 @@ public static class TransactionEnums
         /// The destination (if one is provided) would be a deposit (to Cash/Wallet).
         /// </summary>
         [JsonPropertyName("Withdrawal")]
-        [Display(Description = "Taking money out of the ofxAccount (e.g., ATM or cash withdrawal).")]
+        [Display(Description = "Taking money out of the Account (e.g., ATM or cash withdrawal).")]
         WITHDRAWAL,
     }
 
@@ -146,7 +146,10 @@ public static class TransactionEnums
             .ToDictionary(k => (int)k, v => v.ToString().Replace("_", " "));
     }
 
-    public static IReadOnlyCollection<TransactionKeys> CreditTransactionKeys => new[]
+    /// <summary>
+    /// All Credit Transaction Keys that are available in the system
+    /// </summary>
+    public static IReadOnlyCollection<TransactionKeys> AllCreditTransactionKeys => new[]
     {
         TransactionKeys.ADJUSTMENT_CREDIT,
         TransactionKeys.BALANCE_TRANSFER_IN,
@@ -158,7 +161,10 @@ public static class TransactionEnums
         TransactionKeys.TRANSFER_IN,
     };
 
-    public static IReadOnlyCollection<TransactionKeys> DebitTransactionKeys => new[]
+    /// <summary>
+    /// All Debit Transaction Keys that are available in the system.
+    /// </summary>
+    public static IReadOnlyCollection<TransactionKeys> AllDebitTransactionKeys => new[]
     {
         TransactionKeys.ADJUSTMENT_DEBIT,
         TransactionKeys.BALANCE_TRANSFER,
@@ -172,6 +178,24 @@ public static class TransactionEnums
         TransactionKeys.TRANSFER_OUT,
         TransactionKeys.WITHDRAWAL,
     };
+
+    /// <summary>
+    /// All Transaction Keys that are available to the end user.
+    /// </summary>
+    public static IReadOnlyCollection<TransactionKeys> AllUserTransactionKeys => new[]
+    {
+        TransactionKeys.BALANCE_TRANSFER,
+        TransactionKeys.CHARGE_FEE,
+        TransactionKeys.DEPOSIT,
+        TransactionKeys.DIVIDEND,
+        TransactionKeys.INTEREST_EARNED,
+        TransactionKeys.PAYMENT,
+        TransactionKeys.PURCHASE,
+        TransactionKeys.REFUND_REIMBURSEMENT,
+        TransactionKeys.TRANSFER,
+        TransactionKeys.WITHDRAWAL,
+    };
+
 
     public static IReadOnlyDictionary<int, string> CreditTransactionTypes => new Dictionary<int, string>()
     {
@@ -197,26 +221,41 @@ public static class TransactionEnums
         { (int) TransactionKeys.WITHDRAWAL, TransactionKeys.WITHDRAWAL.ToString().Replace("_", " ")}
     };
 
+    public static IReadOnlyDictionary<int, string> UserTransactionTypes => new Dictionary<int, string>()
+    {
+        { (int) TransactionKeys.BALANCE_TRANSFER, TransactionKeys.BALANCE_TRANSFER.ToString().Replace("_", " ")},
+        { (int) TransactionKeys.CHARGE_FEE, TransactionKeys.CHARGE_FEE.ToString().Replace("_", " ")},
+        { (int) TransactionKeys.DEPOSIT, TransactionKeys.DEPOSIT.ToString().Replace("_", " ")},
+        { (int) TransactionKeys.DIVIDEND, TransactionKeys.DIVIDEND.ToString().Replace("_", " ")},
+        { (int) TransactionKeys.INTEREST_EARNED, TransactionKeys.INTEREST_EARNED.ToString().Replace("_", " ")},
+        { (int) TransactionKeys.PAYMENT, TransactionKeys.PAYMENT.ToString().Replace("_", " ")},
+        { (int) TransactionKeys.PURCHASE, TransactionKeys.PURCHASE.ToString().Replace("_", " ")},
+        { (int) TransactionKeys.REFUND_REIMBURSEMENT, TransactionKeys.REFUND_REIMBURSEMENT.ToString().Replace("_", " ")},
+        { (int) TransactionKeys.TRANSFER, TransactionKeys.TRANSFER.ToString().Replace("_", " ")},
+        { (int) TransactionKeys.WITHDRAWAL, TransactionKeys.WITHDRAWAL.ToString().Replace("_", " ")}
+    };
+
     public static IReadOnlyCollection<TransactionKeys> AllTransactionKeys =>
         Enum.GetValues<TransactionKeys>();
 
     public static IReadOnlyCollection<string> AllTransactionKeyStrings() =>
         Enum.GetValues<TransactionKeys>().Select(t => t.ToString()).ToList();
 
-    public static IReadOnlyDictionary<TransactionKeys, bool> UserTransactionTypes =>
-        new Dictionary<TransactionKeys, bool>()
-        {
-            { TransactionKeys.BALANCE_TRANSFER, false },
-            { TransactionKeys.CHARGE_FEE, false },
-            { TransactionKeys.DEPOSIT, true },
-            { TransactionKeys.DIVIDEND, true },
-            { TransactionKeys.INTEREST_EARNED, true },
-            { TransactionKeys.PAYMENT, false },
-            { TransactionKeys.PURCHASE, false },
-            { TransactionKeys.REFUND_REIMBURSEMENT, true },
-            { TransactionKeys.TRANSFER, false },
-            { TransactionKeys.WITHDRAWAL, false }
-        };
+
+    //public static IReadOnlyDictionary<TransactionKeys, bool> UserTransactionTypes =>
+    //    new Dictionary<TransactionKeys, bool>()
+    //    {
+    //        { TransactionKeys.BALANCE_TRANSFER, false },
+    //        { TransactionKeys.CHARGE_FEE, false },
+    //        { TransactionKeys.DEPOSIT, true },
+    //        { TransactionKeys.DIVIDEND, true },
+    //        { TransactionKeys.INTEREST_EARNED, true },
+    //        { TransactionKeys.PAYMENT, false },
+    //        { TransactionKeys.PURCHASE, false },
+    //        { TransactionKeys.REFUND_REIMBURSEMENT, true },
+    //        { TransactionKeys.TRANSFER, false },
+    //        { TransactionKeys.WITHDRAWAL, false }
+    //    };
 
     //public static IReadOnlyCollection<TransactionKeys> UserTransactionTypes() =>
     //[
@@ -252,13 +291,13 @@ public static class TransactionEnums
     //];
 
     public static bool IsCreditTransaction(TransactionKeys transactionType) =>
-          CreditTransactionKeys.Contains(transactionType);
+          AllCreditTransactionKeys.Contains(transactionType);
 
     public static bool IsCreditTransaction(string transactionType) =>
-        CreditTransactionKeys.Any(t => t.ToString().Equals(transactionType));
+        AllCreditTransactionKeys.Any(t => t.ToString().Equals(transactionType));
 
     /// <summary>
-    /// Determines whether the ofxAccount should be credited or debited based on the ofxAccount type and transaction type.
+    /// Determines whether the Account should be credited or debited based on the Account type and transaction type.
     /// Credit Account: Balance increases with Credits (purchases) and decreases with Debits (deposits).
     /// Debit Account: Balance increases with Debits (deposits) and decreases with Credits (purchases).
     /// </summary>
@@ -267,11 +306,11 @@ public static class TransactionEnums
     {
         // DEPOSIT + CHECKING = Balance Increases (GOOD Thing)
         // PURCHASE + CREDIT CARD = Balance (owed) Increases (BAD Thing)
-        var check1 = isCreditAccount && !CreditTransactionKeys.Contains(transactionType);
+        var check1 = isCreditAccount && !AllCreditTransactionKeys.Contains(transactionType);
 
         // DEPOSIT + CREDIT CARD = Balance (owed) Decreases (GOOD Thing)
         // PURCHASE + CHECKING = Balance Decreases (BAD Thing)
-        var check2 = !isCreditAccount && CreditTransactionKeys.Contains(transactionType);
+        var check2 = !isCreditAccount && AllCreditTransactionKeys.Contains(transactionType);
 
         var rslt = check1 || check2;
 

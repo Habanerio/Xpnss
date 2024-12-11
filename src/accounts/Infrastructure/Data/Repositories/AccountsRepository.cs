@@ -26,7 +26,7 @@ public sealed class AccountsRepository(IMongoDatabase mongoDb) :
         if (!ObjectId.TryParse(account.UserId, out var userObjectId) ||
             userObjectId.Equals(ObjectId.Empty))
             return Result.Fail($"Invalid UserId: `{account.UserId}`");
-        //throw new InvalidOperationException($"Add Account: UserId is ({ofxAccount.UserId}) is invalid");
+        //throw new InvalidOperationException($"Add Account: UserId is ({Account.UserId}) is invalid");
 
         try
         {
@@ -43,7 +43,7 @@ public sealed class AccountsRepository(IMongoDatabase mongoDb) :
             if (newAccount is null)
                 return Result.Fail("Could not map the Account");
 
-            //HandleDomainEvents(ofxAccount);
+            //HandleDomainEvents(Account);
 
             return newAccount;
         }
@@ -171,7 +171,7 @@ public sealed class AccountsRepository(IMongoDatabase mongoDb) :
         if (saveCount == 0)
             return Result.Fail("Could not update the Account");
 
-        //HandleIntegrationEvents(ofxAccount);
+        //HandleIntegrationEvents(Account);
 
         return Result.Ok();
     }

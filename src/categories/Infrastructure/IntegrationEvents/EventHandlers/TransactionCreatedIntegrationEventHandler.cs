@@ -1,4 +1,4 @@
-////TODO: Need to know if it's a credit or debit transaction. Don't have that without querying for the ofxAccount first.
+////TODO: Need to know if it's a credit or debit transaction. Don't have that without querying for the Account first.
 
 //using Habanerio.Xpnss.Categories.Domain.Interfaces;
 //using Habanerio.Xpnss.Shared.Types;
@@ -57,7 +57,7 @@
 //        TransactionCreatedIntegrationEvent @event,
 //        CancellationToken cancellationToken = default)
 //    {
-//        var isCreditTransaction = TransactionEnums.DoesBalanceIncrease(ofxAccount.AccountType, @event.TransactionType);
+//        var isCreditTransaction = TransactionEnums.DoesBalanceIncrease(Account.AccountType, @event.TransactionType);
 
 //        var monthlyTotalResult = await _categoryMonthlyTotalsRepository
 //            .GetAsync(

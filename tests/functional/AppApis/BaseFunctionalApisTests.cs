@@ -27,7 +27,7 @@ public class BaseFunctionalApisTests : IDisposable
 
     protected const string TEST_USER_EMAIL = "test-user@test.com";
 
-    protected readonly HttpClient HttpClient;
+    protected readonly HttpClient XpnssApiClient;
 
     protected readonly IConfiguration Config;
 
@@ -44,8 +44,9 @@ public class BaseFunctionalApisTests : IDisposable
     protected const string ENDPOINTS_REGISTER = "/api/v1/register";
 
     protected const string ENDPOINTS_TRANSACTIONS_CREATE_TRANSACTION = "/api/v1/users/{userId}/transactions";
-    protected const string ENDPOINTS_TRANSACTIONS_GET_TRANSACTION = "/api/v1/users/{userId}/transactions/{transactionId}";
     protected const string ENDPOINTS_TRANSACTIONS_GET_TRANSACTIONS = "/api/v1/users/{userId}/transactions/search";
+    protected const string ENDPOINTS_TRANSACTIONS_GET_TRANSACTION = "/api/v1/users/{userId}/transactions/{transactionId}";
+    protected const string ENDPOINTS_TRANSACTIONS_COPY_TRANSACTION = "/api/v1/users/{userId}/transactions/{transactionId}/copy";
 
     protected const string ENDPOINTS_USER_PROFILES_GET_USER_PROFILE = "/api/v1/users/{userId}";
 
@@ -58,14 +59,14 @@ public class BaseFunctionalApisTests : IDisposable
 
     protected readonly JsonSerializerOptions JsonSerializationOptions = new() { PropertyNameCaseInsensitive = true };
 
-    private IMongoClient _mongoClient;
-    private IMongoDatabase _mongoDb;
+    private readonly IMongoClient _mongoClient;
+    private readonly IMongoDatabase _mongoDb;
 
     protected static Random RandomGenerator => new();
 
     protected BaseFunctionalApisTests(WebApplicationFactory<Apis.App.AppApis.Program> factory)
     {
-        HttpClient = factory.CreateClient();
+        XpnssApiClient = factory.CreateClient();
 
         Config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
@@ -92,7 +93,7 @@ public class BaseFunctionalApisTests : IDisposable
         //Config = AppConfigSettingsManager.GetConfigs();
         //var apiKey = Config.GetValue<string>("ApiKey");
 
-        //HttpClient.DefaultRequestHeaders.AddDocument("xpnss-api-key", apiKey);
+        //XpnssApiClient.DefaultRequestHeaders.AddDocument("xpnss-api-key", apiKey);
     }
 
     protected async Task<IEnumerable<MonthlyTotalDocument>> GetMonthlyTotalsAsync(
@@ -174,6 +175,7 @@ public class BaseFunctionalApisTests : IDisposable
 
     public void Dispose()
     {
+        XpnssApiClient.Dispose();
         _mongoClient.Dispose();
     }
 }

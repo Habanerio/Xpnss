@@ -21,6 +21,8 @@ public record TransactionDto
 
     //public PayerPayeeDto PayerPayee { get; set; }
 
+    public string RefTransactionId { get; set; } = string.Empty;
+
     public List<string> Tags { get; set; } = [];
 
     public virtual decimal TotalAmount { get; set; }
@@ -49,6 +51,7 @@ public record TransactionDto
         string extTransactionId,
         bool isCredit,
         string payerPayeeId,
+        string refTransactionId,
         IEnumerable<string>? tags,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType)
@@ -59,6 +62,7 @@ public record TransactionDto
         ExtTransactionId = extTransactionId;
         IsCredit = isCredit;
         PayerPayeeId = payerPayeeId;
+        RefTransactionId = refTransactionId;
         Tags = tags?.ToList() ?? [];
         TransactionDate = transactionDate;
         TransactionType = transactionType;
@@ -68,7 +72,7 @@ public record TransactionDto
 #region - Credit Transactions -
 
 /// <summary>
-/// A Credit Transaction ("CR") is a transaction that takes money from an ofxAccount.
+/// A Credit Transaction ("CR") is a transaction that takes money from an Account.
 /// </summary>
 public record CreditTransactionDto : TransactionDto
 {
@@ -84,6 +88,7 @@ public record CreditTransactionDto : TransactionDto
         string description,
         string extTransactionId,
         string payerPayeeId,
+        string refTransactionId,
         IEnumerable<string>? tags,
         decimal totalAmount,
         DateTime transactionDate,
@@ -95,6 +100,7 @@ public record CreditTransactionDto : TransactionDto
             extTransactionId,
             true,
             payerPayeeId,
+            refTransactionId,
             tags,
             transactionDate,
             transactionType)
@@ -104,8 +110,8 @@ public record CreditTransactionDto : TransactionDto
 }
 
 /// <summary>
-/// A transaction that adds money to an ofxAccount,
-/// such as cash to a checking ofxAccount.
+/// A transaction that adds money to an Account,
+/// such as cash to a checking Account.
 /// </summary>
 public sealed record DepositTransactionDto :
     CreditTransactionDto
@@ -122,6 +128,7 @@ public sealed record DepositTransactionDto :
         string extTransactionId,
         string payerPayeeId,
         IEnumerable<string>? tags,
+        string refTransactionId,
         decimal totalAmount,
         DateTime transactionDate) :
         base(
@@ -130,6 +137,7 @@ public sealed record DepositTransactionDto :
             description,
             extTransactionId,
             payerPayeeId,
+            refTransactionId,
             tags,
             totalAmount,
             transactionDate,
@@ -142,7 +150,7 @@ public sealed record DepositTransactionDto :
 #region - Debit Transactions -
 
 /// <summary>
-/// A Debit Transaction ("DR") is a transaction that adds money to an ofxAccount.
+/// A Debit Transaction ("DR") is a transaction that adds money to an Account.
 /// </summary>
 public abstract record DebitTransactionDto : TransactionDto
 {
@@ -159,6 +167,7 @@ public abstract record DebitTransactionDto : TransactionDto
         string description,
         string extTransactionId,
         string payerPayeeId,
+        string refTransactionId,
         IEnumerable<string>? tags,
         decimal totalAmount,
         DateTime transactionDate,
@@ -170,6 +179,7 @@ public abstract record DebitTransactionDto : TransactionDto
             extTransactionId,
             false,
             payerPayeeId,
+            refTransactionId,
             tags,
             transactionDate,
             transactionType)
@@ -205,6 +215,7 @@ public sealed record PurchaseTransactionDto :
         string extTransactionId,
         IEnumerable<TransactionItemDto> items,
         string payerPayeeId,
+        string refTransactionId,
         IEnumerable<string>? tags,
         decimal totalPaid,
         DateTime transactionDate) :
@@ -214,6 +225,7 @@ public sealed record PurchaseTransactionDto :
             description,
             extTransactionId,
             payerPayeeId,
+            refTransactionId,
             tags,
             0,
             transactionDate,
@@ -225,8 +237,8 @@ public sealed record PurchaseTransactionDto :
 }
 
 /// <summary>
-/// A transaction that takes money out of an ofxAccount,
-/// such as a withdrawal from a checking ofxAccount.
+/// A transaction that takes money out of an Account,
+/// such as a withdrawal from a checking Account.
 /// </summary>
 public sealed record WithdrawalTransactionDto :
     DebitTransactionDto
@@ -238,7 +250,7 @@ public sealed record WithdrawalTransactionDto :
 
     ///<summary>
     /// </summary>
-    /// <param name="payerPayeeId">The Id of the ofxAccount
+    /// <param name="payerPayeeId">The Id of the Account
     /// that the money withdrew to (Cash/Wallet)</param>
     public WithdrawalTransactionDto(
         string userId,
@@ -246,6 +258,7 @@ public sealed record WithdrawalTransactionDto :
         string description,
         string extTransactionId,
         string payerPayeeId,
+        string refTransactionId,
         IEnumerable<string>? tags,
         decimal totalAmount,
         DateTime transactionDate) :
@@ -255,6 +268,7 @@ public sealed record WithdrawalTransactionDto :
             description,
             extTransactionId,
             payerPayeeId,
+            refTransactionId,
             tags,
             totalAmount,
             transactionDate,
@@ -276,6 +290,7 @@ public sealed record PaymentTransactionDto :
         string description,
         string extTransactionId,
         string payerPayeeId,
+        string refTransactionId,
         IEnumerable<string>? tags,
         decimal totalAmount,
         DateTime transactionDate) :
@@ -285,6 +300,7 @@ public sealed record PaymentTransactionDto :
             description,
             extTransactionId,
             payerPayeeId,
+            refTransactionId,
             tags,
             totalAmount,
             transactionDate,

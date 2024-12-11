@@ -1,6 +1,7 @@
 using Habanerio.Xpnss.Accounts.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.Apis.App.AppApis;
 using Habanerio.Xpnss.Shared.Requests;
+using Habanerio.Xpnss.Shared.Requests.Transactions;
 using Habanerio.Xpnss.Shared.Types;
 using Microsoft.AspNetCore.Mvc.Testing;
 using MongoDB.Bson;
@@ -95,8 +96,6 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
         if (existingAccount is null)
             Assert.Fail("Need to add accounts before running this test");
 
-        var transactionDate = GetRandomPastDate;
-
         await CanCall_CreateDepositTTransaction_WithValidRequest_ReturnsOk(
             testUserId,
             existingAccount,
@@ -134,16 +133,18 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
 
         var transactionDate = GetRandomPastDate;
 
+        var tags = new[] { "tag1", "tag3", "tag 7" };
+
         // Arrange
-        var createTransactionRequest = new CreateDepositTransactionApiRequest
-        {
-            UserId = testUserId.ToString(),
-            AccountId = existingAccount.Id.ToString(),
-            TotalAmount = 999,
-            TransactionDate = transactionDate,
-            Description = transactionDescription,
-            PayerPayee = randomPayerPayeeRequest ?? new PayerPayeeApiRequest()
-        };
+        var createTransactionRequest = new CreateDepositTransactionApiRequest(
+            testUserId.ToString(),
+            existingAccount.Id.ToString(),
+            999,
+            transactionDescription,
+            randomPayerPayeeRequest ?? new PayerPayeeApiRequest(),
+            transactionDate,
+            tags,
+            "extTransactionId");
 
         // Assert
         await AssertTransactionAsync(testUserId, existingAccount, createTransactionRequest, TRANSACTION_TYPE);

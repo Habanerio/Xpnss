@@ -15,6 +15,10 @@ public class CategoryDocument : MongoDocument
     [BsonElement("category_name")]
     public string Name { get; set; } = string.Empty;
 
+    //TODO: Add Budget
+
+    // TODO: Add Average Spent/Earned
+
     [BsonElement("category_type")]
     [BsonRepresentation(BsonType.String)]
     public CategoryGroupEnums.CategoryKeys CategoryType { get; set; }

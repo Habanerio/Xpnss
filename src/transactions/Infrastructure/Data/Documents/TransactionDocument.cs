@@ -37,6 +37,12 @@ public class TransactionDocument : MongoDocument
     [BsonElement("payerpayee_id")]
     public ObjectId? PayerPayeeId { get; set; }
 
+    /// <summary>
+    /// Reference to another transaction within the system
+    /// </summary>
+    [BsonElement("ref_transaction_id")]
+    public ObjectId? RefTransactionId { get; set; }
+
     [BsonElement("tags")]
     public List<string> Tags { get; set; } = [];
 

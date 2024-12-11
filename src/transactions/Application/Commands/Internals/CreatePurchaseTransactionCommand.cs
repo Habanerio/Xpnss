@@ -1,7 +1,6 @@
 using FluentResults;
 using FluentValidation;
 using Habanerio.Xpnss.Shared.DTOs;
-using Habanerio.Xpnss.Shared.Requests;
 using Habanerio.Xpnss.Shared.ValueObjects;
 using Habanerio.Xpnss.Shared.IntegrationEvents.Transactions;
 using Habanerio.Xpnss.Transactions.Application.Mappers;
@@ -9,6 +8,7 @@ using Habanerio.Xpnss.Transactions.Domain.Entities;
 using Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using MediatR;
+using Habanerio.Xpnss.Shared.Requests.Transactions;
 
 namespace Habanerio.Xpnss.Transactions.Application.Commands.Internals;
 
@@ -58,6 +58,7 @@ internal sealed class CreatePurchaseTransactionHandler(
                         i.Description)
                 ).ToList(),
             new PayerPayeeId(transactionRequest.PayerPayee.Id),
+            new RefTransactionId(transactionRequest.RefTransactionId),
             transactionRequest.Tags,
             transactionRequest.TransactionDate);
 
@@ -82,10 +83,11 @@ internal sealed class CreatePurchaseTransactionHandler(
                 purchaseTransaction.Id,
                 purchaseTransaction.UserId,
                 purchaseTransaction.AccountId,
+
                 // transactionItem
-                transactionItem.CategoryId,
-                transactionItem.SubCategoryId,
-                purchaseTransaction.PayerPayeeId,
+                transactionItem.CategoryId.Value,
+                transactionItem.SubCategoryId.Value,
+                purchaseTransaction.PayerPayeeId.Value,
                 purchaseTransaction.TransactionType,
                 // transactionItem
                 transactionItem.Amount,

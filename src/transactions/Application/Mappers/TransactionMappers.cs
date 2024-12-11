@@ -54,7 +54,6 @@ internal static class ApplicationMapper
         }
     }
 
-
     public static TransactionItemDto? Map(TransactionItem? item)
     {
         if (item is null)
@@ -97,6 +96,7 @@ internal static class ApplicationMapper
             Description = entity.Description,
             ExtTransactionId = entity.ExtTransactionId,
             PayerPayeeId = entity.PayerPayeeId,
+            RefTransactionId = entity.RefTransactionId,
             Tags = entity.Tags.ToList(),
             TransactionDate = entity.TransactionDate
         };

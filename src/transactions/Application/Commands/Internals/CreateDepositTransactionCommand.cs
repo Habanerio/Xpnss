@@ -2,7 +2,7 @@ using FluentResults;
 using FluentValidation;
 using Habanerio.Xpnss.Shared.DTOs;
 using Habanerio.Xpnss.Shared.IntegrationEvents.Transactions;
-using Habanerio.Xpnss.Shared.Requests;
+using Habanerio.Xpnss.Shared.Requests.Transactions;
 using Habanerio.Xpnss.Shared.ValueObjects;
 using Habanerio.Xpnss.Transactions.Application.Mappers;
 using Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
@@ -49,10 +49,11 @@ internal sealed class CreateDepositTransactionCommandHandler(
             new AccountId(transactionRequest.AccountId),
             new Money(transactionRequest.TotalAmount),
             transactionRequest.Description,
+            transactionRequest.ExtTransactionId,
             new PayerPayeeId(transactionRequest.PayerPayee.Id),
-            transactionRequest.TransactionDate,
+            new RefTransactionId(transactionRequest.RefTransactionId),
             transactionRequest.Tags,
-            transactionRequest.ExtTransactionId);
+            transactionRequest.TransactionDate);
 
         var result = await _repository.AddAsync(transaction, cancellationToken);
 
@@ -68,6 +69,7 @@ internal sealed class CreateDepositTransactionCommandHandler(
             transactionDto.Id,
             transactionDto.UserId,
             transactionDto.AccountId,
+            // Deposits don't have categories (?)
             string.Empty,
             string.Empty,
             transactionDto.PayerPayeeId,

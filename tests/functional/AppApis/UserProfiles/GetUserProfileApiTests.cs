@@ -22,7 +22,7 @@ public class GetUserProfileApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
         var userId = actualUserProfileDocument.Id;
 
         // Act
-        var response = await HttpClient.GetAsync(
+        var response = await XpnssApiClient.GetAsync(
             ENDPOINTS_USER_PROFILES_GET_USER_PROFILE
                 .Replace("{userId}", userId.ToString()));
 
@@ -54,7 +54,7 @@ public class GetUserProfileApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
         var userId = ObjectId.GenerateNewId();
 
         // Act
-        var response = await HttpClient.GetAsync(
+        var response = await XpnssApiClient.GetAsync(
             ENDPOINTS_USER_PROFILES_GET_USER_PROFILE
             .Replace("{userId}", userId.ToString()));
 

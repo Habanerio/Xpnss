@@ -42,6 +42,7 @@ public class PurchaseTransaction :
         string extTransactionId,
         IEnumerable<TransactionItem> items,
         PayerPayeeId payerPayeeId,
+        RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
         DateTime transactionDate)
         : base(
@@ -51,6 +52,7 @@ public class PurchaseTransaction :
             extTransactionId,
             items,
             payerPayeeId,
+            refTransactionId,
             tags,
             transactionDate,
             TransactionEnums.TransactionKeys.PURCHASE)
@@ -67,11 +69,12 @@ public class PurchaseTransaction :
         UserId userId,
         AccountId accountId,
         string description,
-        PayerPayeeId payerPayeeId,
-        IEnumerable<TransactionItem> items,
-        DateTime transactionDate,
-        IEnumerable<string>? tags,
         string extTransactionId,
+        IEnumerable<TransactionItem> items,
+        PayerPayeeId payerPayeeId,
+        RefTransactionId refTransactionId,
+        IEnumerable<string>? tags,
+        DateTime transactionDate,
         DateTime dateCreated,
         DateTime? dateUpdated,
         DateTime? dateDeleted)
@@ -83,6 +86,7 @@ public class PurchaseTransaction :
             extTransactionId,
             items,
             payerPayeeId,
+            refTransactionId,
             tags,
             transactionDate,
             TransactionEnums.TransactionKeys.PURCHASE,
@@ -98,11 +102,12 @@ public class PurchaseTransaction :
         UserId userId,
         AccountId accountId,
         string description,
-        PayerPayeeId payerPayeeId,
-        IEnumerable<TransactionItem> items,
-        DateTime transactionDate,
-        IEnumerable<string>? tags,
         string extTransactionId,
+        IEnumerable<TransactionItem> items,
+        PayerPayeeId payerPayeeId,
+        RefTransactionId refTransactionId,
+        IEnumerable<string>? tags,
+        DateTime transactionDate,
         DateTime dateCreated,
         DateTime? dateUpdated,
         DateTime? dateDeleted)
@@ -112,11 +117,12 @@ public class PurchaseTransaction :
             userId,
             accountId,
             description,
-            payerPayeeId,
-            items,
-            transactionDate,
-            tags,
             extTransactionId,
+            items,
+            payerPayeeId,
+            refTransactionId,
+            tags,
+            transactionDate,
             dateCreated,
             dateUpdated,
             dateDeleted);
@@ -129,6 +135,7 @@ public class PurchaseTransaction :
         string extTransactionId,
         IEnumerable<TransactionItem> items,
         PayerPayeeId payerPayeeId,
+        RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
         DateTime transactionDate)
     {
@@ -139,6 +146,7 @@ public class PurchaseTransaction :
             extTransactionId,
             items,
             payerPayeeId,
+            refTransactionId,
             tags,
             transactionDate);
     }
