@@ -33,16 +33,16 @@
 //        if (accountResult.Value is null)
 //            throw new InvalidOperationException($"Account '{@event.AccountId}' could not be found for user '{@event.UserId}'");
 
-//        var account = accountResult.Value;
+//        var ofxAccount = accountResult.Value;
 
 //        // If @event.NewAmount is 0, then Transaction is considered deleted?
 //        // If so, it should have been validated prior, and not reach this point.
-//        account.ApplyTransactionAmount(new Money(@event.Difference), @event.TransactionType);
+//        ofxAccount.ApplyTransactionAmount(new Money(@event.Difference), @event.TransactionType);
 
-//        //var isCreditTransaction = TransactionEnums.DoesBalanceIncrease(account.AccountType, TransactionEnums.ToTransactionType(@event.TransactionType));
+//        //var isCreditTransaction = TransactionEnums.DoesBalanceIncrease(ofxAccount.AccountType, TransactionEnums.ToTransactionType(@event.TransactionType));
 
 //        //// TODO: This should be handled within the Account itself.
-//        //if (account is BaseCreditAccount creditAccount)
+//        //if (ofxAccount is BaseCreditAccount creditAccount)
 //        //{
 //        //    if (isCreditTransaction)
 //        //        creditAccount.AddDeposit(@event.DateOfTransactionUtc, new Money(@event.Difference));
@@ -52,14 +52,14 @@
 //        //else
 //        //{
 //        //    if (isCreditTransaction)
-//        //        account.AddDeposit(@event.DateOfTransactionUtc, new Money(@event.Difference));
+//        //        ofxAccount.AddDeposit(@event.DateOfTransactionUtc, new Money(@event.Difference));
 //        //    else
-//        //        account.AddWithdrawal(@event.DateOfTransactionUtc, new Money(@event.Difference));
+//        //        ofxAccount.AddWithdrawal(@event.DateOfTransactionUtc, new Money(@event.Difference));
 //        //}
 
 //        try
 //        {
-//            await _accountsRepository.UpdateAsync(account, cancellationToken);
+//            await _accountsRepository.UpdateAsync(ofxAccount, cancellationToken);
 
 //            _logger.LogInformation(@event.Id.ToString(), "A '{@transactionType}' Transaction {@transactionId} was added to Account {@accountId}", @event.TransactionType, @event.TransactionId, @event.AccountId);
 //        }

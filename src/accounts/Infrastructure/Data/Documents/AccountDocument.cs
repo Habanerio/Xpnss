@@ -125,7 +125,7 @@ public partial class AccountDocument :
     public AccountDocument(
         ObjectId id,
         ObjectId userId,
-        AccountEnums.AccountKeys accountType,
+        AccountEnums.AccountKeys AccountType,
         BankAccountEnums.BankAccountKeys bankAccountType,
         InvestmentAccountEnums.InvestmentAccountKeys investmentAccountType,
         LoanAccountEnums.LoanAccountKeys loanAccountType,
@@ -143,7 +143,7 @@ public partial class AccountDocument :
     {
         Id = id;
         UserId = userId;
-        AccountType = accountType;
+        AccountType = AccountType;
         BankAccountType = bankAccountType;
         InvestmentAccountType = investmentAccountType;
         LoanAccountType = loanAccountType;

@@ -66,7 +66,7 @@ public record CreateAccountApiRequest : UserRequiredApiRequest
 
     protected CreateAccountApiRequest(
         string userId,
-        AccountEnums.AccountKeys accountType,
+        AccountEnums.AccountKeys AccountType,
         BankAccountEnums.BankAccountKeys bankAccountType,
         InvestmentAccountEnums.InvestmentAccountKeys investmentAccountType,
         LoanAccountEnums.LoanAccountKeys loanAccountType,
@@ -77,7 +77,7 @@ public record CreateAccountApiRequest : UserRequiredApiRequest
     {
         UserId = userId;
 
-        AccountType = accountType;
+        AccountType = AccountType;
         BankAccountType = bankAccountType;
         InvestmentAccountType = investmentAccountType;
         LoanAccountType = loanAccountType;

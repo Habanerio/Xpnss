@@ -1,6 +1,5 @@
 using System.Net;
 using Carter;
-using FluentValidation;
 using Habanerio.Xpnss.PayerPayees.Application.Commands.CreatePayerPayee;
 using Habanerio.Xpnss.PayerPayees.Domain.Interfaces;
 using Habanerio.Xpnss.Shared.DTOs;
@@ -55,6 +54,7 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
             return BadRequestWithErrors("User Id is required");
 
         // Would like to associate the new/existing PayerPayee with the Transaction somehow differently.//
+        var payerPayeeId = request.PayerPayee?.Id ?? string.Empty;
         var payerPayeeName = request.PayerPayee?.Name ?? string.Empty;
 
         PayerPayeeDto? payerPayeeDto = null;
@@ -63,6 +63,7 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
         {
             var payerPayeeCommand = new CreatePayerPayeeCommand(
                 userId,
+                payerPayeeId,
                 payerPayeeName);
 
             var payerPayeeResult = await payerPayeesService
@@ -77,9 +78,7 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
                     PayerPayee = new PayerPayeeApiRequest
                     {
                         Id = payerPayeeDto.Id,
-                        Name = payerPayeeDto.Name,
-                        Description = payerPayeeDto.Description,
-                        Location = payerPayeeDto.Location
+                        Name = payerPayeeDto.Name
                     }
                 };
             }
@@ -103,7 +102,7 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
             // Assign the PayerPayee, if not null, to the TransactionDto.
             if (payerPayeeDto is not null)
             {
-                transactionDto.PayerPayee = payerPayeeDto;
+                transactionDto.PayerPayeeId = payerPayeeDto.Id;
             }
 
             return Results.Ok(transactionDto);

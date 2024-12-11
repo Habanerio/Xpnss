@@ -71,7 +71,7 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository, 
                 .ThenBy(a => a.Name.Value)
                 .ToList();
 
-            // Start at 2 because the first account is already set to 1
+            // Start at 2 because the first ofxAccount is already set to 1
             var sortOrder = 2;
 
             foreach (var otherDefaultAccount in otherDefaultAccounts)

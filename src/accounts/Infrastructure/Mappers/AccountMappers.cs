@@ -59,7 +59,7 @@ internal static partial class InfrastructureMapper
         throw new InvalidOperationException("Account Type not supported");
 
 
-        //if (account is CashAccount cashAccount)
+        //if (ofxAccount is CashAccount cashAccount)
         //{
         //    var cashDocument = new AccountDocument(
         //        cashAccount.Id,
@@ -78,7 +78,7 @@ internal static partial class InfrastructureMapper
         //    return cashDocument;
         //}
 
-        //if (account is AbstractBankAccount bankAccount)
+        //if (ofxAccount is AbstractBankAccount bankAccount)
         //{
         //    if (bankAccount is CheckingAccount checkingAccount)
         //    {
@@ -171,7 +171,7 @@ internal static partial class InfrastructureMapper
         //    }
         //}
 
-        //if (account is CreditCardAccount creditCardAccount)
+        //if (ofxAccount is CreditCardAccount creditCardAccount)
         //{
         //    var creditCardDocument = new AccountDocument(
         //        creditCardAccount.Id,
@@ -196,7 +196,7 @@ internal static partial class InfrastructureMapper
         //    return creditCardDocument;
         //}
 
-        //if (account is LoanAccount loanAccount)
+        //if (ofxAccount is LoanAccount loanAccount)
         //{
         //    var loanAccountDocument = new AccountDocument(
         //        loanAccount.Id,

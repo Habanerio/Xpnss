@@ -16,8 +16,8 @@ public class TransactionsRepository(IMongoDatabase mongoDb)
     : MongoDbRepository<TransactionDocument>(new TransactionsDbContext(mongoDb)),
         ITransactionsRepository
 {
-    public async Task<Result<TransactionBase>> AddAsync(
-        TransactionBase? transaction,
+    public async Task<Result<Transaction>> AddAsync(
+        Transaction? transaction,
         CancellationToken cancellationToken = default)
     {
         if (transaction is null)
@@ -48,7 +48,7 @@ public class TransactionsRepository(IMongoDatabase mongoDb)
         }
     }
 
-    public async Task<Result<IEnumerable<TransactionBase>>> FindAsync(
+    public async Task<Result<IEnumerable<Transaction>>> FindAsync(
         string userId,
         string accountId = "",
         DateTime? startDate = null,
@@ -87,14 +87,14 @@ public class TransactionsRepository(IMongoDatabase mongoDb)
             .ToList() ?? [];
 
         if (!transactionDocs.Any())
-            return Result.Ok<IEnumerable<TransactionBase>>(new List<TransactionBase>());
+            return Result.Ok<IEnumerable<Transaction>>(new List<Transaction>());
 
         var transactions = InfrastructureMapper.Map(transactionDocs);
 
         return Result.Ok(transactions);
     }
 
-    public async Task<Result<TransactionBase?>> GetAsync(
+    public async Task<Result<Transaction?>> GetAsync(
         string userId,
         string transactionId,
         CancellationToken cancellationToken = default)
@@ -113,18 +113,18 @@ public class TransactionsRepository(IMongoDatabase mongoDb)
             cancellationToken);
 
         if (doc is null)
-            return Result.Ok<TransactionBase?>(null);
+            return Result.Ok<Transaction?>(null);
 
         var transaction = InfrastructureMapper.Map(doc);
 
         if (transaction is null)
             throw new InvalidOperationException($"{nameof(GetType)}: Could not map the transaction from a Document to an Entity");
 
-        return Result.Ok<TransactionBase?>(transaction);
+        return Result.Ok<Transaction?>(transaction);
     }
 
-    public async Task<Result<TransactionBase>> UpdateAsync(
-        TransactionBase transaction,
+    public async Task<Result<Transaction>> UpdateAsync(
+        Transaction transaction,
         CancellationToken cancellationToken = default)
     {
         var existingTransaction = await GetAsync(

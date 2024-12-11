@@ -5,11 +5,11 @@ namespace Habanerio.Xpnss.Transactions.Domain.Interfaces;
 
 public interface ITransactionsRepository
 {
-    Task<Result<TransactionBase>> AddAsync(
-        TransactionBase transaction,
+    Task<Result<Transaction>> AddAsync(
+        Transaction transaction,
         CancellationToken cancellationToken = default);
 
-    Task<Result<IEnumerable<TransactionBase>>> FindAsync(
+    Task<Result<IEnumerable<Transaction>>> FindAsync(
         string userId,
         string accountId = "",
         DateTime? startDate = null,
@@ -17,12 +17,12 @@ public interface ITransactionsRepository
         string userTimeZone = "",
         CancellationToken cancellationToken = default);
 
-    Task<Result<TransactionBase?>> GetAsync(
+    Task<Result<Transaction?>> GetAsync(
         string userId,
         string transactionId,
         CancellationToken cancellationToken = default);
 
-    Task<Result<TransactionBase>> UpdateAsync(
-        TransactionBase transaction,
+    Task<Result<Transaction>> UpdateAsync(
+        Transaction transaction,
         CancellationToken cancellationToken = default);
 }

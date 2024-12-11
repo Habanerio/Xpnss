@@ -11,19 +11,18 @@ using MediatR;
 
 namespace Habanerio.Xpnss.Transactions.Application.Commands.Internals;
 
-internal sealed record CreateDepositTransactionCommand(
-    CreateDepositTransactionApiRequest ApiRequest) :
-    ITransactionsCommand<Result<DepositTransactionDto>>;
+internal sealed record CreateWithdrawalTransactionCommand(
+    CreateWithdrawalTransactionApiRequest ApiRequest) :
+    ITransactionsCommand<Result<WithdrawalTransactionDto>>;
 
 /// <summary>
-/// Handles the creation of a Deposit transaction
+/// Handles the creation of a Withdrawal transaction
 /// </summary>
 /// <param name="repository"></param>
-internal sealed class CreateDepositTransactionCommandHandler(
+internal sealed class CreateWithdrawalTransactionCommandHandler(
     ITransactionsRepository repository,
     IMediator mediator) :
-    IRequestHandler<CreateDepositTransactionCommand,
-    Result<DepositTransactionDto>>
+    IRequestHandler<CreateWithdrawalTransactionCommand, Result<WithdrawalTransactionDto>>
 {
     private readonly IMediator _mediator = mediator ??
         throw new ArgumentNullException(nameof(mediator));
@@ -31,8 +30,8 @@ internal sealed class CreateDepositTransactionCommandHandler(
     private readonly ITransactionsRepository _repository = repository ??
         throw new ArgumentNullException(nameof(repository));
 
-    public async Task<Result<DepositTransactionDto>> Handle(
-        CreateDepositTransactionCommand command,
+    public async Task<Result<WithdrawalTransactionDto>> Handle(
+        CreateWithdrawalTransactionCommand command,
         CancellationToken cancellationToken)
     {
         var validator = new Validator();
@@ -44,7 +43,7 @@ internal sealed class CreateDepositTransactionCommandHandler(
 
         var transactionRequest = command.ApiRequest;
 
-        var transaction = CreditTransaction.NewDeposit(
+        var withdrawalDoc = DebitTransaction.NewWithdrawal(
             new UserId(transactionRequest.UserId),
             new AccountId(transactionRequest.AccountId),
             new Money(transactionRequest.TotalAmount),
@@ -54,15 +53,15 @@ internal sealed class CreateDepositTransactionCommandHandler(
             transactionRequest.Tags,
             transactionRequest.ExtTransactionId);
 
-        var result = await _repository.AddAsync(transaction, cancellationToken);
+        var result = await _repository.AddAsync(withdrawalDoc, cancellationToken);
 
         if (result.IsFailed || result.ValueOrDefault is null)
             return Result.Fail(result.Errors?[0].Message ??
-                $"Failed to save the {nameof(CreditTransaction)} transaction");
+                $"Failed to save the {nameof(DebitTransaction)} transaction");
 
-        if (ApplicationMapper.Map(result.Value) is not DepositTransactionDto transactionDto)
-            throw new InvalidCastException($"{nameof(CreateDepositTransactionCommandHandler)}: " +
-                $"Failed to map {nameof(CreditTransaction)} to {nameof(DepositTransactionDto)}");
+        if (ApplicationMapper.Map(result.Value) is not WithdrawalTransactionDto transactionDto)
+            throw new InvalidCastException($"{nameof(CreateWithdrawalTransactionCommandHandler)}: " +
+                $"Failed to map {nameof(DebitTransaction)} to {nameof(WithdrawalTransactionDto)}");
 
         var transactionCreatedIntegrationEvent = new TransactionCreatedIntegrationEvent(
             transactionDto.Id,
@@ -83,14 +82,15 @@ internal sealed class CreateDepositTransactionCommandHandler(
         return transactionDto;
     }
 
-    public class Validator : AbstractValidator<CreateDepositTransactionCommand>
+    public class Validator : AbstractValidator<CreateWithdrawalTransactionCommand>
     {
         public Validator()
         {
             RuleFor(x => x.ApiRequest.UserId).NotEmpty();
             RuleFor(x => x.ApiRequest.AccountId).NotEmpty();
+            RuleFor(x => x.ApiRequest.TotalAmount).GreaterThan(0);
+            RuleFor(x => x.ApiRequest.Description).NotEmpty();
             RuleFor(x => x.ApiRequest.TransactionDate).NotEmpty();
-            RuleFor(x => x.ApiRequest.TransactionType).NotNull();
         }
     }
 }

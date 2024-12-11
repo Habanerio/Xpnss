@@ -42,7 +42,7 @@ public class MongoDbRepository<TDocument> :
 
         var filter = Builders<TDocument>.Filter.In("_id", idsArray);
 
-        var results = await FindAsync(filter, cancellationToken);
+        var results = await FindDocumentsAsync(filter, cancellationToken);
 
         return results ?? Enumerable.Empty<TDocument>();
     }
@@ -147,7 +147,7 @@ public abstract class MongoDbRepository<TDocument, TId> :
     {
         var filter = Builders<TDocument>.Filter.Where(predicate);
 
-        return FindAsync(filter, cancellationToken);
+        return FindDocumentsAsync(filter, cancellationToken);
     }
 
     public Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)> FindDocumentsAsync(
@@ -168,7 +168,7 @@ public abstract class MongoDbRepository<TDocument, TId> :
     {
         var filter = Builders<TDocument>.Filter.Where(predicate);
 
-        var rslts = await FindAsync(filter, cancellationToken);
+        var rslts = await FindDocumentsAsync(filter, cancellationToken);
 
         return rslts.FirstOrDefault();
     }
@@ -280,7 +280,7 @@ public abstract class MongoDbRepository<TDocument, TId> :
 
     #region - Privates -
 
-    protected async Task<IEnumerable<TDocument>> FindAsync(
+    protected async Task<IEnumerable<TDocument>> FindDocumentsAsync(
         FilterDefinition<TDocument> filter,
         CancellationToken cancellationToken = default)
     {

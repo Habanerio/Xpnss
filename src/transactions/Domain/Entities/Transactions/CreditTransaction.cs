@@ -3,7 +3,7 @@ using Habanerio.Xpnss.Shared.ValueObjects;
 
 namespace Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 
-public class CreditTransaction : TransactionBase
+public class CreditTransaction : Transaction
 {
     /// <summary>
     /// New with one Item

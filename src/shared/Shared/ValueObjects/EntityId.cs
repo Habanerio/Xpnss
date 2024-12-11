@@ -6,7 +6,7 @@ public abstract record EntityId
 {
     private string? _value;
 
-    public string Value => _value ?? string.Empty;
+    public virtual string Value => _value ?? string.Empty;
 
     protected EntityId()
     {

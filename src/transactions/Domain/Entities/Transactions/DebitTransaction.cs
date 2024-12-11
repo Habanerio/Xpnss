@@ -3,7 +3,7 @@ using Habanerio.Xpnss.Shared.ValueObjects;
 
 namespace Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 
-public class DebitTransaction : TransactionBase
+public class DebitTransaction : Transaction
 {
     /// <summary>
     /// New transaction with one Item
@@ -147,6 +147,8 @@ public class DebitTransaction : TransactionBase
             TransactionEnums.TransactionKeys.WITHDRAWAL);
     }
 
+    // Payment may be its own transaction type in the future
+    // As a payment can go from one ofxAccount to another
     public static DebitTransaction NewPayment(
         UserId userId,
         AccountId accountId,

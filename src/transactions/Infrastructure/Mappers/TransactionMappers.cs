@@ -10,10 +10,10 @@ namespace Habanerio.Xpnss.Transactions.Infrastructure.Mappers;
 internal static partial class InfrastructureMapper
 {
     /// <summary>
-    /// Maps an individual <see cref="TransactionDocument"/> to a <see cref="TransactionBase"/>
+    /// Maps an individual <see cref="TransactionDocument"/> to a <see cref="Transaction"/>
     /// </summary>
     /// <exception cref="InvalidOperationException"></exception>
-    public static TransactionBase? Map(TransactionDocument? document)
+    public static Transaction? Map(TransactionDocument? document)
     {
         if (document == null)
             return default;
@@ -21,28 +21,7 @@ internal static partial class InfrastructureMapper
         if (document is PurchaseTransactionDocument purchaseDocument)
             return Map(purchaseDocument);
 
-        // Transfer Document
-        // ...
-
-        if (document is CreditTransactionDocument creditDocument)
-            return Map(creditDocument);
-
-        if (document is DebitTransactionDocument debitDocument)
-            return Map(debitDocument);
-
-        throw new InvalidOperationException("Transaction document type not supported");
-    }
-
-    public static CreditTransaction? Map(CreditTransactionDocument? document)
-    {
-        if (document == null)
-            return default;
-
-        if (!document.IsCredit)
-            throw new InvalidOperationException($"Transaction Document is not a Credit Document." +
-                $"{Environment.NewLine}Transaction Id: {document.Id}" +
-                $"{Environment.NewLine}Transaction Type: {document.TransactionType}");
-
+        // Internally, all transactions have at least one underlying item
         var transactionItem = Map(document.Items[0]) ??
             throw new InvalidOperationException("TransactionItem is null");
 
@@ -63,66 +42,6 @@ internal static partial class InfrastructureMapper
 
         return transaction;
     }
-
-    public static DebitTransaction? Map(DebitTransactionDocument? document)
-    {
-        if (document == null)
-            return default;
-
-        if (document.IsCredit)
-            throw new InvalidOperationException($"Transaction Document is not a Debit Document." +
-                $"{Environment.NewLine}Transaction Id: {document.Id}" +
-                $"{Environment.NewLine}Transaction Type: {document.TransactionType}");
-
-        var transactionItem = Map(document.Items[0]) ??
-            throw new InvalidOperationException("TransactionItem is null");
-
-        var transaction = DebitTransaction.Load(
-            new TransactionId(document.Id.ToString()),
-            new UserId(document.UserId),
-            new AccountId(document.AccountId.ToString()),
-            document.Description,
-            document.ExtTransactionId,
-            transactionItem,
-            new PayerPayeeId(document.PayerPayeeId),
-            document.Tags,
-            document.TransactionDate,
-            document.TransactionType,
-            document.DateCreated,
-            document.DateUpdated,
-            document.DateDeleted);
-
-        return transaction;
-    }
-
-    //public static CreditTransaction? Map(DepositTransactionDocument? depositDocument)
-    //{
-    //    if (depositDocument == null)
-    //        return default;
-
-    //    if (!depositDocument.TransactionType.Equals(TransactionEnums.TransactionKeys.DEPOSIT))
-    //        throw new InvalidOperationException("Transaction document is not a DepositTransactionDocument");
-
-    //    var transactionItem = Map(depositDocument.Items[0]) ??
-    //        throw new InvalidOperationException("TransactionItem is null");
-
-    //    var transaction = CreditTransaction.Load(
-    //        new TransactionId(depositDocument.Id.ToString()),
-    //        new UserId(depositDocument.UserId),
-    //        new AccountId(depositDocument.AccountId.ToString()),
-    //        depositDocument.Description,
-    //        depositDocument.ExtTransactionId,
-    //        transactionItem,
-    //        new PayerPayeeId(depositDocument.PayerPayeeId),
-    //        depositDocument.Tags,
-    //        depositDocument.TransactionDate,
-    //        depositDocument.TransactionType,
-    //        depositDocument.DateCreated,
-    //        depositDocument.DateUpdated,
-    //        depositDocument.DateDeleted);
-
-    //    return transaction;
-    //}
 
     /// <summary>
     /// Maps an individual <see cref="PurchaseTransactionDocument"/> to a <see cref="PurchaseTransaction"/>
@@ -162,7 +81,7 @@ internal static partial class InfrastructureMapper
     /// </summary>
     /// <param name="documents">The collection of documents to convert to domain entities</param>
     /// <returns></returns>
-    public static IEnumerable<TransactionBase> Map(IEnumerable<TransactionDocument> documents)
+    public static IEnumerable<Transaction> Map(IEnumerable<TransactionDocument> documents)
         => documents.Select(Map).Where(t => t is not null).Select(t => t!);
 
 
@@ -211,7 +130,7 @@ internal static partial class InfrastructureMapper
 
 
 
-    public static TransactionDocument? Map(TransactionBase? transaction)
+    public static TransactionDocument? Map(Transaction? transaction)
     {
         if (transaction is null)
             return default;
@@ -224,6 +143,7 @@ internal static partial class InfrastructureMapper
 
         if (transaction is DebitTransaction debitTransaction)
             return Map(debitTransaction);
+
 
 
         throw new InvalidOperationException("Transaction type not supported");
@@ -240,7 +160,7 @@ internal static partial class InfrastructureMapper
             return default;
 
         if (!transaction.IsCredit)
-            throw new InvalidOperationException("Transaction is not a CreditTransaction");
+            throw new InvalidOperationException($"Transaction is not of type '{nameof(CreditTransaction)}'");
 
         var document = new CreditTransactionDocument(transaction.TransactionType)
         {
@@ -279,7 +199,7 @@ internal static partial class InfrastructureMapper
             return default;
 
         if (transaction.IsCredit)
-            throw new InvalidOperationException("Transaction is not a DebitTransaction");
+            throw new InvalidOperationException($"Transaction is not of type '{nameof(DebitTransaction)}'");
 
         var document = new DebitTransactionDocument(transaction.TransactionType)
         {
@@ -290,6 +210,7 @@ internal static partial class InfrastructureMapper
             Description = transaction.Description,
             ExtTransactionId = transaction.ExtTransactionId,
             IsDeleted = transaction.IsDeleted,
+            Items = Map(transaction.Items),
             PayerPayeeId = transaction.PayerPayeeId,
             //PayerPayeeId = !string.IsNullOrWhiteSpace(transaction.PayerPayeeId) ?
             //    ObjectId.Parse(transaction.PayerPayeeId.Value) :

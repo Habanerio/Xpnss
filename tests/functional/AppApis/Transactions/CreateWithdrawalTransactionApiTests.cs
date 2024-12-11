@@ -7,17 +7,18 @@ using MongoDB.Bson;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis.Transactions;
 
-public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> factory) :
+public class CreateWithdrawalTransactionApiTests(WebApplicationFactory<Program> factory) :
     CreateTransactionBaseApiTests(factory)
 {
-    private const TransactionEnums.TransactionKeys TRANSACTION_TYPE = TransactionEnums.TransactionKeys.PURCHASE;
+    private const TransactionEnums.TransactionKeys TRANSACTION_TYPE =
+        TransactionEnums.TransactionKeys.WITHDRAWAL;
 
     /// <summary>
     /// Tests that a Purchase Transaction can be created with a Credit Account
     /// and that the Balance of the Account is INCREASED
     /// </summary>
     [Fact]
-    public async Task CanCall_CreatePurchaseTransaction_CreditAccount_WithValidRequest_ReturnsOk()
+    public async Task CanCall_CreateWithdrawalTransaction_CreditAccount_WithValidRequest_ReturnsOk()
     {
         var testUserId = await GetTestUserObjectIdAsync();
 
@@ -29,7 +30,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
         if (existingAccount is null)
             Assert.Fail("Need to add accounts before running this test");
 
-        await CanCall_CreatePurchaseTransaction_WithValidRequest_ReturnsOk(
+        await CanCall_CreateWithdrawalTransaction_WithValidRequest_ReturnsOk(
             testUserId,
             existingAccount,
             true);
@@ -41,7 +42,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
     /// </summary>
     /// <returns></returns>
     [Fact]
-    public async Task CanCall_CreatePurchaseTransaction_DebitAccount_WithValidRequest_ReturnsOk()
+    public async Task CanCall_CreateWithdrawalTransaction_DebitAccount_WithValidRequest_ReturnsOk()
     {
         var testUserId = await GetTestUserObjectIdAsync();
 
@@ -53,28 +54,28 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
         if (existingAccount is null)
             Assert.Fail("Need to add accounts before running this test");
 
-        await CanCall_CreatePurchaseTransaction_WithValidRequest_ReturnsOk(
+        await CanCall_CreateWithdrawalTransaction_WithValidRequest_ReturnsOk(
             testUserId,
             existingAccount,
             true);
     }
 
+
     /// <summary>
     /// Tests that a transaction can be created with a new PayerPayee
     /// </summary>
     [Fact]
-    public async Task CanCall_CreatePurchaseTransaction_WithNewPayerPayee_ReturnsOk()
+    public async Task CanCall_CreateWithdrawalTransaction_WithNewPayerPayee_ReturnsOk()
     {
         var testUserId = await GetTestUserObjectIdAsync();
 
-        var existingAccount = await AccountDocumentsRepository
-            .FirstOrDefaultDocumentAsync(a =>
+        var existingAccount = await AccountDocumentsRepository.FirstOrDefaultDocumentAsync(a =>
             a.UserId == testUserId);
 
         if (existingAccount is null)
             Assert.Fail("Need to add accounts before running this test");
 
-        await CanCall_CreatePurchaseTransaction_WithValidRequest_ReturnsOk(
+        await CanCall_CreateWithdrawalTransaction_WithValidRequest_ReturnsOk(
             testUserId,
             existingAccount,
             false);
@@ -84,89 +85,76 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
     /// Tests that a transaction can be created with a NO PayerPayee
     /// </summary>
     [Fact]
-    public async Task CanCall_CreatePurchaseTransaction_WithNoPayerPayee_ReturnsOk()
+    public async Task CanCall_CreateWithdrawalTransaction_WithNoPayerPayee_ReturnsOk()
     {
         var testUserId = await GetTestUserObjectIdAsync();
 
         var existingAccount = await AccountDocumentsRepository
-            .FirstOrDefaultDocumentAsync(a =>
-            a.UserId == testUserId);
+            .FirstOrDefaultDocumentAsync(a => a.UserId == testUserId);
 
         if (existingAccount is null)
             Assert.Fail("Need to add accounts before running this test");
 
-        await CanCall_CreatePurchaseTransaction_WithValidRequest_ReturnsOk(
+        var transactionDate = GetRandomPastDate;
+
+        await CanCall_CreateWithdrawalTransaction_WithValidRequest_ReturnsOk(
             testUserId,
             existingAccount,
             null);
     }
 
-
-    private async Task CanCall_CreatePurchaseTransaction_WithValidRequest_ReturnsOk(
+    private async Task CanCall_CreateWithdrawalTransaction_WithValidRequest_ReturnsOk(
         ObjectId testUserId,
         AccountDocument existingAccount,
         bool? useExistingPayerPayee)
     {
         var random = new Random();
 
-        PayerPayeeApiRequest? randomPayerPayeeRequest = null;
+        // Withdrawals go from one account to the other
+        var accounts = (await AccountDocumentsRepository
+            .FindDocumentsAsync(a => a.UserId.Equals(testUserId))).ToList();
+
+        var randomAccount = accounts[random.Next(0, accounts.Count - 1)];
+
+        var randomPayerPayeeRequest = new PayerPayeeApiRequest();
 
         if (useExistingPayerPayee is null)
         {
-            randomPayerPayeeRequest = null;
+            // Do nothing
         }
         else if (useExistingPayerPayee == true)
         {
             randomPayerPayeeRequest = new PayerPayeeApiRequest
-            { Name = GetRandomMerchant() };
+            {
+                Id = randomAccount.Id.ToString(),
+                Name = randomAccount.Name
+            };
         }
         else
         {
             randomPayerPayeeRequest = new PayerPayeeApiRequest
-            { Name = $"Random PayerPayee - {DateTime.Now.Ticks}" };
+            {
+                Id = randomAccount.Id.ToString(),
+                Name = randomAccount.Name
+            };
         }
 
-        var transactionDescription = randomPayerPayeeRequest is null ||
-            string.IsNullOrWhiteSpace(randomPayerPayeeRequest.Name) ?
-            "Purchase Transaction Description - No PayerPayee" :
-            $"Purchase Transaction Description with PayerPayee: " +
+        var transactionDescription = string.IsNullOrWhiteSpace(randomPayerPayeeRequest.Id) ?
+            "Withdrawal Transaction Description - No WithdrawTo Account" :
+            $"Withdrawal Transaction Description with WithdrawTo Account: " +
             $"{randomPayerPayeeRequest.Id} - {randomPayerPayeeRequest.Name}";
-
 
         var transactionDate = GetRandomPastDate;
 
-        var category1 = await GetHomeExpensesCategoryAsync();
-        var subCategory1 = category1.SubCategories[random.Next(0, category1.SubCategories.Count - 1)];
-
-        var category2 = await GetPersonalExpensesCategoryAsync();
-        var subCategory2 = category2.SubCategories[random.Next(0, category2.SubCategories.Count - 1)];
-
         // Arrange
-        var createTransactionRequest = new CreatePurchaseTransactionApiRequest
+        var createTransactionRequest = new CreateWithdrawalTransactionApiRequest()
         {
             UserId = testUserId.ToString(),
             AccountId = existingAccount.Id.ToString(),
-            Items =
-            [
-                new()
-                {
-                    Amount = 35,
-                    CategoryId = category1.Id.ToString(),
-                    SubCategoryId = subCategory1.Id.ToString(),
-                    Description = "Transaction Item 1 Description"
-                },
-
-                new()
-                {
-                    Amount = 65,
-                    CategoryId = category1.Id.ToString(),
-                    SubCategoryId = subCategory2.Id.ToString(),
-                    Description = "Transaction Item 2 Description"
-                }
-            ],
+            TotalAmount = 999,
             TransactionDate = transactionDate,
             Description = transactionDescription,
-            PayerPayee = randomPayerPayeeRequest ?? new PayerPayeeApiRequest()
+            PayerPayee = randomPayerPayeeRequest
         };
 
         // Assert

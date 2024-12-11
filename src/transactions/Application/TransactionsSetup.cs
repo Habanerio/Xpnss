@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text.Json;
 using Habanerio.Core.Dbs.MongoDb;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using Habanerio.Xpnss.Transactions.Infrastructure.Data.Documents;
@@ -16,8 +17,8 @@ public static class TransactionsSetup
         //CreateTransactionRequestsJsonConverter
         services.Configure<JsonOptions>(opt =>
         {
-            opt.SerializerOptions.PropertyNameCaseInsensitive = true;
-
+            //opt.SerializerOptions.PropertyNameCaseInsensitive = true;
+            opt.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             opt.SerializerOptions.Converters.Add(new CreateTransactionRequestsJsonConverter());
             opt.SerializerOptions.Converters.Add(new TransactionDtoJsonConverter());
         });
@@ -40,10 +41,12 @@ public static class TransactionsSetup
             cm.SetIgnoreExtraElements(true);
         });
 
-        BsonClassMap.RegisterClassMap<DepositTransactionDocument>();
-        BsonClassMap.RegisterClassMap<PaymentTransactionDocument>();
+        BsonClassMap.RegisterClassMap<CreditTransactionDocument>();
+        BsonClassMap.RegisterClassMap<DebitTransactionDocument>();
+        //BsonClassMap.RegisterClassMap<DepositTransactionDocument>();
+        //BsonClassMap.RegisterClassMap<PaymentTransactionDocument>();
         BsonClassMap.RegisterClassMap<PurchaseTransactionDocument>();
-        BsonClassMap.RegisterClassMap<WithdrawalTransactionDocument>();
+        //BsonClassMap.RegisterClassMap<WithdrawalTransactionDocument>();
 
         return services;
     }

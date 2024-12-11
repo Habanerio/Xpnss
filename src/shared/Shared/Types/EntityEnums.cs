@@ -28,7 +28,7 @@ public static class EntityEnums
     {
         return key.ToLower() switch
         {
-            "account" => Keys.ACCOUNT,
+            "ofxAccount" => Keys.ACCOUNT,
             "category" => Keys.CATEGORY,
             "subcategory" => Keys.SUBCATEGORY,
             "payerpayee" => Keys.PAYER_PAYEE,

@@ -38,6 +38,13 @@ public class TransactionDtoJsonConverter : JsonConverter<TransactionDto?>
 
                 return purchase;
 
+            case nameof(TransactionEnums.TransactionKeys.WITHDRAWAL):
+                var withdrawal =
+                    JsonSerializer.Deserialize<WithdrawalTransactionDto>(
+                        jsonDoc.RootElement.GetRawText(), options);
+
+                return withdrawal;
+
             default:
                 return
                     JsonSerializer.Deserialize<TransactionDto>(
@@ -60,6 +67,14 @@ public class CreateTransactionRequestsJsonConverter : JsonConverter<CreateTransa
     public override CreateTransactionApiRequest? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         using var jsonDoc = JsonDocument.ParseValue(ref reader);
+
+        var rawText = jsonDoc.RootElement.GetRawText();
+
+        //if (!jsonDoc.RootElement.TryGetProperty(nameof(CreateTransactionApiRequest.IsCredit), out var isCreditProp))
+        //{
+        //    throw new JsonException();
+        //}
+
         if (!jsonDoc.RootElement.TryGetProperty(nameof(CreateTransactionApiRequest.TransactionType), out var typeProp))
         {
             throw new JsonException();
@@ -84,6 +99,15 @@ public class CreateTransactionRequestsJsonConverter : JsonConverter<CreateTransa
                             jsonDoc.RootElement.GetRawText(), options);
 
                     return purchase;
+                }
+
+            case (int)TransactionEnums.TransactionKeys.WITHDRAWAL:
+                {
+                    var withdrawal =
+                        JsonSerializer.Deserialize<CreateWithdrawalTransactionApiRequest>(
+                            jsonDoc.RootElement.GetRawText(), options);
+
+                    return withdrawal;
                 }
 
             default:

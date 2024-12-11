@@ -45,10 +45,10 @@
 //        try
 //        {
 //            // Maybe publish internal Domain Events to handle each one?
-//            var account = await UpdateAccountBalanceAsync(@event, cancellationToken);
+//            var ofxAccount = await UpdateAccountBalanceAsync(@event, cancellationToken);
 
 //            //TODO: Finish MonthlyTotals
-//            await UpdateMonthlyTotalAsync(@event, account, cancellationToken);
+//            await UpdateMonthlyTotalAsync(@event, ofxAccount, cancellationToken);
 
 //            //      await _mongoSession.CommitTransactionAsync(cancellationToken);
 
@@ -83,16 +83,16 @@
 //            throw new InvalidOperationException(
 //                $"Account '{@event.AccountId}' could not be found for user '{@event.UserId}'");
 
-//        var account = accountResult.Value;
+//        var ofxAccount = accountResult.Value;
 
-//        account.ApplyTransactionAmount(new Money(@event.Amount), @event.TransactionType);
+//        ofxAccount.ApplyTransactionAmount(new Money(@event.Amount), @event.TransactionType);
 
 //        try
 //        {
-//            var updateResult = await _accountsRepository.UpdateAsync(account, cancellationToken);
+//            var updateResult = await _accountsRepository.UpdateAsync(ofxAccount, cancellationToken);
 
 //            return updateResult.IsSuccess ?
-//                account :
+//                ofxAccount :
 //                throw new InvalidOperationException(updateResult.Errors[0]?.Message ??
 //                    "An error occurred while trying to update the Account");
 //        }
@@ -106,10 +106,10 @@
 
 //    private async Task UpdateMonthlyTotalAsync(
 //        TransactionCreatedIntegrationEvent @event,
-//        BaseAccount account,
+//        BaseAccount ofxAccount,
 //        CancellationToken cancellationToken = default)
 //    {
-//        var isCreditTransaction = TransactionEnums.DoesBalanceIncrease(account.AccountType, @event.TransactionType);
+//        var isCreditTransaction = TransactionEnums.DoesBalanceIncrease(ofxAccount.AccountType, @event.TransactionType);
 
 //        var monthlyTotalResult = await _accountMonthlyTotalsRepository
 //            .GetAsync(

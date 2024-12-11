@@ -12,7 +12,7 @@ public enum TransactionStatus
     DELETED
 }
 
-public class TransactionBase : AggregateRoot<TransactionId>
+public class Transaction : AggregateRoot<TransactionId>
 {
     private readonly List<TransactionItem> _items;
     private readonly int _maxItemsPerTransaction = 1;
@@ -34,7 +34,7 @@ public class TransactionBase : AggregateRoot<TransactionId>
     public IReadOnlyCollection<TransactionItem> Items => _items.AsReadOnly();
 
     /// <summary>
-    /// The id of the person, company, or account that is paying or receiving the money.
+    /// The id of the person, company, or ofxAccount that is paying or receiving the money.
     /// Optional
     /// </summary>
     public PayerPayeeId PayerPayeeId { get; }
@@ -65,7 +65,7 @@ public class TransactionBase : AggregateRoot<TransactionId>
     /// For NEW (non-existing) Transactions with a single item.
     /// This sets `IsTransient = true` and adds a `TransactionCreatedDomainEvent` to the domain events.
     /// </summary>
-    protected TransactionBase(
+    protected Transaction(
         UserId userId,
         AccountId accountId,
         string description,
@@ -103,7 +103,7 @@ public class TransactionBase : AggregateRoot<TransactionId>
     /// For NEW (non-existing) Transactions with multiple items (eg: purchases).
     /// This sets `IsTransient = true` and adds a `TransactionCreatedDomainEvent` to the domain events.
     /// </summary>
-    protected TransactionBase(
+    protected Transaction(
         UserId userId,
         AccountId accountId,
         string description,
@@ -140,7 +140,7 @@ public class TransactionBase : AggregateRoot<TransactionId>
     /// <summary>
     /// For EXISTING Transactions with a single item.
     /// </summary>
-    protected TransactionBase(
+    protected Transaction(
         TransactionId id,
         UserId userId,
         AccountId accountId,
@@ -177,7 +177,7 @@ public class TransactionBase : AggregateRoot<TransactionId>
     /// <summary>
     /// For EXISTING Transactions with multiple items (eg: Purchases).
     /// </summary>
-    protected TransactionBase(
+    protected Transaction(
         TransactionId id,
         UserId userId,
         AccountId accountId,

@@ -17,7 +17,7 @@ internal static class ApplicationMapper
         };
     */
 
-    public static IEnumerable<TransactionDto> Map(IEnumerable<TransactionBase> entities)
+    public static IEnumerable<TransactionDto> Map(IEnumerable<Transaction> entities)
     {
         var results = new List<TransactionDto>();
 
@@ -32,7 +32,7 @@ internal static class ApplicationMapper
         return results;
     }
 
-    public static TransactionDto? Map(TransactionBase? entity)
+    public static TransactionDto? Map(Transaction? entity)
     {
         if (entity is null)
             return default;
@@ -50,7 +50,7 @@ internal static class ApplicationMapper
 
             default:
                 throw new InvalidOperationException($"{nameof(ApplicationMapper)}: " +
-                                                    $"'{entity.TransactionType}' is not yet support");
+                    $"'{entity.TransactionType}' is not yet support");
         }
     }
 
@@ -86,14 +86,9 @@ internal static class ApplicationMapper
     }
 
 
-    private static TransactionDto PopulateCommonDtoProperties<TDto>(TransactionBase entity)
+    private static TransactionDto PopulateCommonDtoProperties<TDto>(Transaction entity)
         where TDto : TransactionDto, new()
     {
-        if (entity is PurchaseTransaction purchaseEntity)
-        {
-            return PopulatePurchaseProperties(purchaseEntity);
-        }
-
         var transactionDto = new TDto
         {
             Id = entity.Id,
@@ -103,28 +98,19 @@ internal static class ApplicationMapper
             ExtTransactionId = entity.ExtTransactionId,
             PayerPayeeId = entity.PayerPayeeId,
             Tags = entity.Tags.ToList(),
-            TotalAmount = entity.TotalAmount,
             TransactionDate = entity.TransactionDate
         };
 
-        return transactionDto;
-    }
-
-    private static PurchaseTransactionDto PopulatePurchaseProperties(PurchaseTransaction entity)
-    {
-        var transactionDto = new PurchaseTransactionDto()
+        if (entity is PurchaseTransaction purchaseEntity &&
+            transactionDto is PurchaseTransactionDto purchaseDto)
         {
-            Id = entity.Id,
-            UserId = entity.UserId,
-            AccountId = entity.AccountId,
-            Description = entity.Description,
-            ExtTransactionId = entity.ExtTransactionId,
-            Items = Map(entity.Items).ToList(),
-            TotalPaid = entity.TotalPaid,
-            PayerPayeeId = entity.PayerPayeeId,
-            Tags = entity.Tags.ToList(),
-            TransactionDate = entity.TransactionDate
-        };
+            purchaseDto.Items = Map(purchaseEntity.Items).ToList();
+            purchaseDto.TotalPaid = purchaseEntity.TotalPaid;
+
+            return purchaseDto;
+        }
+
+        transactionDto.TotalAmount = entity.TotalAmount;
 
         return transactionDto;
     }
