@@ -3,7 +3,7 @@ using Habanerio.Xpnss.Shared.Types;
 
 namespace Habanerio.Xpnss.Shared.Requests;
 
-public record CreateAccountApiRequest : UserRequiredApiRequest
+public record CreateAccountApiRequest : UserRequiredRequest
 {
 
     [JsonPropertyName("AccountType")]

@@ -2,11 +2,11 @@ using System.Net;
 using Carter;
 using Habanerio.Xpnss.Accounts.Domain.Interfaces;
 using Habanerio.Xpnss.Shared.DTOs;
-using Habanerio.Xpnss.Shared.Requests;
 using Habanerio.Xpnss.PayerPayees.Domain.Interfaces;
 using Habanerio.Xpnss.Transactions.Application.Queries.GetTransactions;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Habanerio.Xpnss.Shared.Requests.Transactions;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Transactions;
 
@@ -20,7 +20,7 @@ public sealed class GetTransactionsEndpoint : BaseEndpoint
                     async (
                         HttpRequest httpRequest,
                         [FromRoute] string userId,
-                        [FromBody] SearchTransactionsApiRequest request,
+                        [FromBody] SearchTransactionsRequest request,
                         [FromServices] IAccountsService accountsService,
                         [FromServices] ITransactionsService transactionsService,
                         [FromServices] IPayerPayeesService payerPayeesService,
@@ -49,7 +49,7 @@ public sealed class GetTransactionsEndpoint : BaseEndpoint
 
     public static async Task<IResult> HandleAsync(
         string userId,
-        SearchTransactionsApiRequest request,
+        SearchTransactionsRequest request,
         string userTimeZone,
         IAccountsService accountsService,
         ITransactionsService transactionsService,

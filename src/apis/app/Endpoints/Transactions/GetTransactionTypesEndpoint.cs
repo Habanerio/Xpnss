@@ -1,4 +1,3 @@
-using System.Net;
 using Carter;
 using Habanerio.Xpnss.Shared.Types;
 
@@ -15,17 +14,45 @@ public sealed class GetTransactionTypesEndpoint : BaseEndpoint
         public void AddRoutes(IEndpointRouteBuilder app)
         {
             app.MapGet("/api/v1/transactions/types",
-                    async (CancellationToken cancellationToken) =>
-                    {
-                        return TransactionEnums.ToDictionary();
-                    })
-                .Produces<Dictionary<int, string>>((int)HttpStatusCode.OK)
-                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
-                .Produces((int)HttpStatusCode.NotFound)
+                    TransactionEnums.ToDictionary)
+                .Produces<IReadOnlyDictionary<int, string>>()
+                .WithName("GetAllTransactionTypes")
+                .WithDisplayName("Get All Transaction Types")
+                .WithGroupName("Transactions")
+                .WithTags("Transactions")
+                .WithOpenApi();
+
+            app.MapGet("/api/v1/transactions/types/credits",
+                    () => TransactionEnums.CreditTransactionTypes)
+                .Produces<IReadOnlyDictionary<int, string>>()
+                .WithName("GeCreditTransactionTypes")
+                .WithDisplayName("Get Credit Transaction Types")
+                .WithDescription("Gets all Credit Transaction Keys")
+                .WithGroupName("Transactions")
+                .WithTags("Transactions")
+                .WithOpenApi();
+
+            app.MapGet("/api/v1/transactions/types/debits",
+                    () => TransactionEnums.DebitTransactionTypes)
+                .Produces<IReadOnlyDictionary<int, string>>()
+                .WithDisplayName("Get Debit Transaction Types")
+                .WithDescription("Gets all Debit Transaction Keys")
+                .WithName("GeDebitTransactionTypes")
+                .WithGroupName("Transactions")
+                .WithTags("Transactions")
+                .WithOpenApi();
+
+            app.MapGet("/api/v1/transactions/types/user",
+                    () => TransactionEnums.UserTransactionTypes)
+                .Produces<Dictionary<int, string>>()
                 .WithDisplayName("Get Transaction Types")
+                .WithDescription("Gets all Transaction Keys that are user friendly")
                 .WithName("GetTransactionTypes")
+                .WithGroupName("Transactions")
                 .WithTags("Transactions")
                 .WithOpenApi();
         }
+
+
     }
 }

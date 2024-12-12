@@ -1,6 +1,6 @@
 namespace Habanerio.Xpnss.Shared.Requests;
 
-public sealed record PayerPayeeApiRequest
+public sealed record PayerPayeeRequest
 {
     /// <summary>
     /// The id of an existing PayerPayee.

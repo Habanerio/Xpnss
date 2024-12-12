@@ -33,7 +33,7 @@ public class UpdateAccountDetailsApiTests(WebApplicationFactory<Apis.App.AppApis
             newDisplayColor);
 
         // Act
-        var updateAccountDetailsResponse = await HttpClient.PatchAsJsonAsync(
+        var updateAccountDetailsResponse = await XpnssApiClient.PatchAsJsonAsync(
             ENDPOINTS_ACCOUNTS_UPDATE_ACCOUNT_DETAILS
                 .Replace("{userId}", USER_ID.ToString())
                 .Replace("{accountId}", account.Id.ToString()),

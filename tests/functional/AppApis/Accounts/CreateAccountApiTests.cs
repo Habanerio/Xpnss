@@ -30,7 +30,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
             "#123ABC");
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync(
+        var response = await XpnssApiClient.PostAsJsonAsync(
             ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT
                 .Replace("{userId}", userId.ToString()),
             request);
@@ -83,7 +83,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
             4232);
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync(
+        var response = await XpnssApiClient.PostAsJsonAsync(
             ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", userId.ToString()),
             request);
 
@@ -131,7 +131,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
              10);
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync(
+        var response = await XpnssApiClient.PostAsJsonAsync(
             ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", userId.ToString()),
             request);
 
@@ -180,7 +180,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
             10);
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync(
+        var response = await XpnssApiClient.PostAsJsonAsync(
             ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", userId.ToString()),
             request);
 
@@ -229,7 +229,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
             10);
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync(
+        var response = await XpnssApiClient.PostAsJsonAsync(
             ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", userId.ToString()),
             request);
 
@@ -274,7 +274,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         CreateAccountCommand? request = null;
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync(
+        var response = await XpnssApiClient.PostAsJsonAsync(
             ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", userId.ToString()),
             request);
 
@@ -299,7 +299,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
     //        Description: "Test Cash Account Description", DisplayColor: "#000000");
 
     //    // Act
-    //    var response = await HttpClient.PostAsJsonAsync(
+    //    var response = await XpnssApiClient.PostAsJsonAsync(
     //        ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", userId.ToString()),
     //        apiRequest);
 
@@ -328,7 +328,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
             "#000000");
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync(
+        var response = await XpnssApiClient.PostAsJsonAsync(
             ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", userId.ToString()),
             request);
 
@@ -359,7 +359,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
              10);
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync(
+        var response = await XpnssApiClient.PostAsJsonAsync(
             ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", userId.ToString()),
             request);
 
@@ -390,7 +390,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
             -1);
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync(
+        var response = await XpnssApiClient.PostAsJsonAsync(
             ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", userId.ToString()),
             request);
 
@@ -421,7 +421,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
             101);
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync(
+        var response = await XpnssApiClient.PostAsJsonAsync(
             ENDPOINTS_ACCOUNTS_CREATE_ACCOUNT.Replace("{userId}", userId.ToString()),
             request);
 

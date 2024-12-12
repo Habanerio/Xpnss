@@ -6,7 +6,7 @@ public abstract record EntityId
 {
     private string? _value;
 
-    public string Value => _value ?? string.Empty;
+    public virtual string Value => _value ?? string.Empty;
 
     protected EntityId()
     {
@@ -16,10 +16,10 @@ public abstract record EntityId
     protected EntityId(string entityId)
     {
         if (string.IsNullOrWhiteSpace(entityId))
-            throw new ArgumentException(nameof(entityId));// InvalidAccountNameException();
+            throw new ArgumentException($"The {nameof(entityId)} cannot be null or empty");// InvalidAccountNameException();
 
-        if (entityId.Length > 50)
-            throw new ArgumentOutOfRangeException(nameof(entityId));// AccountNameTooLongException(accountName);
+        //if (entityId.Length > 50)
+        //    throw new ArgumentOutOfRangeException();// AccountNameTooLongException(accountName);
 
         _value = entityId;
     }

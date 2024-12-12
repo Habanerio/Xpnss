@@ -19,48 +19,39 @@ public class TransactionDocument : MongoDocument
     [BsonRepresentation(BsonType.String)]
     public TransactionEnums.TransactionKeys TransactionType { get; set; }
 
-
     [BsonElement("description")]
-    public string Description { get; set; }
+    public string Description { get; set; } = "";
 
     [BsonElement("ext_transaction_id")]
-    public string ExtTransactionId { get; set; }
+    public string ExtTransactionId { get; set; } = "";
+
+    [BsonElement("is_credit")]
+    public bool IsCredit { get; set; }
 
     [BsonElement("is_deleted")]
     public bool IsDeleted { get; set; }
 
-    [BsonElement("is_paid")]
-    public bool IsPaid => PaidDate.HasValue;
-
     [BsonElement("items")]
-    public List<TransactionDocumentItem> Items { get; set; }
+    public List<TransactionDocumentItem> Items { get; set; } = [];
 
     [BsonElement("payerpayee_id")]
     public ObjectId? PayerPayeeId { get; set; }
 
-    [BsonElement("payments")]
-    public List<TransactionDocumentPayment> Payments { get; set; }
+    /// <summary>
+    /// Reference to another transaction within the system
+    /// </summary>
+    [BsonElement("ref_transaction_id")]
+    public ObjectId? RefTransactionId { get; set; }
 
     [BsonElement("tags")]
-    public List<string> Tags { get; set; }
+    public List<string> Tags { get; set; } = [];
 
     [BsonElement("total_amount")]
-    public decimal TotalAmount { get; set; }
-
-    [BsonElement("total_owing")]
-    public decimal TotalOwing { get; set; }
-
-    [BsonElement("total_paid")]
-    public decimal TotalPaid { get; set; }
+    public decimal TotalAmount => Items.Sum(i => i.Amount);
 
     [BsonElement("transaction_date")]
     [BsonDateTimeOptions(DateOnly = true)]
     public DateTime TransactionDate { get; set; }
-
-    [BsonElement("paid_date")]
-    [BsonDateTimeOptions(DateOnly = true)]
-    public DateTime? PaidDate { get; set; }
-
 
     [BsonElement("date_created")]
     [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
@@ -68,39 +59,64 @@ public class TransactionDocument : MongoDocument
 
     [BsonElement("date_updated")]
     [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
-    public DateTime? DateUpdated { get; set; }
+    public DateTime? DateUpdated { get; set; } = null;
 
     [BsonElement("date_deleted")]
     [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
-    public DateTime? DateDeleted { get; set; }
+    public DateTime? DateDeleted { get; set; } = null;
 
     public TransactionDocument()
     {
         Id = ObjectId.GenerateNewId();
-        Items = [];
-        Payments = [];
     }
 }
 
-public class DepositTransactionDocument : TransactionDocument
+
+// Credits
+public class CreditTransactionDocument :
+    TransactionDocument
 {
-    public DepositTransactionDocument()
+    public CreditTransactionDocument(TransactionEnums.TransactionKeys transactionType)
     {
-        TransactionType = TransactionEnums.TransactionKeys.DEPOSIT;
+        IsCredit = true;
+        TransactionType = transactionType;
+    }
+}
+
+
+// Debits
+public class DebitTransactionDocument :
+    TransactionDocument
+{
+    public DebitTransactionDocument(TransactionEnums.TransactionKeys transactionType)
+    {
+        IsCredit = false;
+        TransactionType = transactionType;
     }
 }
 
 /// <summary>
 /// For when the Account purchases something from a "Merchant"
 /// </summary>
-public class PurchaseTransactionDocument : TransactionDocument
+public sealed class PurchaseTransactionDocument() :
+    DebitTransactionDocument(TransactionEnums.TransactionKeys.PURCHASE)
 {
-    public PurchaseTransactionDocument()
-    {
-        TransactionType = TransactionEnums.TransactionKeys.PURCHASE;
-    }
-}
+    [BsonElement("total_owing")]
+    public decimal TotalOwing => TotalAmount - TotalPaid;
 
+    [BsonElement("is_paid")]
+    public bool IsPaid => PaidDate.HasValue;
+
+    [BsonElement("payments")]
+    public List<TransactionDocumentPayment> Payments { get; set; } = [];
+
+    [BsonElement("total_paid")]
+    public decimal TotalPaid => Payments.Sum(p => p.Amount);
+
+    [BsonElement("paid_date")]
+    [BsonDateTimeOptions(DateOnly = true)]
+    public DateTime? PaidDate { get; set; } = null;
+}
 
 public sealed record TransactionDocumentItem
 {
@@ -153,21 +169,10 @@ public sealed record TransactionDocumentItem
     }
 }
 
-public sealed record TransactionDocumentPayment
+public sealed record TransactionDocumentPayment(ObjectId Id, decimal Amount, DateTime PaymentDate)
 {
     [BsonElement("id")]
-    public ObjectId Id { get; set; }
-
-    public decimal Amount { get; init; }
-
-    public DateTime PaymentDate { get; init; }
-
-    public TransactionDocumentPayment(ObjectId id, decimal amount, DateTime paymentDate)
-    {
-        Id = id;
-        Amount = amount;
-        PaymentDate = paymentDate;
-    }
+    public ObjectId Id { get; set; } = Id;
 
     public static TransactionDocumentPayment New(decimal amount, DateTime paymentDate)
     {

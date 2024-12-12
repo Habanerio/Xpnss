@@ -21,7 +21,7 @@ public class GetAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Program> 
         foreach (var availableAccount in availableAccounts)
         {
             // Act
-            var response = await HttpClient.GetAsync(
+            var response = await XpnssApiClient.GetAsync(
                 ENDPOINTS_ACCOUNTS_GET_ACCOUNT
                     .Replace("{userId}", USER_ID.ToString())
                     .Replace("{accountId}", availableAccount.Id.ToString()));

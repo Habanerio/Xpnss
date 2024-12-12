@@ -41,20 +41,20 @@ public sealed class GetTransactionHandler(ITransactionsRepository repository) :
         if (!validationResult.IsValid)
             return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
-        var docsResult = await _repository.GetAsync(
+        var entityResult = await _repository.GetAsync(
             request.UserId,
             request.TransactionId,
             cancellationToken);
 
-        if (docsResult.IsFailed)
-            return Result.Fail(docsResult.Errors);
+        if (entityResult.IsFailed)
+            return Result.Fail(entityResult.Errors);
 
-        var dto = ApplicationMapper.Map(docsResult.Value);
+        var dto = ApplicationMapper.Map(entityResult.Value);
 
         if (dto is null)
             throw new InvalidCastException("Failed to map Transaction to TransactionDto");
 
-        return Result.Ok(dto);
+        return Result.Ok<TransactionDto?>(dto);
     }
 
     public class Validator : AbstractValidator<GetTransactionQuery>

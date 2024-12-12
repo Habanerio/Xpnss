@@ -3,42 +3,51 @@ using Habanerio.Xpnss.Shared.ValueObjects;
 
 namespace Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 
-public class CreditTransaction : TransactionBase
+public class CreditTransaction : Transaction
 {
+    /// <summary>
+    /// New with one Item
+    /// </summary>
     protected CreditTransaction(
             UserId userId,
             AccountId accountId,
-            TransactionEnums.TransactionKeys transactionType,
-            PayerPayeeId payerPayeeId,
-            Money amount,
             string description,
+            string extTransactionId,
+            TransactionItem item,
+            PayerPayeeId payerPayeeId,
+            RefTransactionId refTransactionId,
+            IEnumerable<string>? tags,
             DateTime transactionDate,
-            IEnumerable<string>? tags = null,
-            string extTransactionId = "") :
+            TransactionEnums.TransactionKeys transactionType) :
         base(
             userId,
             accountId,
-            transactionType,
-            true,
-            payerPayeeId,
-            amount,
             description,
-            transactionDate,
+            extTransactionId,
+            isCredit: true,
+            item,
+            payerPayeeId,
+            refTransactionId,
             tags,
-            extTransactionId)
+            transactionDate,
+            transactionType)
     { }
 
+    /// <summary>
+    /// Existing with a single Item
+    /// </summary>
     protected CreditTransaction(
             TransactionId id,
             UserId userId,
             AccountId accountId,
-            TransactionEnums.TransactionKeys transactionType,
-            PayerPayeeId payerPayeeId,
-            Money amount,
             string description,
-            DateTime transactionDate,
+            string extTransactionId,
+            TransactionItem item,
+            PayerPayeeId payerPayeeId,
+            RefTransactionId refTransactionId,
             IEnumerable<string>? tags,
-            string externalTransactionId,
+            DateTime transactionDate,
+            TransactionEnums.TransactionKeys transactionType,
             DateTime dateCreated,
             DateTime? dateUpdated = null,
             DateTime? dateDeleted = null) :
@@ -46,15 +55,79 @@ public class CreditTransaction : TransactionBase
             id,
             userId,
             accountId,
-            transactionType, true,
-            payerPayeeId,
-            amount,
             description,
-            transactionDate,
+            extTransactionId,
+            isCredit: true,
+            item,
+            payerPayeeId,
+            refTransactionId,
             tags,
-            externalTransactionId,
+            transactionDate,
+            transactionType,
             dateCreated,
             dateUpdated,
             dateDeleted)
     { }
+
+    public static CreditTransaction NewDeposit(
+        UserId userId,
+        AccountId accountId,
+        Money amount,
+        string description,
+        string extTransactionId,
+        PayerPayeeId payerPayeeId,
+        RefTransactionId refTransactionId,
+        IEnumerable<string>? tags,
+        DateTime transactionDate)
+    {
+        return new CreditTransaction(
+            userId,
+            accountId,
+            description,
+            extTransactionId,
+            TransactionItem.New(
+                new Money(amount),
+                CategoryId.Empty,
+                SubCategoryId.Empty,
+                description),
+            payerPayeeId,
+            refTransactionId,
+            tags,
+            transactionDate,
+            TransactionEnums.TransactionKeys.DEPOSIT);
+    }
+
+
+    public static CreditTransaction Load(
+        TransactionId id,
+        UserId userId,
+        AccountId accountId,
+        string description,
+        string extTransactionId,
+        TransactionItem item,
+        PayerPayeeId payerPayeeId,
+        RefTransactionId refTransactionId,
+        IEnumerable<string>? tags,
+        DateTime transactionDate,
+        TransactionEnums.TransactionKeys transactionType,
+        DateTime dateCreated,
+        DateTime? dateUpdated,
+        DateTime? dateDeleted)
+    {
+        return new CreditTransaction(
+            id,
+            userId,
+            accountId,
+            description,
+            extTransactionId,
+            item,
+            payerPayeeId,
+            refTransactionId,
+            tags,
+            transactionDate,
+            transactionType,
+            dateCreated,
+            dateUpdated,
+            dateDeleted);
+    }
 }

@@ -5,11 +5,11 @@ namespace Habanerio.Xpnss.Shared.DTOs;
 
 public record TransactionDto
 {
-    public string Id { get; set; }
+    public string Id { get; set; } = "";
 
-    public string UserId { get; set; }
+    public string UserId { get; set; } = "";
 
-    public string AccountId { get; set; }
+    public string AccountId { get; set; } = "";
 
     public string Description { get; set; } = string.Empty;
 
@@ -17,9 +17,11 @@ public record TransactionDto
 
     public bool IsCredit { get; protected set; }
 
-    public string? PayerPayeeId { get; set; } = string.Empty;
+    public string PayerPayeeId { get; set; } = string.Empty;
 
-    public PayerPayeeDto? PayerPayee { get; set; }
+    //public PayerPayeeDto PayerPayee { get; set; }
+
+    public string RefTransactionId { get; set; } = string.Empty;
 
     public List<string> Tags { get; set; } = [];
 
@@ -29,13 +31,11 @@ public record TransactionDto
 
     [JsonPropertyName("TransactionType")]
     [JsonConverter(typeof(JsonNumberEnumConverter<TransactionEnums.TransactionKeys>))]
-    public TransactionEnums.TransactionKeys TransactionType { get; set; }
+    public TransactionEnums.TransactionKeys TransactionType { get; protected set; }
 
     public string TransactionTypeString => TransactionType.ToString();
 
     [JsonConstructor]
-    public TransactionDto() { }
-
     protected TransactionDto(
         bool isCredit,
         TransactionEnums.TransactionKeys transactionType)
@@ -43,28 +43,105 @@ public record TransactionDto
         IsCredit = isCredit;
         TransactionType = transactionType;
     }
+
+    protected TransactionDto(
+        string userId,
+        string accountId,
+        string description,
+        string extTransactionId,
+        bool isCredit,
+        string payerPayeeId,
+        string refTransactionId,
+        IEnumerable<string>? tags,
+        DateTime transactionDate,
+        TransactionEnums.TransactionKeys transactionType)
+    {
+        UserId = userId;
+        AccountId = accountId;
+        Description = description;
+        ExtTransactionId = extTransactionId;
+        IsCredit = isCredit;
+        PayerPayeeId = payerPayeeId;
+        RefTransactionId = refTransactionId;
+        Tags = tags?.ToList() ?? [];
+        TransactionDate = transactionDate;
+        TransactionType = transactionType;
+    }
 }
 
 #region - Credit Transactions -
 
 /// <summary>
-/// A Credit Transaction ("CR") is a transaction that takes money from an account.
+/// A Credit Transaction ("CR") is a transaction that takes money from an Account.
 /// </summary>
-public abstract record CreditTransactionDto : TransactionDto
+public record CreditTransactionDto : TransactionDto
 {
     protected CreditTransactionDto(TransactionEnums.TransactionKeys transactionType) :
         base(true, transactionType)
     { }
+
+    public override decimal TotalAmount { get; set; }
+
+    protected CreditTransactionDto(
+        string userId,
+        string accountId,
+        string description,
+        string extTransactionId,
+        string payerPayeeId,
+        string refTransactionId,
+        IEnumerable<string>? tags,
+        decimal totalAmount,
+        DateTime transactionDate,
+        TransactionEnums.TransactionKeys transactionType) :
+        base(
+            userId,
+            accountId,
+            description,
+            extTransactionId,
+            true,
+            payerPayeeId,
+            refTransactionId,
+            tags,
+            transactionDate,
+            transactionType)
+    {
+        TotalAmount = totalAmount;
+    }
 }
 
 /// <summary>
-/// A transaction that adds money to an account,
-/// such as cash to a checking account.
+/// Represents a transaction where money placed into the Account, from another Account (Payer).
 /// </summary>
-public sealed record DepositTransactionDto() :
-    CreditTransactionDto(TransactionEnums.TransactionKeys.DEPOSIT)
+public sealed record DepositTransactionDto :
+    CreditTransactionDto
 {
-    //public string CategoryId { get; set; } = string.Empty;
+    [JsonConstructor]
+    public DepositTransactionDto() :
+        base(TransactionEnums.TransactionKeys.DEPOSIT)
+    { }
+
+    public DepositTransactionDto(
+        string userId,
+        string accountId,
+        string description,
+        string extTransactionId,
+        string payerPayeeId,
+        string refTransactionId,
+        IEnumerable<string>? tags,
+        decimal totalAmount,
+        DateTime transactionDate) :
+        base(
+            userId,
+            accountId,
+            description,
+            extTransactionId,
+            payerPayeeId,
+            refTransactionId,
+            tags,
+            totalAmount,
+            transactionDate,
+            TransactionEnums.TransactionKeys.DEPOSIT)
+    { }
 }
 
 #endregion
@@ -72,17 +149,46 @@ public sealed record DepositTransactionDto() :
 #region - Debit Transactions -
 
 /// <summary>
-/// A Debit Transaction ("DR") is a transaction that adds money to an account.
+/// A Debit Transaction ("DR") is a transaction that adds money to an Account.
 /// </summary>
 public abstract record DebitTransactionDto : TransactionDto
 {
+    [JsonConstructor]
     protected DebitTransactionDto(TransactionEnums.TransactionKeys transactionType) :
         base(false, transactionType)
     { }
+
+    public override decimal TotalAmount { get; set; }
+
+    protected DebitTransactionDto(
+        string userId,
+        string accountId,
+        string description,
+        string extTransactionId,
+        string payerPayeeId,
+        string refTransactionId,
+        IEnumerable<string>? tags,
+        decimal totalAmount,
+        DateTime transactionDate,
+        TransactionEnums.TransactionKeys transactionType) :
+        base(
+            userId,
+            accountId,
+            description,
+            extTransactionId,
+            false,
+            payerPayeeId,
+            refTransactionId,
+            tags,
+            transactionDate,
+            transactionType)
+    {
+        TotalAmount = totalAmount;
+    }
 }
 
-public sealed record PurchaseTransactionDto() :
-    DebitTransactionDto(TransactionEnums.TransactionKeys.PURCHASE)
+public sealed record PurchaseTransactionDto :
+    DebitTransactionDto
 {
     public bool IsPaid => PaidDate.HasValue;
 
@@ -95,24 +201,110 @@ public sealed record PurchaseTransactionDto() :
     public decimal TotalOwing => TotalAmount - TotalPaid;
 
     public decimal TotalPaid { get; set; }
+
+    [JsonConstructor]
+    public PurchaseTransactionDto() :
+        base(TransactionEnums.TransactionKeys.PURCHASE)
+    { }
+
+    public PurchaseTransactionDto(
+        string userId,
+        string accountId,
+        string description,
+        string extTransactionId,
+        IEnumerable<TransactionItemDto> items,
+        string payerPayeeId,
+        string refTransactionId,
+        IEnumerable<string>? tags,
+        decimal totalPaid,
+        DateTime transactionDate) :
+        base(
+            userId,
+            accountId,
+            description,
+            extTransactionId,
+            payerPayeeId,
+            refTransactionId,
+            tags,
+            0,
+            transactionDate,
+            TransactionEnums.TransactionKeys.PURCHASE)
+    {
+        Items = items?.ToList() ?? [];
+        TotalPaid = totalPaid;
+    }
 }
 
 /// <summary>
-/// A transaction that takes money out of an account,
-/// such as a withdrawal from a checking account.
+/// A transaction that takes money out of an Account,
+/// such as a withdrawal from a checking Account.
 /// </summary>
-public sealed record WithdrawalTransactionDto() :
-    CreditTransactionDto(TransactionEnums.TransactionKeys.WITHDRAWAL)
+public sealed record WithdrawalTransactionDto :
+    DebitTransactionDto
 {
-    /// <summary>
-    /// The Id of the underlying account that the withdrawal was made FROM.
-    /// </summary>
-    public string WithdrewFromAccountId { get; set; } = string.Empty;
+    [JsonConstructor]
+    public WithdrawalTransactionDto() :
+        base(TransactionEnums.TransactionKeys.WITHDRAWAL)
+    { }
 
     /// <summary>
-    /// The Id of the underlying account that the withdrawal was made TO.
+    /// Represents a transaction where money is taken out of the Account, and deposited into another Account (Payee).
     /// </summary>
-    public string WithdrewToAccountId { get; set; } = string.Empty;
+    public WithdrawalTransactionDto(
+        string userId,
+        string accountId,
+        string description,
+        string extTransactionId,
+        string payerPayeeId,
+        string refTransactionId,
+        IEnumerable<string>? tags,
+        decimal totalAmount,
+        DateTime transactionDate) :
+        base(
+            userId,
+            accountId,
+            description,
+            extTransactionId,
+            payerPayeeId,
+            refTransactionId,
+            tags,
+            totalAmount,
+            transactionDate,
+            TransactionEnums.TransactionKeys.WITHDRAWAL)
+    { }
+}
+
+
+public sealed record PaymentTransactionDto :
+    DebitTransactionDto
+{
+    [JsonConstructor]
+    public PaymentTransactionDto() :
+        base(TransactionEnums.TransactionKeys.PAYMENT)
+    { }
+
+    public PaymentTransactionDto(
+        string userId,
+        string accountId,
+        string description,
+        string extTransactionId,
+        string payerPayeeId,
+        string refTransactionId,
+        IEnumerable<string>? tags,
+        decimal totalAmount,
+        DateTime transactionDate) :
+        base(
+            userId,
+            accountId,
+            description,
+            extTransactionId,
+            payerPayeeId,
+            refTransactionId,
+            tags,
+            totalAmount,
+            transactionDate,
+            TransactionEnums.TransactionKeys.PAYMENT)
+    { }
 }
 
 #endregion

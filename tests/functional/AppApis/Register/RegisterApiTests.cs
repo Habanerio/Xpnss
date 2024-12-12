@@ -31,7 +31,7 @@ public class RegisterApiTests(WebApplicationFactory<Apis.App.AppApis.Program> fa
             CurrencyEnums.CurrencyKeys.USD);
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync(
+        var response = await XpnssApiClient.PostAsJsonAsync(
             ENDPOINTS_REGISTER,
             createUserProfileRequest);
 
@@ -76,11 +76,11 @@ public class RegisterApiTests(WebApplicationFactory<Apis.App.AppApis.Program> fa
         var createUserProfileRequest = new CreateUserProfileApiRequest(
             email,
             firstName,
-            extUserId,
-            lastName);
+            lastName,
+            extUserId);
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync(
+        var response = await XpnssApiClient.PostAsJsonAsync(
             ENDPOINTS_REGISTER,
             createUserProfileRequest);
 

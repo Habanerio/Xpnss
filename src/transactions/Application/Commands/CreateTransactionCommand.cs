@@ -1,13 +1,16 @@
 using FluentResults;
 using FluentValidation;
 using Habanerio.Xpnss.Shared.DTOs;
-using Habanerio.Xpnss.Shared.Requests;
+using Habanerio.Xpnss.Shared.Requests.Transactions;
+using Habanerio.Xpnss.Transactions.Application.Commands.Internals;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using MediatR;
 
 namespace Habanerio.Xpnss.Transactions.Application.Commands;
 
-public sealed record CreateTransactionCommand(CreateTransactionApiRequest Request) :
+public sealed record CreateTransactionCommand(
+    string UserId,
+    CreateTransactionRequest Request) :
     ITransactionsCommand<Result<TransactionDto>>;
 
 /// <summary>
@@ -17,13 +20,13 @@ public sealed record CreateTransactionCommand(CreateTransactionApiRequest Reques
 public sealed class CreateTransactionCommandHandler(IMediator mediator) :
     IRequestHandler<CreateTransactionCommand, Result<TransactionDto>>
 {
-    private readonly IMediator _mediator = mediator ??
-        throw new ArgumentNullException(nameof(mediator));
-
     public async Task<Result<TransactionDto>> Handle(
         CreateTransactionCommand command,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(mediator);
+
         var validator = new Validator();
 
         var validationResult = await validator.ValidateAsync(command, cancellationToken);
@@ -31,43 +34,55 @@ public sealed class CreateTransactionCommandHandler(IMediator mediator) :
         if (!validationResult.IsValid)
             return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
-        TransactionDto transactionDto;
+        Result<TransactionDto> result;
 
         if (command.Request is CreatePurchaseTransactionApiRequest purchaseRequest)
         {
-            //// Allowed to NOT assign a Category to a Purchase,
-            //// but if a Category is assigned, a SubCategory must also be assigned.
-            //// Temporary may? This is due to updating the Monthly Totals.
-            //// Maybe need a TransactionItemCreatedEvent?
-            //if (purchaseRequest.Items
-            //    .Any(i =>
-            //        !string.IsNullOrWhiteSpace(i.CategoryId) &&
-            //        string.IsNullOrWhiteSpace(i.SubCategoryId)))
-            //{
-            //    return Result.Fail("Cannot assign a Purchase to a Parent Category.");
-            //}
-
-            var newCommand = new CreatePurchaseTransactionCommand(purchaseRequest);
-            var result = await _mediator.Send(newCommand, cancellationToken);
-
-            if (result.IsFailed || result.ValueOrDefault is null)
-                return Result.Fail(result.Errors?[0].Message ??
-                                   "Failed to create purchase transaction");
-
-            transactionDto = result.ValueOrDefault;
-
-            if (transactionDto is null)
-                return Result.Fail("Failed to create purchase transaction");
+            result = await SendSpecificCommand
+                <CreatePurchaseTransactionCommand, PurchaseTransactionDto>(
+                new CreatePurchaseTransactionCommand(purchaseRequest),
+                cancellationToken);
         }
-        //else if (command.Request is CreateDepositTransactionApiRequest depositRequest)
-        //{
-
-        //}
+        else if (command.Request is CreateDepositTransactionRequest depositRequest)
+        {
+            result = await SendSpecificCommand
+                <CreateDepositTransactionCommand, DepositTransactionDto>(
+                new CreateDepositTransactionCommand(depositRequest),
+                cancellationToken);
+        }
+        else if (command.Request is CreateWithdrawalTransactionRequest withdrawalRequest)
+        {
+            result = await SendSpecificCommand
+                <CreateWithdrawalTransactionCommand, WithdrawalTransactionDto>(
+                    new CreateWithdrawalTransactionCommand(withdrawalRequest),
+                    cancellationToken);
+        }
         else
         {
-            return Result.Fail($"Invalid Transaction Request. " +
-                               $"'{command.Request.TransactionType}' is not (yet) a support type");
+            return Result.Fail($"{nameof(CreateTransactionCommandHandler)}: " +
+            $"Invalid Transaction Request. '{command.Request.TransactionType}' " +
+            $"is not (yet) a support type");
         }
+
+        return result;
+    }
+
+    private async Task<Result<TransactionDto>> SendSpecificCommand<TCommand, TDto>(
+        TCommand command,
+        CancellationToken cancellationToken)
+        where TCommand : ITransactionsCommand<Result<TDto>>
+        where TDto : TransactionDto
+    {
+        var result = await mediator.Send(command, cancellationToken);
+
+        if (result.IsFailed || result.ValueOrDefault is null)
+            return Result.Fail(result.Errors?[0].Message ??
+                               "Failed to create the transaction");
+
+        TransactionDto transactionDto = result.ValueOrDefault;
+
+        if (transactionDto is null)
+            throw new InvalidOperationException();
 
         return Result.Ok(transactionDto);
     }

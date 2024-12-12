@@ -1,7 +1,6 @@
 using FluentResults;
 using Habanerio.Core.Dbs.MongoDb;
 using Habanerio.Xpnss.Shared.Types;
-using Habanerio.Xpnss.Shared.Types;
 using Habanerio.Xpnss.Totals.Domain.Entities;
 using Habanerio.Xpnss.Totals.Domain.Interfaces;
 using Habanerio.Xpnss.Totals.Infrastructure.Data.Documents;

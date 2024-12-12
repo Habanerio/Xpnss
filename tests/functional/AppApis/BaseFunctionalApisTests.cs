@@ -3,6 +3,7 @@ using Habanerio.Core.Dbs.MongoDb;
 using Habanerio.Xpnss.Accounts.Infrastructure.Data.Repositories;
 using Habanerio.Xpnss.Categories.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.Categories.Infrastructure.Data.Repositories;
+using Habanerio.Xpnss.PayerPayees.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.PayerPayees.Infrastructure.Data.Repositories;
 using Habanerio.Xpnss.Totals.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.Totals.Infrastructure.Data.Repositories;
@@ -26,7 +27,7 @@ public class BaseFunctionalApisTests : IDisposable
 
     protected const string TEST_USER_EMAIL = "test-user@test.com";
 
-    protected readonly HttpClient HttpClient;
+    protected readonly HttpClient XpnssApiClient;
 
     protected readonly IConfiguration Config;
 
@@ -43,8 +44,10 @@ public class BaseFunctionalApisTests : IDisposable
     protected const string ENDPOINTS_REGISTER = "/api/v1/register";
 
     protected const string ENDPOINTS_TRANSACTIONS_CREATE_TRANSACTION = "/api/v1/users/{userId}/transactions";
-    protected const string ENDPOINTS_TRANSACTIONS_GET_TRANSACTION = "/api/v1/users/{userId}/transactions/{transactionId}";
     protected const string ENDPOINTS_TRANSACTIONS_GET_TRANSACTIONS = "/api/v1/users/{userId}/transactions/search";
+    protected const string ENDPOINTS_TRANSACTIONS_GET_TRANSACTION = "/api/v1/users/{userId}/transactions/{transactionId}";
+    protected const string ENDPOINTS_TRANSACTIONS_COPY_TRANSACTION = "/api/v1/users/{userId}/transactions/{transactionId}/copy";
+    protected const string ENDPOINTS_TRANSACTIONS_DELETE_TRANSACTION = "/api/v1/users/{userId}/transactions/{transactionId}";
 
     protected const string ENDPOINTS_USER_PROFILES_GET_USER_PROFILE = "/api/v1/users/{userId}";
 
@@ -57,14 +60,14 @@ public class BaseFunctionalApisTests : IDisposable
 
     protected readonly JsonSerializerOptions JsonSerializationOptions = new() { PropertyNameCaseInsensitive = true };
 
-    private IMongoClient _mongoClient;
-    private IMongoDatabase _mongoDb;
+    private readonly IMongoClient _mongoClient;
+    private readonly IMongoDatabase _mongoDb;
 
     protected static Random RandomGenerator => new();
 
     protected BaseFunctionalApisTests(WebApplicationFactory<Apis.App.AppApis.Program> factory)
     {
-        HttpClient = factory.CreateClient();
+        XpnssApiClient = factory.CreateClient();
 
         Config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
@@ -91,12 +94,14 @@ public class BaseFunctionalApisTests : IDisposable
         //Config = AppConfigSettingsManager.GetConfigs();
         //var apiKey = Config.GetValue<string>("ApiKey");
 
-        //HttpClient.DefaultRequestHeaders.AddDocument("xpnss-api-key", apiKey);
+        //XpnssApiClient.DefaultRequestHeaders.AddDocument("xpnss-api-key", apiKey);
     }
 
-    protected async Task<IEnumerable<MonthlyTotalDocument>> GetMonthlyTotalsAsync(ObjectId userId, int? year, int? month)
+    protected async Task<IEnumerable<MonthlyTotalDocument>> GetMonthlyTotalsAsync(
+        ObjectId userId, int? year, int? month)
     {
-        var monthlyTotals = await MonthlyTotalDocumentsRepository.FindDocumentsAsync(t =>
+        var monthlyTotals =
+            await MonthlyTotalDocumentsRepository.FindDocumentsAsync(t =>
             t.UserId.Equals(userId) &&
             (!year.HasValue || t.Year == year) &&
             (!month.HasValue || t.Month == month));
@@ -117,7 +122,8 @@ public class BaseFunctionalApisTests : IDisposable
 
     protected async Task<CategoryDocument> GetPersonalExpensesCategoryAsync()
     {
-        var doc = await CategoryDocumentsRepository.FirstOrDefaultDocumentAsync(c =>
+        var doc = await CategoryDocumentsRepository
+            .FirstOrDefaultDocumentAsync(c =>
             c.Name.Equals("Personal"));
 
         if (doc is null)
@@ -126,7 +132,34 @@ public class BaseFunctionalApisTests : IDisposable
         return doc;
     }
 
-    protected static DateTime GetRandomPastDate => DateTime.Now.AddDays(-(RandomGenerator.Next(1, 180)));
+    protected async Task<List<PayerPayeeDocument>> GetExistingPayerPayeesAsync()
+    {
+        var testUserId = await GetTestUserIdAsync();
+
+        var existingPayerPayees =
+            (await PayerPayeeDocumentsRepository
+                .FindDocumentsAsync(p => p.UserId.Equals(testUserId)))?
+            .ToList() ?? [];
+
+        return existingPayerPayees;
+    }
+
+    protected async Task<PayerPayeeDocument?> GetRandomPayerPayeeAsync()
+    {
+        var existingPayerPayees = await GetExistingPayerPayeesAsync();
+
+        // Check for a random PayerPayee. If one can not be provided to you, then create a new random one.
+        var existingPayerPayee = existingPayerPayees.Any() ?
+            existingPayerPayees
+                .ToList()[new Random()
+                    .Next(0, existingPayerPayees.Count - 1)] :
+            default;
+
+        return existingPayerPayee;
+    }
+
+    protected static DateTime GetRandomPastDate =>
+        DateTime.Now.AddDays(-(RandomGenerator.Next(1, 180)));
 
     protected async Task<string> GetTestUserIdAsync()
     {
@@ -143,6 +176,7 @@ public class BaseFunctionalApisTests : IDisposable
 
     public void Dispose()
     {
+        XpnssApiClient.Dispose();
         _mongoClient.Dispose();
     }
 }

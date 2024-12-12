@@ -1,16 +1,12 @@
 using System.Net;
-
 using Carter;
-
-using FluentValidation;
-
-using Habanerio.Xpnss.Shared.DTOs;
-using Habanerio.Xpnss.Shared.Requests;
 using Habanerio.Xpnss.PayerPayees.Application.Commands.CreatePayerPayee;
 using Habanerio.Xpnss.PayerPayees.Domain.Interfaces;
+using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.Requests;
+using Habanerio.Xpnss.Shared.Requests.Transactions;
 using Habanerio.Xpnss.Transactions.Application.Commands;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
-
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Transactions;
@@ -24,7 +20,7 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
             app.MapPost("/api/v1/users/{userId}/transactions/",
                     async (
                         [FromRoute] string userId,
-                        [FromBody] CreateTransactionApiRequest request,
+                        [FromBody] CreateTransactionRequest request,
                         [FromServices] ITransactionsService transactionsService,
                         [FromServices] IPayerPayeesService payerPayeesService,
                         [FromServices] ILogger<CreateTransactionEndpoint> logger,
@@ -44,7 +40,7 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
 
     public static async Task<IResult> HandleAsync(
         string userId,
-        CreateTransactionApiRequest request,
+        CreateTransactionRequest request,
         ITransactionsService transactionsService,
         IPayerPayeesService payerPayeesService,
         ILogger<CreateTransactionEndpoint> logger,
@@ -59,6 +55,7 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
             return BadRequestWithErrors("User Id is required");
 
         // Would like to associate the new/existing PayerPayee with the Transaction somehow differently.//
+        var payerPayeeId = request.PayerPayee?.Id ?? string.Empty;
         var payerPayeeName = request.PayerPayee?.Name ?? string.Empty;
 
         PayerPayeeDto? payerPayeeDto = null;
@@ -67,6 +64,7 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
         {
             var payerPayeeCommand = new CreatePayerPayeeCommand(
                 userId,
+                payerPayeeId,
                 payerPayeeName);
 
             var payerPayeeResult = await payerPayeesService
@@ -78,18 +76,16 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
 
                 request = request with
                 {
-                    PayerPayee = new PayerPayeeApiRequest
+                    PayerPayee = new PayerPayeeRequest
                     {
                         Id = payerPayeeDto.Id,
-                        Name = payerPayeeDto.Name,
-                        Description = payerPayeeDto.Description,
-                        Location = payerPayeeDto.Location
+                        Name = payerPayeeDto.Name
                     }
                 };
             }
         }
 
-        var command = new CreateTransactionCommand(request);
+        var command = new CreateTransactionCommand(userId, request);
 
         try
         {
@@ -107,14 +103,14 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
             // Assign the PayerPayee, if not null, to the TransactionDto.
             if (payerPayeeDto is not null)
             {
-                transactionDto.PayerPayee = payerPayeeDto;
+                transactionDto.PayerPayeeId = payerPayeeDto.Id;
             }
 
             return Results.Ok(transactionDto);
         }
         catch (Exception e)
         {
-            logger.LogCritical(e, "An error occurred while trying to create a new Transaction:" +
+            logger.LogCritical(e, $"An error occurred while trying to create a new Transaction:" +
                                     "\r\n UserId: {UserId}" +
                                     "\r\n AccountId: {AccountId}" +
                                     "\r\n TransactionType: {TransactionType}" +

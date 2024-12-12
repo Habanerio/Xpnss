@@ -4,7 +4,7 @@ using Habanerio.Xpnss.Shared.Requests;
 
 namespace Habanerio.Xpnss.Shared.Requests.Categories;
 
-public record AddSubCategoriesApiRequest : UserRequiredApiRequest
+public record AddSubCategoriesApiRequest : UserRequiredRequest
 {
     [Required]
     public string ParentCategoryId { get; set; } = string.Empty;

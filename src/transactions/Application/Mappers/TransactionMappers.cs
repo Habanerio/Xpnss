@@ -5,9 +5,19 @@ using Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 
 namespace Habanerio.Xpnss.Transactions.Application.Mappers;
 
-internal static partial class ApplicationMapper
+internal static class ApplicationMapper
 {
-    public static IEnumerable<TransactionDto> Map(IEnumerable<TransactionBase> entities)
+    /*
+    private static readonly Dictionary<TransactionEnums.TransactionKeys, Type> TypeDtoMapper =
+        new Dictionary<TransactionEnums.TransactionKeys, Type>
+        {
+            { TransactionEnums.TransactionKeys.DEPOSIT, typeof(DepositTransactionDto) },
+            { TransactionEnums.TransactionKeys.PURCHASE, typeof(PurchaseTransactionDto) },
+            { TransactionEnums.TransactionKeys.WITHDRAWAL, typeof(WithdrawalTransactionDto) }
+        };
+    */
+
+    public static IEnumerable<TransactionDto> Map(IEnumerable<Transaction> entities)
     {
         var results = new List<TransactionDto>();
 
@@ -22,69 +32,40 @@ internal static partial class ApplicationMapper
         return results;
     }
 
-    public static TransactionDto? Map(TransactionBase? entity)
+    public static TransactionDto? Map(Transaction? entity)
     {
         if (entity is null)
             return default;
 
-        if (entity is DepositTransaction depositEntity)
-            return Map(depositEntity);
+        switch (entity.TransactionType)
+        {
+            case TransactionEnums.TransactionKeys.PURCHASE:
+                return PopulateCommonDtoProperties<PurchaseTransactionDto>(entity);
 
-        if (entity is PurchaseTransaction purchaseEntity)
-            return Map(purchaseEntity);
+            case TransactionEnums.TransactionKeys.DEPOSIT:
+                return PopulateCommonDtoProperties<DepositTransactionDto>(entity);
 
-        throw new InvalidOperationException("Invalid transaction type");
+            case TransactionEnums.TransactionKeys.WITHDRAWAL:
+                return PopulateCommonDtoProperties<WithdrawalTransactionDto>(entity);
+
+            default:
+                throw new InvalidOperationException($"{nameof(ApplicationMapper)}: " +
+                    $"'{entity.TransactionType}' is not yet support");
+        }
     }
 
-    public static DepositTransactionDto? Map(DepositTransaction? entity)
+    public static TransactionItemDto? Map(TransactionItem? item)
     {
-        if (entity is null)
+        if (item is null)
             return default;
 
-        if (!entity.TransactionType.Equals(TransactionEnums.TransactionKeys.DEPOSIT))
-            throw new InvalidOperationException("Invalid transaction type");
-
-        return new DepositTransactionDto()
+        return new TransactionItemDto
         {
-            Id = entity.Id,
-            UserId = entity.UserId,
-            AccountId = entity.AccountId,
-            ExtTransactionId = entity.ExtTransactionId,
-            TotalAmount = entity.TotalAmount,
-            Description = entity.Description,
-            PayerPayeeId = entity.PayerPayeeId,
-            Tags = entity.Tags.ToList(),
-            TransactionDate = entity.TransactionDate,
-        };
-    }
-
-    /// <summary>
-    /// Converts a PurchaseTransaction to a PurchaseTransactionDto
-    /// </summary>
-    /// <param name="entity">The Purchase Transaction Entity</param>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    public static TransactionDto? Map(PurchaseTransaction? entity)
-    {
-        if (entity is null)
-            return default;
-
-        if (!entity.TransactionType.Equals(TransactionEnums.TransactionKeys.PURCHASE))
-            throw new InvalidOperationException("Invalid transaction type");
-
-        return new PurchaseTransactionDto()
-        {
-            Id = entity.Id,
-            UserId = entity.UserId,
-            AccountId = entity.AccountId,
-            Description = entity.Description,
-            Items = Map(entity.Items).ToList(),
-            PayerPayeeId = entity.PayerPayeeId.Value,
-            Tags = entity.Tags.ToList(),
-            TotalAmount = entity.TotalAmount,
-            TotalPaid = entity.TotalPaid,
-            TransactionDate = entity.TransactionDate,
-            PaidDate = entity.DatePaid,
+            Id = item.Id,
+            CategoryId = item.CategoryId,
+            SubCategoryId = item.SubCategoryId,
+            Description = item.Description,
+            Amount = item.Amount,
         };
     }
 
@@ -103,18 +84,34 @@ internal static partial class ApplicationMapper
         return results;
     }
 
-    public static TransactionItemDto? Map(TransactionItem? item)
-    {
-        if (item is null)
-            return default;
 
-        return new TransactionItemDto
+    private static TransactionDto PopulateCommonDtoProperties<TDto>(Transaction entity)
+        where TDto : TransactionDto, new()
+    {
+        var transactionDto = new TDto
         {
-            Id = item.Id,
-            CategoryId = item.CategoryId,
-            SubCategoryId = item.SubCategoryId,
-            Description = item.Description,
-            Amount = item.Amount,
+            Id = entity.Id,
+            UserId = entity.UserId,
+            AccountId = entity.AccountId,
+            Description = entity.Description,
+            ExtTransactionId = entity.ExtTransactionId,
+            PayerPayeeId = entity.PayerPayeeId,
+            RefTransactionId = entity.RefTransactionId,
+            Tags = entity.Tags.ToList(),
+            TransactionDate = entity.TransactionDate
         };
+
+        if (entity is PurchaseTransaction purchaseEntity &&
+            transactionDto is PurchaseTransactionDto purchaseDto)
+        {
+            purchaseDto.Items = Map(purchaseEntity.Items).ToList();
+            purchaseDto.TotalPaid = purchaseEntity.TotalPaid;
+
+            return purchaseDto;
+        }
+
+        transactionDto.TotalAmount = entity.TotalAmount;
+
+        return transactionDto;
     }
 }

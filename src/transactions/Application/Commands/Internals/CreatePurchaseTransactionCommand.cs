@@ -1,7 +1,6 @@
 using FluentResults;
 using FluentValidation;
 using Habanerio.Xpnss.Shared.DTOs;
-using Habanerio.Xpnss.Shared.Requests;
 using Habanerio.Xpnss.Shared.ValueObjects;
 using Habanerio.Xpnss.Shared.IntegrationEvents.Transactions;
 using Habanerio.Xpnss.Transactions.Application.Mappers;
@@ -9,14 +8,15 @@ using Habanerio.Xpnss.Transactions.Domain.Entities;
 using Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using MediatR;
+using Habanerio.Xpnss.Shared.Requests.Transactions;
 
-namespace Habanerio.Xpnss.Transactions.Application.Commands;
+namespace Habanerio.Xpnss.Transactions.Application.Commands.Internals;
 
-public sealed record CreatePurchaseTransactionCommand(
+internal sealed record CreatePurchaseTransactionCommand(
     CreatePurchaseTransactionApiRequest ApiRequest) :
     ITransactionsCommand<Result<PurchaseTransactionDto>>;
 
-public sealed class CreatePurchaseTransactionHandler(
+internal sealed class CreatePurchaseTransactionHandler(
     ITransactionsRepository repository,
     IMediator mediator) :
     IRequestHandler<CreatePurchaseTransactionCommand, Result<PurchaseTransactionDto>>
@@ -44,11 +44,11 @@ public sealed class CreatePurchaseTransactionHandler(
 
         var transactionRequest = command.ApiRequest;
 
-        var transactionDoc = PurchaseTransaction.New(
+        var transactionEntity = PurchaseTransaction.New(
             new UserId(transactionRequest.UserId),
             new AccountId(transactionRequest.AccountId),
             transactionRequest.Description,
-            new PayerPayeeId(transactionRequest.PayerPayee.Id),
+            transactionRequest.ExtTransactionId,
             transactionRequest.Items
                 .Select(i =>
                     TransactionItem.New(
@@ -57,10 +57,12 @@ public sealed class CreatePurchaseTransactionHandler(
                         new SubCategoryId(i.SubCategoryId),
                         i.Description)
                 ).ToList(),
-            transactionRequest.TransactionDate,
-            transactionRequest.Tags);
+            new PayerPayeeId(transactionRequest.PayerPayee.Id),
+            new RefTransactionId(transactionRequest.RefTransactionId),
+            transactionRequest.Tags,
+            transactionRequest.TransactionDate);
 
-        var result = await _repository.AddAsync(transactionDoc, cancellationToken);
+        var result = await _repository.AddAsync(transactionEntity, cancellationToken);
 
         if (result.IsFailed)
             return Result.Fail(result.Errors?[0].Message ?? "Could not save the Purchase Transaction");
@@ -78,19 +80,20 @@ public sealed class CreatePurchaseTransactionHandler(
         foreach (var transactionItem in purchaseTransaction.Items)
         {
             var transactionCreatedIntegrationEvent = new TransactionCreatedIntegrationEvent(
-                purchaseTransaction.Id,
-                purchaseTransaction.UserId,
-                purchaseTransaction.AccountId,
-                // transactionItem
-                transactionItem.CategoryId,
-                transactionItem.SubCategoryId,
-                purchaseTransaction.PayerPayeeId,
-                purchaseTransaction.TransactionType,
-                // transactionItem
-                transactionItem.Amount,
+                purchaseTransaction.Id.Value,
+                purchaseTransaction.UserId.Value,
+                purchaseTransaction.AccountId.Value,
 
-                // Use transactionApiRequest.TransactionDate and not
-                // transaction.TransactionDate (as it's Utc) ??
+                // transactionItem
+                transactionItem.CategoryId.Value,
+                transactionItem.SubCategoryId.Value,
+
+                purchaseTransaction.PayerPayeeId.Value,
+                purchaseTransaction.TransactionType,
+
+                // transactionItem
+                transactionItem.Amount.Value,
+
                 transactionRequest.TransactionDate);
 
             await _mediator.Publish(transactionCreatedIntegrationEvent, cancellationToken);

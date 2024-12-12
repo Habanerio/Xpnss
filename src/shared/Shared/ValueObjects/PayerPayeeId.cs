@@ -4,8 +4,6 @@ namespace Habanerio.Xpnss.Shared.ValueObjects;
 
 public sealed record PayerPayeeId : EntityObjectId
 {
-    private PayerPayeeId() : this(ObjectId.Empty.ToString())
-    { }
 
     public PayerPayeeId(ObjectId? id) : this(id?.ToString())
     { }
@@ -22,7 +20,7 @@ public sealed record PayerPayeeId : EntityObjectId
     public static bool IsEmpty(PayerPayeeId id) => id.Equals(Empty);
 
 
-    public static implicit operator string(PayerPayeeId id) => id.Value;
+    public static implicit operator string(PayerPayeeId id) => IsEmpty(id) ? string.Empty : id.Value;
 
     ////public static implicit operator AccountId(string userId) => new(userId);
 }

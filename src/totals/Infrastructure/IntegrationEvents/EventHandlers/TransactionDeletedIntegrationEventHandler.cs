@@ -33,14 +33,14 @@
 //        if (accountResult.Value is null)
 //            throw new InvalidOperationException($"Account '{@event.AccountId}' could not be found for user '{@event.UserId}'");
 
-//        var account = accountResult.Value;
+//        var Account = accountResult.Value;
 
-//        account.ApplyTransactionAmount(new Money(@event.Amount), @event.TransactionType);
+//        Account.ApplyTransactionAmount(new Money(@event.Amount), @event.TransactionType);
 
-//        //var isCreditTransaction = TransactionEnums.DoesBalanceIncrease(account.AccountType, TransactionEnums.ToTransactionType(@event.TransactionType));
+//        //var isCreditTransaction = TransactionEnums.DoesBalanceIncrease(Account.AccountType, TransactionEnums.ToTransactionType(@event.TransactionType));
 
 //        //// TODO: This should be handled within the Account itself.
-//        //if (account is BaseCreditAccount creditAccount)
+//        //if (Account is BaseCreditAccount creditAccount)
 //        //{
 //        //    if (isCreditTransaction)
 //        //        creditAccount.RemoveWithdrawal(@event.DateOfTransactionUtc, new Money(@event.CreditLimit));
@@ -50,14 +50,14 @@
 //        //else
 //        //{
 //        //    if (isCreditTransaction)
-//        //        account.RemoveWithdrawal(@event.DateOfTransactionUtc, new Money(@event.CreditLimit));
+//        //        Account.RemoveWithdrawal(@event.DateOfTransactionUtc, new Money(@event.CreditLimit));
 //        //    else
-//        //        account.RemoveDeposit(@event.DateOfTransactionUtc, new Money(@event.CreditLimit));
+//        //        Account.RemoveDeposit(@event.DateOfTransactionUtc, new Money(@event.CreditLimit));
 //        //}
 
 //        try
 //        {
-//            await _accountsRepository.UpdateAsync(account, cancellationToken);
+//            await _accountsRepository.UpdateAsync(Account, cancellationToken);
 
 //            _logger.LogInformation(@event.Id.ToString(), "A '{@transactionType}' Transaction {@transactionId} was deleted from Account {@accountId}", @event.TransactionType, @event.TransactionId, @event.AccountId);
 //        }
