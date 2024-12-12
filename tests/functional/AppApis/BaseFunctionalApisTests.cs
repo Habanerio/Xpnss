@@ -47,6 +47,7 @@ public class BaseFunctionalApisTests : IDisposable
     protected const string ENDPOINTS_TRANSACTIONS_GET_TRANSACTIONS = "/api/v1/users/{userId}/transactions/search";
     protected const string ENDPOINTS_TRANSACTIONS_GET_TRANSACTION = "/api/v1/users/{userId}/transactions/{transactionId}";
     protected const string ENDPOINTS_TRANSACTIONS_COPY_TRANSACTION = "/api/v1/users/{userId}/transactions/{transactionId}/copy";
+    protected const string ENDPOINTS_TRANSACTIONS_DELETE_TRANSACTION = "/api/v1/users/{userId}/transactions/{transactionId}";
 
     protected const string ENDPOINTS_USER_PROFILES_GET_USER_PROFILE = "/api/v1/users/{userId}";
 

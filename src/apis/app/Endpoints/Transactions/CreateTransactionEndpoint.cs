@@ -76,7 +76,7 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
 
                 request = request with
                 {
-                    PayerPayee = new PayerPayeeApiRequest
+                    PayerPayee = new PayerPayeeRequest
                     {
                         Id = payerPayeeDto.Id,
                         Name = payerPayeeDto.Name

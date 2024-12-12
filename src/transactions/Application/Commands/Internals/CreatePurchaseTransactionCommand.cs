@@ -80,20 +80,20 @@ internal sealed class CreatePurchaseTransactionHandler(
         foreach (var transactionItem in purchaseTransaction.Items)
         {
             var transactionCreatedIntegrationEvent = new TransactionCreatedIntegrationEvent(
-                purchaseTransaction.Id,
-                purchaseTransaction.UserId,
-                purchaseTransaction.AccountId,
+                purchaseTransaction.Id.Value,
+                purchaseTransaction.UserId.Value,
+                purchaseTransaction.AccountId.Value,
 
                 // transactionItem
                 transactionItem.CategoryId.Value,
                 transactionItem.SubCategoryId.Value,
+
                 purchaseTransaction.PayerPayeeId.Value,
                 purchaseTransaction.TransactionType,
-                // transactionItem
-                transactionItem.Amount,
 
-                // Use transactionApiRequest.TransactionDate and not
-                // transaction.TransactionDate (as it's Utc) ??
+                // transactionItem
+                transactionItem.Amount.Value,
+
                 transactionRequest.TransactionDate);
 
             await _mediator.Publish(transactionCreatedIntegrationEvent, cancellationToken);

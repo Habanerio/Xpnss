@@ -88,7 +88,7 @@ public class CreateTransactionRequestsJsonConverter : JsonConverter<CreateTransa
             case (int)TransactionEnums.TransactionKeys.DEPOSIT:
                 {
                     var deposit =
-                        JsonSerializer.Deserialize<CreateDepositTransactionApiRequest>(
+                        JsonSerializer.Deserialize<CreateDepositTransactionRequest>(
                             jsonDoc.RootElement.GetRawText(), options);
 
                     return deposit;
@@ -106,7 +106,7 @@ public class CreateTransactionRequestsJsonConverter : JsonConverter<CreateTransa
             case (int)TransactionEnums.TransactionKeys.WITHDRAWAL:
                 {
                     var withdrawal =
-                        JsonSerializer.Deserialize<CreateWithdrawalTransactionApiRequest>(
+                        JsonSerializer.Deserialize<CreateWithdrawalTransactionRequest>(
                             jsonDoc.RootElement.GetRawText(), options);
 
                     return withdrawal;

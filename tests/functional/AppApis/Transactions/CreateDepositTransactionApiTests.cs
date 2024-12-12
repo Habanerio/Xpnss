@@ -107,7 +107,7 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
         AccountDocument existingAccount,
         bool? useExistingPayerPayee)
     {
-        PayerPayeeApiRequest? randomPayerPayeeRequest = null;
+        PayerPayeeRequest? randomPayerPayeeRequest = null;
 
         if (useExistingPayerPayee is null)
         {
@@ -115,12 +115,12 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
         }
         else if (useExistingPayerPayee == true)
         {
-            randomPayerPayeeRequest = new PayerPayeeApiRequest
+            randomPayerPayeeRequest = new PayerPayeeRequest
             { Name = GetRandomMerchant() };
         }
         else
         {
-            randomPayerPayeeRequest = new PayerPayeeApiRequest
+            randomPayerPayeeRequest = new PayerPayeeRequest
             { Name = $"Random PayerPayee - {DateTime.Now.Ticks}" };
         }
 
@@ -136,12 +136,12 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
         var tags = new[] { "tag1", "tag3", "tag 7" };
 
         // Arrange
-        var createTransactionRequest = new CreateDepositTransactionApiRequest(
+        var createTransactionRequest = new CreateDepositTransactionRequest(
             testUserId.ToString(),
             existingAccount.Id.ToString(),
             999,
             transactionDescription,
-            randomPayerPayeeRequest ?? new PayerPayeeApiRequest(),
+            randomPayerPayeeRequest ?? new PayerPayeeRequest(),
             transactionDate,
             tags,
             "extTransactionId");

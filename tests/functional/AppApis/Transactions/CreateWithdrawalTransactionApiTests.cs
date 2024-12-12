@@ -115,7 +115,7 @@ public class CreateWithdrawalTransactionApiTests(WebApplicationFactory<Program> 
 
         var randomAccount = accounts[random.Next(0, accounts.Count - 1)];
 
-        var randomPayerPayeeRequest = new PayerPayeeApiRequest();
+        var randomPayerPayeeRequest = new PayerPayeeRequest();
 
         if (useExistingPayerPayee is null)
         {
@@ -123,7 +123,7 @@ public class CreateWithdrawalTransactionApiTests(WebApplicationFactory<Program> 
         }
         else if (useExistingPayerPayee == true)
         {
-            randomPayerPayeeRequest = new PayerPayeeApiRequest
+            randomPayerPayeeRequest = new PayerPayeeRequest
             {
                 Id = randomAccount.Id.ToString(),
                 Name = randomAccount.Name
@@ -131,7 +131,7 @@ public class CreateWithdrawalTransactionApiTests(WebApplicationFactory<Program> 
         }
         else
         {
-            randomPayerPayeeRequest = new PayerPayeeApiRequest
+            randomPayerPayeeRequest = new PayerPayeeRequest
             {
                 Id = randomAccount.Id.ToString(),
                 Name = randomAccount.Name
@@ -146,7 +146,7 @@ public class CreateWithdrawalTransactionApiTests(WebApplicationFactory<Program> 
         var transactionDate = GetRandomPastDate;
 
         // Arrange
-        var createTransactionRequest = new CreateWithdrawalTransactionApiRequest()
+        var createTransactionRequest = new CreateWithdrawalTransactionRequest()
         {
             UserId = testUserId.ToString(),
             AccountId = existingAccount.Id.ToString(),

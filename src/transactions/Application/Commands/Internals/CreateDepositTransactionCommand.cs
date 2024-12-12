@@ -12,7 +12,7 @@ using MediatR;
 namespace Habanerio.Xpnss.Transactions.Application.Commands.Internals;
 
 internal sealed record CreateDepositTransactionCommand(
-    CreateDepositTransactionApiRequest ApiRequest) :
+    CreateDepositTransactionRequest Request) :
     ITransactionsCommand<Result<DepositTransactionDto>>;
 
 /// <summary>
@@ -42,7 +42,7 @@ internal sealed class CreateDepositTransactionCommandHandler(
         if (!validationResult.IsValid)
             return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
-        var transactionRequest = command.ApiRequest;
+        var transactionRequest = command.Request;
 
         var transaction = CreditTransaction.NewDeposit(
             new UserId(transactionRequest.UserId),
@@ -76,7 +76,7 @@ internal sealed class CreateDepositTransactionCommandHandler(
             transactionDto.TransactionType,
             transactionDto.TotalAmount,
 
-            // Use transactionApiRequest.TransactionDate and not
+            // Use transactionRequest.TransactionDate and not
             // transaction.TransactionDate (as it's Utc) ??
             transactionRequest.TransactionDate);
 
@@ -89,10 +89,10 @@ internal sealed class CreateDepositTransactionCommandHandler(
     {
         public Validator()
         {
-            RuleFor(x => x.ApiRequest.UserId).NotEmpty();
-            RuleFor(x => x.ApiRequest.AccountId).NotEmpty();
-            RuleFor(x => x.ApiRequest.TransactionDate).NotEmpty();
-            RuleFor(x => x.ApiRequest.TransactionType).NotNull();
+            RuleFor(x => x.Request.UserId).NotEmpty();
+            RuleFor(x => x.Request.AccountId).NotEmpty();
+            RuleFor(x => x.Request.TransactionDate).NotEmpty();
+            RuleFor(x => x.Request.TransactionType).NotNull();
         }
     }
 }

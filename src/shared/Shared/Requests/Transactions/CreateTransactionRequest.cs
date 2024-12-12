@@ -17,7 +17,7 @@ public record CreateTransactionRequest : UserRequiredRequest
 
     public bool IsCredit { get; init; }
 
-    public PayerPayeeApiRequest PayerPayee { get; init; } = new();
+    public PayerPayeeRequest PayerPayee { get; init; } = new();
 
     public string RefTransactionId { get; set; } = string.Empty;
 
@@ -64,7 +64,7 @@ public record CreateTransactionRequest : UserRequiredRequest
         string description,
         string extTransactionId,
         bool isCredit,
-        PayerPayeeApiRequest payerPayee,
+        PayerPayeeRequest payerPayee,
         string refTransactionId,
         IEnumerable<string>? tags,
         DateTime transactionDate)
@@ -85,21 +85,21 @@ public record CreateTransactionRequest : UserRequiredRequest
 
 #region - Credit Transactions -
 
-public record CreateCreditTransactionApiRequest :
+public record CreateCreditTransactionRequest :
     CreateTransactionRequest
 {
     [JsonConstructor]
-    public CreateCreditTransactionApiRequest(TransactionEnums.TransactionKeys transactionType) :
+    public CreateCreditTransactionRequest(TransactionEnums.TransactionKeys transactionType) :
         base(true, transactionType)
     { }
 
-    public CreateCreditTransactionApiRequest(
+    public CreateCreditTransactionRequest(
         string userId,
         TransactionEnums.TransactionKeys transactionType,
         string accountId,
         decimal amount,
         string description,
-        PayerPayeeApiRequest payerPayee,
+        PayerPayeeRequest payerPayee,
         DateTime transactionDate,
         IEnumerable<string>? tags = null,
         string extTransactionId = "",
@@ -123,20 +123,20 @@ public record CreateCreditTransactionApiRequest :
 /// Represents when the user deposits money into their account from an external source
 /// (eg: Income, Gift, etc)
 /// </summary>
-public sealed record CreateDepositTransactionApiRequest :
-    CreateCreditTransactionApiRequest
+public sealed record CreateDepositTransactionRequest :
+    CreateCreditTransactionRequest
 {
     [JsonConstructor]
-    public CreateDepositTransactionApiRequest() :
+    public CreateDepositTransactionRequest() :
         base(TransactionEnums.TransactionKeys.DEPOSIT)
     { }
 
-    public CreateDepositTransactionApiRequest(
+    public CreateDepositTransactionRequest(
         string userId,
         string accountId,
         decimal amount,
         string description,
-        PayerPayeeApiRequest depositFrom,
+        PayerPayeeRequest depositFrom,
         DateTime transactionDate,
         IEnumerable<string>? tags = null,
         string extTransactionId = "",
@@ -172,7 +172,7 @@ public abstract record CreateDebitTransactionApiRequest :
         string accountId,
         decimal amount,
         string description,
-        PayerPayeeApiRequest payerPayee,
+        PayerPayeeRequest payerPayee,
         DateTime transactionDate,
         List<string>? tags = null,
         string extTransactionId = "",
@@ -207,7 +207,7 @@ public sealed record CreatePurchaseTransactionApiRequest :
     public CreatePurchaseTransactionApiRequest(
         string userId,
         string accountId,
-        PayerPayeeApiRequest payee,
+        PayerPayeeRequest payee,
         string description,
         DateTime transactionDate,
         List<TransactionApiRequestItem> items,
@@ -232,20 +232,20 @@ public sealed record CreatePurchaseTransactionApiRequest :
 /// <summary>
 /// Usually for when then money is taken out as Cash
 /// </summary>
-public sealed record CreateWithdrawalTransactionApiRequest :
+public sealed record CreateWithdrawalTransactionRequest :
     CreateDebitTransactionApiRequest
 {
     [JsonConstructor]
-    public CreateWithdrawalTransactionApiRequest() :
+    public CreateWithdrawalTransactionRequest() :
         base(TransactionEnums.TransactionKeys.WITHDRAWAL)
     { }
 
-    public CreateWithdrawalTransactionApiRequest(
+    public CreateWithdrawalTransactionRequest(
         string userId,
         string accountId,
         decimal amount,
-        string cashAccountId,
         string description,
+        PayerPayeeRequest withdrewTo,
         DateTime transactionDate,
         List<string>? tags = null,
         string extTransactionId = "",
@@ -256,15 +256,15 @@ public sealed record CreateWithdrawalTransactionApiRequest :
             accountId,
             amount,
             description,
-            new PayerPayeeApiRequest() { Id = cashAccountId },
+            withdrewTo,
             transactionDate,
             tags,
             extTransactionId,
             refTransactionId)
     {
-        if (string.IsNullOrWhiteSpace(cashAccountId))
-            throw new ArgumentException("Cash Account Id is required for Withdrawal Transactions. " +
-                "The money has to go somewhere");
+        //if (string.IsNullOrWhiteSpace(cashAccountId))
+        //    throw new ArgumentException("Cash Account Id is required for Withdrawal Transactions. " +
+        //        "The money has to go somewhere");
     }
 }
 

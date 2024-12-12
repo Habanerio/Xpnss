@@ -45,13 +45,13 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
 
         TransactionDto actualTransactionDto;
 
-        if (originalRequest is CreateDepositTransactionApiRequest createDepositRequest)
+        if (originalRequest is CreateDepositTransactionRequest createDepositRequest)
         {
             Assert.NotNull(createDepositRequest);
 
             actualTransactionDto =
                 await GetCreateTransactionFromApi
-                    <CreateDepositTransactionApiRequest, DepositTransactionDto>
+                    <CreateDepositTransactionRequest, DepositTransactionDto>
                     (testUserId, createDepositRequest);
 
             await AssertTransactionResultDtoAsync(
@@ -79,13 +79,13 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
 
             Assert.NotNull(actualTransactionDto);
         }
-        else if (originalRequest is CreateWithdrawalTransactionApiRequest createWithdrawalRequest)
+        else if (originalRequest is CreateWithdrawalTransactionRequest createWithdrawalRequest)
         {
             Assert.NotNull(createWithdrawalRequest);
 
             actualTransactionDto =
                 await GetCreateTransactionFromApi
-                    <CreateWithdrawalTransactionApiRequest, WithdrawalTransactionDto>
+                    <CreateWithdrawalTransactionRequest, WithdrawalTransactionDto>
                     (testUserId, createWithdrawalRequest);
 
             await AssertTransactionResultDtoAsync(
@@ -145,7 +145,7 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
             actualTransactionDto);
 
         if (createTransactionRequest is
-                CreateDepositTransactionApiRequest depositRequest &&
+                CreateDepositTransactionRequest depositRequest &&
             actualTransactionDto is
                 DepositTransactionDto depositDto)
         {
@@ -159,7 +159,7 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
             AssertPurchaseTransaction(purchaseRequest, purchaseDto);
         }
         else if (createTransactionRequest is
-                     CreateWithdrawalTransactionApiRequest withdrawalRequest &&
+                     CreateWithdrawalTransactionRequest withdrawalRequest &&
                  actualTransactionDto is
                      WithdrawalTransactionDto withdrawalDto)
         {
@@ -249,12 +249,12 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
     }
 
     protected static void AssertDepositTransaction(
-        CreateDepositTransactionApiRequest transactionApiRequest,
+        CreateDepositTransactionRequest transactionRequest,
         DepositTransactionDto? transactionDto)
     {
         Assert.NotNull(transactionDto);
-        Assert.Equal(transactionApiRequest.TransactionDate, transactionDto.TransactionDate);
-        Assert.Equal(transactionApiRequest.TotalAmount, transactionDto.TotalAmount);
+        Assert.Equal(transactionRequest.TransactionDate, transactionDto.TransactionDate);
+        Assert.Equal(transactionRequest.TotalAmount, transactionDto.TotalAmount);
     }
 
     protected static void AssertPurchaseTransaction(
@@ -291,13 +291,13 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
     }
 
     protected static void AssertWithdrawalTransaction(
-        CreateWithdrawalTransactionApiRequest transactionApiRequest,
+        CreateWithdrawalTransactionRequest transactionRequest,
         WithdrawalTransactionDto? transactionDto)
     {
         Assert.NotNull(transactionDto);
-        Assert.Equal(transactionApiRequest.TransactionDate, transactionDto.TransactionDate);
-        Assert.Equal(transactionApiRequest.TotalAmount, transactionDto.TotalAmount);
-        Assert.Equal(transactionApiRequest.PayerPayee.Id, transactionDto.PayerPayeeId);
+        Assert.Equal(transactionRequest.TransactionDate, transactionDto.TransactionDate);
+        Assert.Equal(transactionRequest.TotalAmount, transactionDto.TotalAmount);
+        Assert.Equal(transactionRequest.PayerPayee.Id, transactionDto.PayerPayeeId);
     }
 
 
@@ -393,11 +393,11 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
         return Assert.IsAssignableFrom<TDto>(transactionApiResponse);
     }
 
-    protected async Task<PayerPayeeApiRequest> GetRandomPayerPayeeRequest()
+    protected async Task<PayerPayeeRequest> GetRandomPayerPayeeRequest()
     {
         var randomPayerPayee = await GetRandomPayerPayeeAsync();
 
-        return new PayerPayeeApiRequest
+        return new PayerPayeeRequest
         {
             Id = randomPayerPayee?.Id.ToString() ?? string.Empty,
             Name = randomPayerPayee?.Name ?? string.Empty,

@@ -32,7 +32,9 @@ public class CopyTransactionApiTests(WebApplicationFactory<Program> factory) :
         };
 
         var response = await XpnssApiClient.PostAsJsonAsync(
-            $"/api/v1/users/{testUserId}/transactions/{existingTransaction.Id}/copy",
+            ENDPOINTS_TRANSACTIONS_COPY_TRANSACTION
+                .Replace("{userId}", testUserId.ToString())
+                .Replace("{transactionId}", existingTransaction.Id.ToString()),
             request);
 
         Assert.NotNull(response);
@@ -107,7 +109,9 @@ public class CopyTransactionApiTests(WebApplicationFactory<Program> factory) :
         };
 
         var response = await XpnssApiClient.PostAsJsonAsync(
-            $"/api/v1/users/{testUserId}/transactions/{existingTransaction.Id}/copy",
+            ENDPOINTS_TRANSACTIONS_COPY_TRANSACTION
+                .Replace("{userId}", testUserId.ToString())
+                .Replace("{transactionId}", existingTransaction.Id.ToString()),
             request);
 
         Assert.NotNull(response);

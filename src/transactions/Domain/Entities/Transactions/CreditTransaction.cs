@@ -33,32 +33,6 @@ public class CreditTransaction : Transaction
             transactionType)
     { }
 
-    ///// <summary>
-    ///// New with multiple Items
-    ///// </summary>
-    //protected CreditTransaction(
-    //    UserId userId,
-    //    AccountId accountId,
-    //    string description,
-    //    string extTransactionId,
-    //    IEnumerable<TransactionItem> items,
-    //    PayerPayeeId payerPayeeId,
-    //    IEnumerable<string>? tags,
-    //    DateTime transactionDate,
-    //    TransactionEnums.TransactionKeys transactionType) :
-    //    base(
-    //        userId,
-    //        accountId,
-    //        description,
-    //        extTransactionId,
-    //        isCredit: true,
-    //        items,
-    //        payerPayeeId,
-    //        tags,
-    //        transactionDate,
-    //        transactionType)
-    //{ }
-
     /// <summary>
     /// Existing with a single Item
     /// </summary>
@@ -156,5 +130,4 @@ public class CreditTransaction : Transaction
             dateUpdated,
             dateDeleted);
     }
-
 }

@@ -110,8 +110,7 @@ public record CreditTransactionDto : TransactionDto
 }
 
 /// <summary>
-/// A transaction that adds money to an Account,
-/// such as cash to a checking Account.
+/// Represents a transaction where money placed into the Account, from another Account (Payer).
 /// </summary>
 public sealed record DepositTransactionDto :
     CreditTransactionDto
@@ -127,8 +126,8 @@ public sealed record DepositTransactionDto :
         string description,
         string extTransactionId,
         string payerPayeeId,
-        IEnumerable<string>? tags,
         string refTransactionId,
+        IEnumerable<string>? tags,
         decimal totalAmount,
         DateTime transactionDate) :
         base(
@@ -248,10 +247,9 @@ public sealed record WithdrawalTransactionDto :
         base(TransactionEnums.TransactionKeys.WITHDRAWAL)
     { }
 
-    ///<summary>
+    /// <summary>
+    /// Represents a transaction where money is taken out of the Account, and deposited into another Account (Payee).
     /// </summary>
-    /// <param name="payerPayeeId">The Id of the Account
-    /// that the money withdrew to (Cash/Wallet)</param>
     public WithdrawalTransactionDto(
         string userId,
         string accountId,
@@ -275,6 +273,7 @@ public sealed record WithdrawalTransactionDto :
             TransactionEnums.TransactionKeys.WITHDRAWAL)
     { }
 }
+
 
 public sealed record PaymentTransactionDto :
     DebitTransactionDto

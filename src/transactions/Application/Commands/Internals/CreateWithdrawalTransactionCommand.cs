@@ -12,7 +12,7 @@ using MediatR;
 namespace Habanerio.Xpnss.Transactions.Application.Commands.Internals;
 
 internal sealed record CreateWithdrawalTransactionCommand(
-    CreateWithdrawalTransactionApiRequest ApiRequest) :
+    CreateWithdrawalTransactionRequest Request) :
     ITransactionsCommand<Result<WithdrawalTransactionDto>>;
 
 /// <summary>
@@ -41,7 +41,7 @@ internal sealed class CreateWithdrawalTransactionCommandHandler(
         if (!validationResult.IsValid)
             return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
-        var transactionRequest = command.ApiRequest;
+        var transactionRequest = command.Request;
 
         var withdrawalDoc = DebitTransaction.NewWithdrawal(
             new UserId(transactionRequest.UserId),
@@ -77,7 +77,7 @@ internal sealed class CreateWithdrawalTransactionCommandHandler(
             transactionDto.TransactionType,
             transactionDto.TotalAmount,
 
-            // Use transactionApiRequest.TransactionDate and not
+            // Use transactionRequest.TransactionDate and not
             // transaction.TransactionDate (as it's Utc) ??
             transactionRequest.TransactionDate);
 
@@ -90,11 +90,11 @@ internal sealed class CreateWithdrawalTransactionCommandHandler(
     {
         public Validator()
         {
-            RuleFor(x => x.ApiRequest.UserId).NotEmpty();
-            RuleFor(x => x.ApiRequest.AccountId).NotEmpty();
-            RuleFor(x => x.ApiRequest.TotalAmount).GreaterThan(0);
-            RuleFor(x => x.ApiRequest.Description).NotEmpty();
-            RuleFor(x => x.ApiRequest.TransactionDate).NotEmpty();
+            RuleFor(x => x.Request.UserId).NotEmpty();
+            RuleFor(x => x.Request.AccountId).NotEmpty();
+            RuleFor(x => x.Request.TotalAmount).GreaterThan(0);
+            RuleFor(x => x.Request.Description).NotEmpty();
+            RuleFor(x => x.Request.TransactionDate).NotEmpty();
         }
     }
 }

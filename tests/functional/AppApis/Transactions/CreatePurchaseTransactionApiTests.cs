@@ -110,7 +110,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
     {
         var random = new Random();
 
-        PayerPayeeApiRequest? randomPayerPayeeRequest = null;
+        PayerPayeeRequest? randomPayerPayeeRequest = null;
 
         if (useExistingPayerPayee is null)
         {
@@ -118,12 +118,12 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
         }
         else if (useExistingPayerPayee == true)
         {
-            randomPayerPayeeRequest = new PayerPayeeApiRequest
+            randomPayerPayeeRequest = new PayerPayeeRequest
             { Name = GetRandomMerchant() };
         }
         else
         {
-            randomPayerPayeeRequest = new PayerPayeeApiRequest
+            randomPayerPayeeRequest = new PayerPayeeRequest
             { Name = $"Random PayerPayee - {DateTime.Now.Ticks}" };
         }
 
@@ -146,7 +146,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
         var createTransactionRequest = new CreatePurchaseTransactionApiRequest(
             testUserId.ToString(),
             existingAccount.Id.ToString(),
-            randomPayerPayeeRequest ?? new PayerPayeeApiRequest(),
+            randomPayerPayeeRequest ?? new PayerPayeeRequest(),
             transactionDescription,
             transactionDate,
             new List<TransactionApiRequestItem>

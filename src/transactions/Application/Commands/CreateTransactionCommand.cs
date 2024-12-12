@@ -43,14 +43,14 @@ public sealed class CreateTransactionCommandHandler(IMediator mediator) :
                 new CreatePurchaseTransactionCommand(purchaseRequest),
                 cancellationToken);
         }
-        else if (command.Request is CreateDepositTransactionApiRequest depositRequest)
+        else if (command.Request is CreateDepositTransactionRequest depositRequest)
         {
             result = await SendSpecificCommand
                 <CreateDepositTransactionCommand, DepositTransactionDto>(
                 new CreateDepositTransactionCommand(depositRequest),
                 cancellationToken);
         }
-        else if (command.Request is CreateWithdrawalTransactionApiRequest withdrawalRequest)
+        else if (command.Request is CreateWithdrawalTransactionRequest withdrawalRequest)
         {
             result = await SendSpecificCommand
                 <CreateWithdrawalTransactionCommand, WithdrawalTransactionDto>(

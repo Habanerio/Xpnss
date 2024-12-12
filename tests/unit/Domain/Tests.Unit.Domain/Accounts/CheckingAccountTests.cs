@@ -315,7 +315,8 @@ public class CheckingAccountTests : TestsBase
         Assert.True(_testClass.IsClosed);
 
         Assert.NotNull(_testClass.DateUpdated);
-        Assert.Equal(DateTime.Now.ToUniversalTime(),
+        Assert.Equal(
+            DateTime.Now.ToUniversalTime(),
             _testClass.DateUpdated.Value, new TimeSpan(0, 0, 0, 10));
     }
 

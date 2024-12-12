@@ -56,16 +56,41 @@ public sealed class CopyTransactionCommandHandler(ITransactionsRepository reposi
         {
             var refTransactionId = actualTransaction.Id.Value;
 
-            if (actualTransaction is CreditTransaction creditTransaction)
+            if (actualTransaction is PurchaseTransaction purchaseTransaction)
+            {
+                var createPurchaseRequest = new CreatePurchaseTransactionApiRequest(
+                    command.UserId,
+                    accountId: purchaseTransaction.AccountId,
+                    new PayerPayeeRequest() { Id = purchaseTransaction.PayerPayeeId.Value },
+                    purchaseTransaction.Description,
+                    newTransactionDate,
+                    purchaseTransaction.Items.Select(i => new TransactionApiRequestItem
+                    {
+                        Amount = i.Amount,
+                        CategoryId = i.CategoryId,
+                        SubCategoryId = i.SubCategoryId,
+                        Description = i.Description,
+                    }).ToList(),
+                    purchaseTransaction.Tags?.ToList() ?? [],
+                    purchaseTransaction.ExtTransactionId,
+                    refTransactionId);
+
+                var newCommand = new CreateTransactionCommand(command.UserId, createPurchaseRequest);
+
+                tasks.Add(mediator.Send(newCommand, cancellationToken));
+            }
+
+            else if (actualTransaction is CreditTransaction creditTransaction)
             {
                 if (actualTransaction.TransactionType.Equals(TransactionEnums.TransactionKeys.DEPOSIT))
                 {
-                    var createDepositRequest = new CreateDepositTransactionApiRequest(
+                    var createDepositRequest = new CreateDepositTransactionRequest(
                         command.UserId,
                         creditTransaction.AccountId.Value,
                         creditTransaction.TotalAmount.Value,
                         creditTransaction.Description,
-                        new PayerPayeeApiRequest() { Id = creditTransaction.PayerPayeeId.Value },
+                        depositFrom: new PayerPayeeRequest()
+                        { Id = creditTransaction.PayerPayeeId.Value },
                         newTransactionDate,
                         creditTransaction.Tags?.ToList() ?? [],
                         creditTransaction.ExtTransactionId,
@@ -76,40 +101,18 @@ public sealed class CopyTransactionCommandHandler(ITransactionsRepository reposi
                     tasks.Add(mediator.Send(newCommand, cancellationToken));
                 }
             }
+
             else if (actualTransaction is DebitTransaction debitTransaction)
             {
-                if (actualTransaction is PurchaseTransaction purchaseTransaction)
+                if (actualTransaction.TransactionType.Equals(TransactionEnums.TransactionKeys.WITHDRAWAL))
                 {
-                    var createPurchaseRequest = new CreatePurchaseTransactionApiRequest(
+                    var createWithdrawalRequest = new CreateWithdrawalTransactionRequest(
                         command.UserId,
-                        accountId: purchaseTransaction.AccountId,
-                        new PayerPayeeApiRequest() { Id = purchaseTransaction.PayerPayeeId.Value },
-                        purchaseTransaction.Description,
-                        newTransactionDate,
-                        purchaseTransaction.Items.Select(i => new TransactionApiRequestItem
-                        {
-                            Amount = i.Amount,
-                            CategoryId = i.CategoryId,
-                            SubCategoryId = i.SubCategoryId,
-                            Description = i.Description,
-                        }).ToList(),
-                        purchaseTransaction.Tags?.ToList() ?? [],
-                        purchaseTransaction.ExtTransactionId,
-                        refTransactionId);
-
-                    var newCommand = new CreateTransactionCommand(command.UserId, createPurchaseRequest);
-
-                    tasks.Add(mediator.Send(newCommand, cancellationToken));
-                }
-
-                else if (actualTransaction.TransactionType.Equals(TransactionEnums.TransactionKeys.WITHDRAWAL))
-                {
-                    var createWithdrawalRequest = new CreateWithdrawalTransactionApiRequest(
-                        command.UserId,
-                        accountId: debitTransaction.AccountId,
-                        amount: debitTransaction.TotalAmount,
-                        cashAccountId: debitTransaction.PayerPayeeId,
+                        accountId: debitTransaction.AccountId.Value,
+                        amount: debitTransaction.TotalAmount.Value,
                         debitTransaction.Description,
+                        withdrewTo: new PayerPayeeRequest()
+                        { Id = debitTransaction.PayerPayeeId.Value },
                         newTransactionDate,
                         debitTransaction.Tags?.ToList() ?? [],
                         debitTransaction.ExtTransactionId,
