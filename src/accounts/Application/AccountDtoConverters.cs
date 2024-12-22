@@ -50,9 +50,9 @@ public class AccountDtoConverters : JsonConverter<AccountDto>
     }
 }
 
-public class AccountRequestJsonConverter : JsonConverter<CreateAccountApiRequest>
+public class AccountRequestJsonConverter : JsonConverter<CreateAccountRequest>
 {
-    public override CreateAccountApiRequest? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override CreateAccountRequest? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         //TODO: Look at how I did it in TransactionCommandHandler
         using (var jsonDoc = JsonDocument.ParseValue(ref reader))
@@ -100,6 +100,11 @@ public class AccountRequestJsonConverter : JsonConverter<CreateAccountApiRequest
                 return JsonSerializer.Deserialize<CreateCreditCardAccountRequest>(jsonDoc.RootElement.GetRawText(), options);
             }
 
+            if (accountType == (int)AccountEnums.AccountKeys.INVESTMENT)
+            {
+                return JsonSerializer.Deserialize<CreateInvestmentAccountRequest>(jsonDoc.RootElement.GetRawText(), options);
+            }
+
 
             if (accountType == (int)AccountEnums.AccountKeys.LOAN)
             {
@@ -110,7 +115,7 @@ public class AccountRequestJsonConverter : JsonConverter<CreateAccountApiRequest
         }
     }
 
-    public override void Write(Utf8JsonWriter writer, CreateAccountApiRequest value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, CreateAccountRequest value, JsonSerializerOptions options)
     {
         var type = value.GetType();
         JsonSerializer.Serialize(writer, value, type, options);

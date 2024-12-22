@@ -11,9 +11,11 @@ public record CreateTransactionRequest : UserRequiredRequest
     [Required]
     public string AccountId { get; init; } = string.Empty;
 
+    public string CategoryId { get; init; } = string.Empty;
+
     public string Description { get; init; } = string.Empty;
 
-    public string ExtTransactionId { get; init; } = string.Empty;
+    public string ExtTransactionNo { get; init; } = string.Empty;
 
     public bool IsCredit { get; init; }
 
@@ -21,10 +23,12 @@ public record CreateTransactionRequest : UserRequiredRequest
 
     public string RefTransactionId { get; set; } = string.Empty;
 
+    public string SubCategoryId { get; init; } = string.Empty;
+
     public List<string> Tags { get; init; } = [];
 
     [Required]
-    public virtual decimal TotalAmount { get; init; }
+    public virtual decimal Amount { get; init; }
 
     public DateTime TransactionDate
     {
@@ -61,22 +65,26 @@ public record CreateTransactionRequest : UserRequiredRequest
         TransactionEnums.TransactionKeys transactionType,
         string accountId,
         decimal amount,
+        string categoryId,
         string description,
-        string extTransactionId,
+        string extTransactionNo,
         bool isCredit,
         PayerPayeeRequest payerPayee,
         string refTransactionId,
+        string subCategoryId,
         IEnumerable<string>? tags,
         DateTime transactionDate)
     {
         UserId = userId;
         AccountId = accountId;
-        TotalAmount = amount;
+        CategoryId = categoryId;
+        Amount = amount;
         Description = description;
         IsCredit = isCredit;
-        ExtTransactionId = extTransactionId;
+        ExtTransactionNo = extTransactionNo;
         PayerPayee = payerPayee;
         RefTransactionId = refTransactionId;
+        SubCategoryId = subCategoryId;
         Tags = tags?.ToList() ?? [];
         TransactionDate = transactionDate;
         TransactionType = transactionType;
@@ -89,6 +97,12 @@ public record CreateCreditTransactionRequest :
     CreateTransactionRequest
 {
     [JsonConstructor]
+    public CreateCreditTransactionRequest() :
+        base()
+    {
+        IsCredit = true;
+    }
+
     public CreateCreditTransactionRequest(TransactionEnums.TransactionKeys transactionType) :
         base(true, transactionType)
     { }
@@ -98,26 +112,31 @@ public record CreateCreditTransactionRequest :
         TransactionEnums.TransactionKeys transactionType,
         string accountId,
         decimal amount,
+        string categoryId,
         string description,
         PayerPayeeRequest payerPayee,
+        string subCategoryId,
         DateTime transactionDate,
         IEnumerable<string>? tags = null,
-        string extTransactionId = "",
+        string extTransactionNo = "",
         string refTransactionId = "") :
         base(
             userId,
             transactionType,
             accountId,
             amount,
+            categoryId,
             description,
-            extTransactionId,
-            true,
+            extTransactionNo,
+            isCredit: true,
             payerPayee,
             refTransactionId,
+            subCategoryId,
             tags,
             transactionDate)
     { }
 }
+
 
 /// <summary>
 /// Represents when the user deposits money into their account from an external source
@@ -135,84 +154,198 @@ public sealed record CreateDepositTransactionRequest :
         string userId,
         string accountId,
         decimal amount,
+        string categoryId,
         string description,
         PayerPayeeRequest depositFrom,
+        string subCategoryId,
         DateTime transactionDate,
         IEnumerable<string>? tags = null,
-        string extTransactionId = "",
+        string extTransactionNo = "",
         string refTransactionId = "") :
         base(
             userId,
-            TransactionEnums.TransactionKeys.DEPOSIT,
+            transactionType: TransactionEnums.TransactionKeys.DEPOSIT,
             accountId,
             amount,
+            categoryId,
             description,
             depositFrom,
+            subCategoryId,
             transactionDate,
             tags,
-            extTransactionId,
+            extTransactionNo,
             refTransactionId)
     { }
 }
 
+
+/// <summary>
+/// For payments where you receive (credit) money into your account.
+/// If this is from an existing account, then only create a `Payment Made` Request.
+/// </summary>
+public sealed record CreatePaymentInTransactionRequest :
+    CreateCreditTransactionRequest
+{
+    public bool IsFromOwnAccount { get; set; }
+
+    [JsonConstructor]
+    public CreatePaymentInTransactionRequest() :
+        base(TransactionEnums.TransactionKeys.PAYMENT_IN)
+    { }
+
+    public CreatePaymentInTransactionRequest(
+        string userId,
+        string accountId,
+        decimal amount,
+        string categoryId,
+        string description,
+        bool isPaidTFromOwnAccount,
+        PayerPayeeRequest paymentInFrom,
+        string subCategoryId,
+        DateTime transactionDate,
+        IEnumerable<string>? tags = null,
+        string extTransactionNo = "",
+        string refTransactionId = "") :
+        base(
+            userId,
+            transactionType: TransactionEnums.TransactionKeys.PAYMENT_IN,
+            accountId,
+            amount,
+            categoryId,
+            description,
+            payerPayee: paymentInFrom,
+            subCategoryId,
+            transactionDate,
+            tags,
+            extTransactionNo,
+            refTransactionId)
+    {
+        IsFromOwnAccount = isPaidTFromOwnAccount;
+    }
+}
+
 #endregion // Credit Transactions
+
+
 
 #region - Debit Transactions -
 
-public abstract record CreateDebitTransactionApiRequest :
+public record CreateDebitTransactionRequest :
     CreateTransactionRequest
 {
-    protected CreateDebitTransactionApiRequest(TransactionEnums.TransactionKeys transactionType) :
+    [JsonConstructor]
+    public CreateDebitTransactionRequest() :
+        base()
+    {
+        IsCredit = false;
+    }
+
+    public CreateDebitTransactionRequest(TransactionEnums.TransactionKeys transactionType) :
         base(false, transactionType)
     { }
 
-    protected CreateDebitTransactionApiRequest(
+    public CreateDebitTransactionRequest(
         string userId,
         TransactionEnums.TransactionKeys transactionType,
         string accountId,
         decimal amount,
+        string categoryId,
         string description,
         PayerPayeeRequest payerPayee,
+        string subCategoryId,
         DateTime transactionDate,
-        List<string>? tags = null,
-        string extTransactionId = "",
+        IEnumerable<string>? tags = null,
+        string extTransactionNo = "",
         string refTransactionId = "") :
         base(
             userId,
             transactionType,
             accountId,
             amount,
+            categoryId,
             description,
-            extTransactionId,
-            false,
+            extTransactionNo,
+            isCredit: false,
             payerPayee,
             refTransactionId,
+            subCategoryId,
             tags,
             transactionDate)
     { }
 }
 
-public sealed record CreatePurchaseTransactionApiRequest :
-    CreateDebitTransactionApiRequest
-{
-    public List<TransactionApiRequestItem> Items { get; set; } = [];
 
-    public override decimal TotalAmount => Items.Sum(i => i.Amount);
+/// <summary>
+/// For payments where you pay (debit) money out of your account.
+/// If it's a payment to an existing account, set IsExistingAccount to true,
+/// and only use this one. Do NOT create a Payment Received Request
+/// </summary>
+public sealed record CreatePaymentOutTransactionRequest :
+    CreateDebitTransactionRequest
+{
+    public bool IsToOwnAccount { get; set; }
 
     [JsonConstructor]
-    public CreatePurchaseTransactionApiRequest() :
+    public CreatePaymentOutTransactionRequest() :
+        base(TransactionEnums.TransactionKeys.PAYMENT_OUT)
+    { }
+
+    public CreatePaymentOutTransactionRequest(
+        string userId,
+        string accountId,
+        decimal amount,
+        string categoryId,
+        string description,
+        PayerPayeeRequest paymentOutTo,
+        bool isPaidToOwnAccount,
+        string subCategoryId,
+        DateTime transactionDate,
+        IEnumerable<string>? tags = null,
+        string extTransactionNo = "",
+        string refTransactionId = "") :
+        base(
+            userId,
+            TransactionEnums.TransactionKeys.PAYMENT_OUT,
+            accountId,
+            amount,
+            categoryId,
+            description,
+            payerPayee: paymentOutTo,
+            subCategoryId,
+            transactionDate,
+            tags,
+            extTransactionNo,
+            refTransactionId)
+    {
+        IsToOwnAccount = isPaidToOwnAccount;
+    }
+}
+
+
+/// <summary>
+/// For when a purchase has more than one groupings of items (split)
+/// </summary>
+public sealed record CreatePurchasesTransactionRequest :
+    CreateDebitTransactionRequest
+{
+    public List<TransactionRequestItem> Items { get; set; } = [];
+
+    public override decimal Amount => Items.Sum(i => i.Amount);
+
+    [JsonConstructor]
+    public CreatePurchasesTransactionRequest() :
         base(TransactionEnums.TransactionKeys.PURCHASE)
     { }
 
-    public CreatePurchaseTransactionApiRequest(
+    public CreatePurchasesTransactionRequest(
         string userId,
         string accountId,
         PayerPayeeRequest payee,
         string description,
         DateTime transactionDate,
-        List<TransactionApiRequestItem> items,
+        IEnumerable<TransactionRequestItem> items,
         IEnumerable<string>? tags = null,
-        string extTransactionId = "",
+        string extTransactionNo = "",
         string refTransactionId = "") :
         base(TransactionEnums.TransactionKeys.PURCHASE)
     {
@@ -220,20 +353,21 @@ public sealed record CreatePurchaseTransactionApiRequest :
         AccountId = accountId;
         PayerPayee = payee;
         Description = description;
-        ExtTransactionId = extTransactionId;
+        ExtTransactionNo = extTransactionNo;
         TransactionDate = transactionDate;
-        Items = items;
+        Items = items?.ToList() ?? [];
         RefTransactionId = refTransactionId;
         Tags = tags?.ToList() ?? [];
-        TotalAmount = items.Sum(i => i.Amount);
+        Amount = Items.Sum(i => i.Amount);
     }
 }
+
 
 /// <summary>
 /// Usually for when then money is taken out as Cash
 /// </summary>
 public sealed record CreateWithdrawalTransactionRequest :
-    CreateDebitTransactionApiRequest
+    CreateDebitTransactionRequest
 {
     [JsonConstructor]
     public CreateWithdrawalTransactionRequest() :
@@ -244,22 +378,26 @@ public sealed record CreateWithdrawalTransactionRequest :
         string userId,
         string accountId,
         decimal amount,
+        string categoryId,
         string description,
         PayerPayeeRequest withdrewTo,
+        string subCategoryId,
         DateTime transactionDate,
-        List<string>? tags = null,
-        string extTransactionId = "",
+        IEnumerable<string>? tags = null,
+        string extTransactionNo = "",
         string refTransactionId = "") :
         base(
             userId,
             TransactionEnums.TransactionKeys.WITHDRAWAL,
             accountId,
             amount,
+            categoryId,
             description,
             withdrewTo,
+            subCategoryId,
             transactionDate,
             tags,
-            extTransactionId,
+            extTransactionNo,
             refTransactionId)
     {
         //if (string.IsNullOrWhiteSpace(cashAccountId))
@@ -270,8 +408,8 @@ public sealed record CreateWithdrawalTransactionRequest :
 
 #endregion // Debit Transactions
 
-// 
-public sealed record TransactionApiRequestItem
+
+public sealed record TransactionRequestItem
 {
     public decimal Amount { get; set; }
 
@@ -280,4 +418,19 @@ public sealed record TransactionApiRequestItem
     public string SubCategoryId { get; set; } = string.Empty;
 
     public string Description { get; set; } = string.Empty;
+
+    [JsonConstructor]
+    public TransactionRequestItem() { }
+
+    public TransactionRequestItem(
+        decimal amount,
+        string categoryId,
+        string subCategoryId,
+        string description)
+    {
+        Amount = amount;
+        CategoryId = categoryId;
+        SubCategoryId = subCategoryId;
+        Description = description;
+    }
 }

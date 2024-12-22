@@ -3,7 +3,7 @@ using FluentValidation;
 using Habanerio.Xpnss.Categories.Application.Mappers;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
 using Habanerio.Xpnss.Categories.Infrastructure.Data.Documents;
-using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.DTOs.Categories;
 using Habanerio.Xpnss.Shared.Requests.Categories;
 using Habanerio.Xpnss.Shared.ValueObjects;
 using MediatR;
@@ -15,7 +15,7 @@ namespace Habanerio.Xpnss.Categories.Application.Commands;
 /// </summary>
 public record AddSubCategoriesCommand(
     string UserId,
-    AddSubCategoriesApiRequest Request) :
+    AddSubCategoriesRequest Request) :
     ICategoriesCommand<Result<CategoryDto>>, IRequest
 { }
 
@@ -49,6 +49,7 @@ public class AddSubCategoriesCommandHandler(ICategoriesRepository repository) :
 
         var requestSubCategories = request.SubCategories.ToArray();
 
+        //TODO: Check if it exists already?
         for (var i = 0; i < requestSubCategories.Length; i++)
         {
             var subCatDto = requestSubCategories[i];
@@ -82,7 +83,7 @@ public class AddSubCategoriesCommandHandler(ICategoriesRepository repository) :
         return parentCategoryDto;
     }
 
-    public class Validator : AbstractValidator<AddSubCategoriesApiRequest>
+    public class Validator : AbstractValidator<AddSubCategoriesRequest>
     {
         public Validator()
         {

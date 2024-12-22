@@ -75,9 +75,9 @@ public class MonthlyTotalsRepository(
 
     public async Task<Result<MonthlyTotal?>> GetAsync(
         string userId,
+        EntityEnums.Keys entityType,
         string entityId,
         string subEntityId,
-        EntityEnums.Keys entityType,
         int year,
         int month,
         CancellationToken cancellationToken = default)
@@ -132,12 +132,12 @@ public class MonthlyTotalsRepository(
 
     public async Task<Result<IEnumerable<MonthlyTotal>>> ListAsync(
         string userId,
-        string entityId,
         EntityEnums.Keys entityType,
+        string entityId,
         int year,
         CancellationToken cancellationToken = default)
     {
-        var results = await RangeAsync(userId, entityId, entityType, (year, 1), (year, 12), cancellationToken);
+        var results = await RangeAsync(userId, entityType, entityId, (year, 1), (year, 12), cancellationToken);
 
         return results;
 
@@ -169,8 +169,8 @@ public class MonthlyTotalsRepository(
 
     public async Task<Result<IEnumerable<MonthlyTotal>>> RangeAsync(
         string userId,
-        string entityId,
         EntityEnums.Keys entityType,
+        string entityId,
         (int Year, int Month) startMonth,
         (int Year, int Month) endMonth,
         CancellationToken cancellationToken = default)
@@ -183,22 +183,17 @@ public class MonthlyTotalsRepository(
             null :
             ObjectId.Parse(entityId);
 
-        //if (!ObjectId.TryParse(entityId, out var entityObjectId) ||
-        //    entityObjectId.Equals(ObjectId.Empty))
-        //    return Result.Fail($"Invalid EntityId: `{entityId}`");
-
-
-
         var monthlyTotalDocs = (await FindDocumentsAsync(t =>
                 t.UserId.Equals(userObjectId) &&
+                t.EntityType.Equals(entityType) &&
                 (entityObjectId == null || t.EntityId.Equals(entityObjectId)) &&
-                (entityType == null || t.EntityType.Equals(entityType)) &&
 
                 // Will this work? Could store a DateTime in the Document with yy/mm/01
                 (
                     new DateOnly(t.Year, t.Month, 1) >= new DateOnly(startMonth.Year, startMonth.Month, 1) &&
                     new DateOnly(t.Year, t.Month, 1) <= new DateOnly(endMonth.Year, endMonth.Month, 1)
                 ),
+
             cancellationToken)).ToList();
 
         if (monthlyTotalDocs.Count == 0)

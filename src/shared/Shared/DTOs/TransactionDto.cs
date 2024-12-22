@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+
 using Habanerio.Xpnss.Shared.Types;
 
 namespace Habanerio.Xpnss.Shared.DTOs;
@@ -11,17 +12,21 @@ public record TransactionDto
 
     public string AccountId { get; set; } = "";
 
+    public string CategoryId { get; set; } = "";
+
     public string Description { get; set; } = string.Empty;
 
-    public string ExtTransactionId { get; set; } = string.Empty;
+    public string ExtTransactionNo { get; set; } = string.Empty;
 
-    public bool IsCredit { get; protected set; }
+    public bool IsCredit { get; set; }
 
     public string PayerPayeeId { get; set; } = string.Empty;
 
     //public PayerPayeeDto PayerPayee { get; set; }
 
-    public string RefTransactionId { get; set; } = string.Empty;
+    //public string RefTransactionId { get; set; } = string.Empty;
+
+    public string SubCategoryId { get; set; } = "";
 
     public List<string> Tags { get; set; } = [];
 
@@ -31,11 +36,13 @@ public record TransactionDto
 
     [JsonPropertyName("TransactionType")]
     [JsonConverter(typeof(JsonNumberEnumConverter<TransactionEnums.TransactionKeys>))]
-    public TransactionEnums.TransactionKeys TransactionType { get; protected set; }
+    public TransactionEnums.TransactionKeys TransactionType { get; set; }
 
     public string TransactionTypeString => TransactionType.ToString();
 
     [JsonConstructor]
+    public TransactionDto() { }
+
     protected TransactionDto(
         bool isCredit,
         TransactionEnums.TransactionKeys transactionType)
@@ -47,23 +54,29 @@ public record TransactionDto
     protected TransactionDto(
         string userId,
         string accountId,
+        string categoryId,
         string description,
-        string extTransactionId,
+        string extTransactionNo,
         bool isCredit,
         string payerPayeeId,
-        string refTransactionId,
+        //string refTransactionId,
+        string subCategoryId,
         IEnumerable<string>? tags,
+        decimal totalAmount,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType)
     {
         UserId = userId;
         AccountId = accountId;
+        CategoryId = categoryId;
         Description = description;
-        ExtTransactionId = extTransactionId;
+        ExtTransactionNo = extTransactionNo;
         IsCredit = isCredit;
         PayerPayeeId = payerPayeeId;
-        RefTransactionId = refTransactionId;
+        //RefTransactionId = refTransactionId;
+        SubCategoryId = subCategoryId;
         Tags = tags?.ToList() ?? [];
+        TotalAmount = totalAmount;
         TransactionDate = transactionDate;
         TransactionType = transactionType;
     }
@@ -76,6 +89,13 @@ public record TransactionDto
 /// </summary>
 public record CreditTransactionDto : TransactionDto
 {
+    [JsonConstructor]
+    public CreditTransactionDto() :
+        base()
+    {
+        IsCredit = true;
+    }
+
     protected CreditTransactionDto(TransactionEnums.TransactionKeys transactionType) :
         base(true, transactionType)
     { }
@@ -85,10 +105,12 @@ public record CreditTransactionDto : TransactionDto
     protected CreditTransactionDto(
         string userId,
         string accountId,
+        string categoryId,
         string description,
-        string extTransactionId,
+        string extTransactionNo,
         string payerPayeeId,
-        string refTransactionId,
+        //string refTransactionId,
+        string subCategoryId,
         IEnumerable<string>? tags,
         decimal totalAmount,
         DateTime transactionDate,
@@ -96,16 +118,19 @@ public record CreditTransactionDto : TransactionDto
         base(
             userId,
             accountId,
+            categoryId,
             description,
-            extTransactionId,
-            true,
+            extTransactionNo,
+            isCredit: true,
             payerPayeeId,
-            refTransactionId,
+            //refTransactionId,
+            subCategoryId,
             tags,
+            totalAmount,
             transactionDate,
             transactionType)
     {
-        TotalAmount = totalAmount;
+        IsCredit = true;
     }
 }
 
@@ -123,25 +148,31 @@ public sealed record DepositTransactionDto :
     public DepositTransactionDto(
         string userId,
         string accountId,
+        string categoryId,
         string description,
-        string extTransactionId,
+        string extTransactionNo,
         string payerPayeeId,
-        string refTransactionId,
+        //string refTransactionId,
+        string subCategoryId,
         IEnumerable<string>? tags,
         decimal totalAmount,
         DateTime transactionDate) :
         base(
             userId,
             accountId,
+            categoryId,
             description,
-            extTransactionId,
+            extTransactionNo,
             payerPayeeId,
-            refTransactionId,
+            //refTransactionId,
+            subCategoryId,
             tags,
             totalAmount,
             transactionDate,
             TransactionEnums.TransactionKeys.DEPOSIT)
-    { }
+    {
+        IsCredit = false;
+    }
 }
 
 #endregion
@@ -151,22 +182,28 @@ public sealed record DepositTransactionDto :
 /// <summary>
 /// A Debit Transaction ("DR") is a transaction that adds money to an Account.
 /// </summary>
-public abstract record DebitTransactionDto : TransactionDto
+public record DebitTransactionDto : TransactionDto
 {
     [JsonConstructor]
+    public DebitTransactionDto() :
+        base()
+    {
+        IsCredit = false;
+    }
+
     protected DebitTransactionDto(TransactionEnums.TransactionKeys transactionType) :
         base(false, transactionType)
     { }
 
-    public override decimal TotalAmount { get; set; }
-
     protected DebitTransactionDto(
         string userId,
         string accountId,
+        string categoryId,
         string description,
-        string extTransactionId,
+        string extTransactionNo,
         string payerPayeeId,
-        string refTransactionId,
+        //string refTransactionId,
+        string subCategoryId,
         IEnumerable<string>? tags,
         decimal totalAmount,
         DateTime transactionDate,
@@ -174,20 +211,23 @@ public abstract record DebitTransactionDto : TransactionDto
         base(
             userId,
             accountId,
+            categoryId,
             description,
-            extTransactionId,
-            false,
+            extTransactionNo,
+            isCredit: false,
             payerPayeeId,
-            refTransactionId,
+            //refTransactionId,
+            subCategoryId,
             tags,
+            totalAmount,
             transactionDate,
             transactionType)
     {
-        TotalAmount = totalAmount;
+        IsCredit = false;
     }
 }
 
-public sealed record PurchaseTransactionDto :
+public sealed record PurchasesTransactionDto :
     DebitTransactionDto
 {
     public bool IsPaid => PaidDate.HasValue;
@@ -203,32 +243,34 @@ public sealed record PurchaseTransactionDto :
     public decimal TotalPaid { get; set; }
 
     [JsonConstructor]
-    public PurchaseTransactionDto() :
+    public PurchasesTransactionDto() :
         base(TransactionEnums.TransactionKeys.PURCHASE)
     { }
 
-    public PurchaseTransactionDto(
+    public PurchasesTransactionDto(
         string userId,
         string accountId,
         string description,
-        string extTransactionId,
-        IEnumerable<TransactionItemDto> items,
+        string extTransactionNo,
+        IEnumerable<TransactionItemDto>? items,
         string payerPayeeId,
-        string refTransactionId,
+        //string refTransactionId,
         IEnumerable<string>? tags,
         decimal totalPaid,
         DateTime transactionDate) :
         base(
             userId,
             accountId,
+            categoryId: string.Empty,
             description,
-            extTransactionId,
+            extTransactionNo,
             payerPayeeId,
-            refTransactionId,
+            //refTransactionId,
+            subCategoryId: string.Empty,
             tags,
-            0,
+            totalAmount: 0,
             transactionDate,
-            TransactionEnums.TransactionKeys.PURCHASE)
+            transactionType: TransactionEnums.TransactionKeys.PURCHASE)
     {
         Items = items?.ToList() ?? [];
         TotalPaid = totalPaid;
@@ -253,20 +295,24 @@ public sealed record WithdrawalTransactionDto :
     public WithdrawalTransactionDto(
         string userId,
         string accountId,
+        string categoryId,
         string description,
-        string extTransactionId,
+        string extTransactionNo,
         string payerPayeeId,
-        string refTransactionId,
+        //string refTransactionId,
+        string subCategoryId,
         IEnumerable<string>? tags,
         decimal totalAmount,
         DateTime transactionDate) :
         base(
             userId,
             accountId,
+            categoryId,
             description,
-            extTransactionId,
+            extTransactionNo,
             payerPayeeId,
-            refTransactionId,
+            //refTransactionId,
+            subCategoryId,
             tags,
             totalAmount,
             transactionDate,
@@ -275,35 +321,133 @@ public sealed record WithdrawalTransactionDto :
 }
 
 
-public sealed record PaymentTransactionDto :
-    DebitTransactionDto
+public abstract record PaymentTransactionDto :
+    TransactionDto
 {
+    /// <summary>
+    /// Whether the payment was made to, or from, and existing account within the system.
+    /// </summary>
+    public bool IsOwnAccount { get; set; }
+
     [JsonConstructor]
-    public PaymentTransactionDto() :
-        base(TransactionEnums.TransactionKeys.PAYMENT)
+    protected PaymentTransactionDto() :
+        base(
+            isCredit: false,
+            transactionType: TransactionEnums.TransactionKeys.PAYMENT_OUT)
     { }
 
-    public PaymentTransactionDto(
+    protected PaymentTransactionDto(TransactionEnums.TransactionKeys transactionType) :
+        base(
+            isCredit: transactionType.Equals(TransactionEnums.TransactionKeys.PAYMENT_IN),
+            transactionType)
+    { }
+
+    protected PaymentTransactionDto(
         string userId,
         string accountId,
+        string categoryId,
         string description,
-        string extTransactionId,
+        string extTransactionNo,
+        bool isExistingAccount,
         string payerPayeeId,
-        string refTransactionId,
+        //string refTransactionId,
+        string subCategoryId,
+        IEnumerable<string>? tags,
+        decimal totalAmount,
+        DateTime transactionDate,
+        TransactionEnums.TransactionKeys transactionType) :
+        base(
+            userId,
+            accountId,
+            categoryId,
+            description,
+            extTransactionNo,
+            isCredit: transactionType.Equals(TransactionEnums.TransactionKeys.PAYMENT_IN),
+            payerPayeeId,
+            //refTransactionId,
+            subCategoryId,
+            tags,
+            totalAmount,
+            transactionDate,
+            transactionType)
+    {
+        IsOwnAccount = isExistingAccount;
+    }
+}
+
+public sealed record PaymentOutTransactionDto :
+    PaymentTransactionDto
+{
+    [JsonConstructor]
+    public PaymentOutTransactionDto() :
+        base(TransactionEnums.TransactionKeys.PAYMENT_OUT)
+    { }
+
+    public PaymentOutTransactionDto(
+        string userId,
+        string accountId,
+        string categoryId,
+        string description,
+        string extTransactionNo,
+        bool isToOwnAccount,
+        string paidToId,
+        //string refTransactionId,
+        string subCategoryId,
         IEnumerable<string>? tags,
         decimal totalAmount,
         DateTime transactionDate) :
         base(
             userId,
             accountId,
+            categoryId,
             description,
-            extTransactionId,
-            payerPayeeId,
-            refTransactionId,
+            extTransactionNo,
+            isToOwnAccount,
+            paidToId,
+            //refTransactionId,
+            subCategoryId,
             tags,
             totalAmount,
             transactionDate,
-            TransactionEnums.TransactionKeys.PAYMENT)
+            transactionType: TransactionEnums.TransactionKeys.PAYMENT)
+    { }
+}
+
+public sealed record PaymentInTransactionDto :
+    PaymentTransactionDto
+{
+    [JsonConstructor]
+    public PaymentInTransactionDto() :
+        base(transactionType: TransactionEnums.TransactionKeys.PAYMENT_IN)
+    { }
+
+    public PaymentInTransactionDto(
+        string userId,
+        string accountId,
+        string categoryId,
+        string description,
+        string extTransactionNo,
+        bool isFromOwnAccount,
+        string payerPayeeId,
+        //string refTransactionId,
+        string subCategoryId,
+        IEnumerable<string>? tags,
+        decimal totalAmount,
+        DateTime transactionDate) :
+        base(
+            userId,
+            accountId,
+            categoryId,
+            description,
+            extTransactionNo,
+            isFromOwnAccount,
+            payerPayeeId,
+            //refTransactionId,
+            subCategoryId,
+            tags,
+            totalAmount,
+            transactionDate,
+            transactionType: TransactionEnums.TransactionKeys.PAYMENT_IN)
     { }
 }
 

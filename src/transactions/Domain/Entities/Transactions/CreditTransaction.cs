@@ -12,10 +12,10 @@ public class CreditTransaction : Transaction
             UserId userId,
             AccountId accountId,
             string description,
-            string extTransactionId,
+            string extTransactionNo,
             TransactionItem item,
             PayerPayeeId payerPayeeId,
-            RefTransactionId refTransactionId,
+            //RefTransactionId refTransactionId,
             IEnumerable<string>? tags,
             DateTime transactionDate,
             TransactionEnums.TransactionKeys transactionType) :
@@ -23,11 +23,11 @@ public class CreditTransaction : Transaction
             userId,
             accountId,
             description,
-            extTransactionId,
+            extTransactionNo,
             isCredit: true,
             item,
             payerPayeeId,
-            refTransactionId,
+            //refTransactionId,
             tags,
             transactionDate,
             transactionType)
@@ -41,10 +41,10 @@ public class CreditTransaction : Transaction
             UserId userId,
             AccountId accountId,
             string description,
-            string extTransactionId,
+            string extTransactionNo,
             TransactionItem item,
             PayerPayeeId payerPayeeId,
-            RefTransactionId refTransactionId,
+            //RefTransactionId refTransactionId,
             IEnumerable<string>? tags,
             DateTime transactionDate,
             TransactionEnums.TransactionKeys transactionType,
@@ -56,11 +56,11 @@ public class CreditTransaction : Transaction
             userId,
             accountId,
             description,
-            extTransactionId,
+            extTransactionNo,
             isCredit: true,
             item,
             payerPayeeId,
-            refTransactionId,
+            //refTransactionId,
             tags,
             transactionDate,
             transactionType,
@@ -69,14 +69,17 @@ public class CreditTransaction : Transaction
             dateDeleted)
     { }
 
-    public static CreditTransaction NewDeposit(
+    public static CreditTransaction New(
         UserId userId,
+        TransactionEnums.TransactionKeys transactionType,
         AccountId accountId,
         Money amount,
+        CategoryId categoryId,
         string description,
-        string extTransactionId,
+        string extTransactionNo,
         PayerPayeeId payerPayeeId,
-        RefTransactionId refTransactionId,
+        //RefTransactionId refTransactionId,
+        SubCategoryId subCategoryId,
         IEnumerable<string>? tags,
         DateTime transactionDate)
     {
@@ -84,14 +87,44 @@ public class CreditTransaction : Transaction
             userId,
             accountId,
             description,
-            extTransactionId,
+            extTransactionNo,
             TransactionItem.New(
                 new Money(amount),
-                CategoryId.Empty,
-                SubCategoryId.Empty,
+                categoryId,
+                subCategoryId,
                 description),
             payerPayeeId,
-            refTransactionId,
+            //refTransactionId,
+            tags,
+            transactionDate,
+            transactionType);
+    }
+
+    public static CreditTransaction NewDeposit(
+        UserId userId,
+        AccountId accountId,
+        Money amount,
+        CategoryId categoryId,
+        string description,
+        string extTransactionNo,
+        PayerPayeeId payerPayeeId,
+        //RefTransactionId refTransactionId,
+        SubCategoryId subCategoryId,
+        IEnumerable<string>? tags,
+        DateTime transactionDate)
+    {
+        return new CreditTransaction(
+            userId,
+            accountId,
+            description,
+            extTransactionNo,
+            TransactionItem.New(
+                new Money(amount),
+                categoryId,
+                subCategoryId,
+                description),
+            payerPayeeId,
+            //refTransactionId,
             tags,
             transactionDate,
             TransactionEnums.TransactionKeys.DEPOSIT);
@@ -103,10 +136,10 @@ public class CreditTransaction : Transaction
         UserId userId,
         AccountId accountId,
         string description,
-        string extTransactionId,
+        string extTransactionNo,
         TransactionItem item,
         PayerPayeeId payerPayeeId,
-        RefTransactionId refTransactionId,
+        //RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType,
@@ -114,15 +147,19 @@ public class CreditTransaction : Transaction
         DateTime? dateUpdated,
         DateTime? dateDeleted)
     {
+        if (!TransactionEnums.IsCreditTransaction(transactionType))
+            throw new InvalidOperationException($"'{transactionType.ToString()}' " +
+                                                $"Transaction type is not a Credit Transaction");
+
         return new CreditTransaction(
             id,
             userId,
             accountId,
             description,
-            extTransactionId,
+            extTransactionNo,
             item,
             payerPayeeId,
-            refTransactionId,
+            //refTransactionId,
             tags,
             transactionDate,
             transactionType,

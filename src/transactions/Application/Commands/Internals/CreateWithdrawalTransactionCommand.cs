@@ -46,13 +46,14 @@ internal sealed class CreateWithdrawalTransactionCommandHandler(
         var withdrawalDoc = DebitTransaction.NewWithdrawal(
             new UserId(transactionRequest.UserId),
             new AccountId(transactionRequest.AccountId),
-            new Money(transactionRequest.TotalAmount),
+            new Money(transactionRequest.Amount),
+            new CategoryId(transactionRequest.CategoryId),
             transactionRequest.Description,
             new PayerPayeeId(transactionRequest.PayerPayee.Id),
-            new RefTransactionId(transactionRequest.RefTransactionId),
+            //new RefTransactionId(transactionRequest.RefTransactionId),
+            new SubCategoryId(transactionRequest.SubCategoryId),
             transactionRequest.TransactionDate,
-            transactionRequest.Tags,
-            transactionRequest.ExtTransactionId);
+            transactionRequest.Tags);
 
         var result = await _repository.AddAsync(withdrawalDoc, cancellationToken);
 
@@ -92,7 +93,7 @@ internal sealed class CreateWithdrawalTransactionCommandHandler(
         {
             RuleFor(x => x.Request.UserId).NotEmpty();
             RuleFor(x => x.Request.AccountId).NotEmpty();
-            RuleFor(x => x.Request.TotalAmount).GreaterThan(0);
+            RuleFor(x => x.Request.Amount).GreaterThan(0);
             RuleFor(x => x.Request.Description).NotEmpty();
             RuleFor(x => x.Request.TransactionDate).NotEmpty();
         }

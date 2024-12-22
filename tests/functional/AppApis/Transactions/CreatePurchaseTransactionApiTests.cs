@@ -8,7 +8,7 @@ using MongoDB.Bson;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis.Transactions;
 
-public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> factory) :
+public class CreatePurchasesTransactionApiTests(WebApplicationFactory<Program> factory) :
     CreateTransactionBaseApiTests(factory)
 {
     private const TransactionEnums.TransactionKeys TRANSACTION_TYPE = TransactionEnums.TransactionKeys.PURCHASE;
@@ -18,7 +18,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
     /// and that the Balance of the Account is INCREASED
     /// </summary>
     [Fact]
-    public async Task CanCall_CreatePurchaseTransaction_CreditAccount_WithValidRequest_ReturnsOk()
+    public async Task CanCall_CreatePurchasesTransaction_CreditAccount_WithValidRequest_ReturnsOk()
     {
         var testUserId = await GetTestUserObjectIdAsync();
 
@@ -30,7 +30,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
         if (existingAccount is null)
             Assert.Fail("Need to add accounts before running this test");
 
-        await CanCall_CreatePurchaseTransaction_WithValidRequest_ReturnsOk(
+        await CanCall_CreatePurchasesTransaction_WithValidRequest_ReturnsOk(
             testUserId,
             existingAccount,
             true);
@@ -42,7 +42,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
     /// </summary>
     /// <returns></returns>
     [Fact]
-    public async Task CanCall_CreatePurchaseTransaction_DebitAccount_WithValidRequest_ReturnsOk()
+    public async Task CanCall_CreatePurchasesTransaction_DebitAccount_WithValidRequest_ReturnsOk()
     {
         var testUserId = await GetTestUserObjectIdAsync();
 
@@ -54,7 +54,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
         if (existingAccount is null)
             Assert.Fail("Need to add accounts before running this test");
 
-        await CanCall_CreatePurchaseTransaction_WithValidRequest_ReturnsOk(
+        await CanCall_CreatePurchasesTransaction_WithValidRequest_ReturnsOk(
             testUserId,
             existingAccount,
             true);
@@ -64,7 +64,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
     /// Tests that a transaction can be created with a new PayerPayee
     /// </summary>
     [Fact]
-    public async Task CanCall_CreatePurchaseTransaction_WithNewPayerPayee_ReturnsOk()
+    public async Task CanCall_CreatePurchasesTransaction_WithNewPayerPayee_ReturnsOk()
     {
         var testUserId = await GetTestUserObjectIdAsync();
 
@@ -75,7 +75,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
         if (existingAccount is null)
             Assert.Fail("Need to add accounts before running this test");
 
-        await CanCall_CreatePurchaseTransaction_WithValidRequest_ReturnsOk(
+        await CanCall_CreatePurchasesTransaction_WithValidRequest_ReturnsOk(
             testUserId,
             existingAccount,
             false);
@@ -85,7 +85,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
     /// Tests that a transaction can be created with a NO PayerPayee
     /// </summary>
     [Fact]
-    public async Task CanCall_CreatePurchaseTransaction_WithNoPayerPayee_ReturnsOk()
+    public async Task CanCall_CreatePurchasesTransaction_WithNoPayerPayee_ReturnsOk()
     {
         var testUserId = await GetTestUserObjectIdAsync();
 
@@ -96,14 +96,14 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
         if (existingAccount is null)
             Assert.Fail("Need to add accounts before running this test");
 
-        await CanCall_CreatePurchaseTransaction_WithValidRequest_ReturnsOk(
+        await CanCall_CreatePurchasesTransaction_WithValidRequest_ReturnsOk(
             testUserId,
             existingAccount,
             null);
     }
 
 
-    private async Task CanCall_CreatePurchaseTransaction_WithValidRequest_ReturnsOk(
+    private async Task CanCall_CreatePurchasesTransaction_WithValidRequest_ReturnsOk(
         ObjectId testUserId,
         AccountDocument existingAccount,
         bool? useExistingPayerPayee)
@@ -143,13 +143,13 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
         var subCategory2 = category2.SubCategories[random.Next(0, category2.SubCategories.Count - 1)];
 
         // Arrange
-        var createTransactionRequest = new CreatePurchaseTransactionApiRequest(
+        var createTransactionRequest = new CreatePurchasesTransactionRequest(
             testUserId.ToString(),
             existingAccount.Id.ToString(),
             randomPayerPayeeRequest ?? new PayerPayeeRequest(),
             transactionDescription,
             transactionDate,
-            new List<TransactionApiRequestItem>
+            new List<TransactionRequestItem>
             {
                 new()
                 {
@@ -168,7 +168,7 @@ public class CreatePurchaseTransactionApiTests(WebApplicationFactory<Program> fa
                 }
             },
             new List<string> { "tag1", "tag3", "tag 7" },
-            "extTransactionId");
+            "extTransactionNo");
 
         // Assert
         await AssertTransactionAsync(testUserId, existingAccount, createTransactionRequest, TRANSACTION_TYPE);

@@ -1,10 +1,10 @@
 using System.Net;
 using Carter;
-using Habanerio.Xpnss.Shared.DTOs;
 using Habanerio.Xpnss.Shared.Requests.Categories;
 using Habanerio.Xpnss.Categories.Application.Commands;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Habanerio.Xpnss.Shared.DTOs.Categories;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Categories;
 
@@ -18,7 +18,7 @@ public class AddSubCategoriesEndpoint : BaseEndpoint
                 async (
                     [FromRoute] string userId,
                     [FromRoute] string categoryId,
-                    [FromBody] AddSubCategoriesApiRequest request,
+                    [FromBody] AddSubCategoriesRequest request,
                     [FromServices] ICategoriesService service,
                     CancellationToken cancellationToken) =>
                 {
@@ -35,7 +35,7 @@ public class AddSubCategoriesEndpoint : BaseEndpoint
         public static async Task<IResult> HandleAsync(
             string userId,
             string categoryId,
-            AddSubCategoriesApiRequest request,
+            AddSubCategoriesRequest request,
             ICategoriesService service,
             CancellationToken cancellationToken)
         {

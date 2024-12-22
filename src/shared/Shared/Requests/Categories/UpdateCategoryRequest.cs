@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Habanerio.Xpnss.Shared.Requests.Categories;
 
-public sealed record UpdateCategoryApiRequest : UserRequiredRequest
+public sealed record UpdateCategoryRequest : UserRequiredRequest
 {
     public string Id { get; set; } = "";
 
@@ -13,10 +13,10 @@ public sealed record UpdateCategoryApiRequest : UserRequiredRequest
     public int SortOrder { get; set; }
 
     [JsonConstructor]
-    public UpdateCategoryApiRequest()
+    public UpdateCategoryRequest()
     { }
 
-    public UpdateCategoryApiRequest(
+    public UpdateCategoryRequest(
         string userId,
         string id,
         string name,

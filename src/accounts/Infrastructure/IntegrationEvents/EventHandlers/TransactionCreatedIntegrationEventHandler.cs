@@ -61,7 +61,7 @@ public class TransactionCreatedIntegrationEventHandler(
 
         var account = accountResult.Value;
 
-        account.AddTransactionAmount(new Money(@event.Amount), @event.TransactionType);
+        account.AddTransactionAmount(@event.DateOfTransaction, new Money(@event.Amount), @event.TransactionType);
 
         try
         {

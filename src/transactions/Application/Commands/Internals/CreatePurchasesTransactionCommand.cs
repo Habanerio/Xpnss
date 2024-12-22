@@ -12,14 +12,14 @@ using Habanerio.Xpnss.Shared.Requests.Transactions;
 
 namespace Habanerio.Xpnss.Transactions.Application.Commands.Internals;
 
-internal sealed record CreatePurchaseTransactionCommand(
-    CreatePurchaseTransactionApiRequest ApiRequest) :
-    ITransactionsCommand<Result<PurchaseTransactionDto>>;
+internal sealed record CreatePurchasesTransactionCommand(
+    CreatePurchasesTransactionRequest Request) :
+    ITransactionsCommand<Result<PurchasesTransactionDto>>;
 
-internal sealed class CreatePurchaseTransactionHandler(
+internal sealed class CreatePurchasesTransactionHandler(
     ITransactionsRepository repository,
     IMediator mediator) :
-    IRequestHandler<CreatePurchaseTransactionCommand, Result<PurchaseTransactionDto>>
+    IRequestHandler<CreatePurchasesTransactionCommand, Result<PurchasesTransactionDto>>
 {
     // Would like to use the following, but wasn't able to get it to work. Revisit later.
     ///private readonly IEventDispatcher _eventDispatcher = eventDispatcher ??
@@ -31,8 +31,8 @@ internal sealed class CreatePurchaseTransactionHandler(
     private readonly IMediator _mediator = mediator ??
         throw new ArgumentNullException(nameof(mediator));
 
-    public async Task<Result<PurchaseTransactionDto>> Handle(
-        CreatePurchaseTransactionCommand command,
+    public async Task<Result<PurchasesTransactionDto>> Handle(
+        CreatePurchasesTransactionCommand command,
         CancellationToken cancellationToken)
     {
         var validator = new Validator();
@@ -42,13 +42,13 @@ internal sealed class CreatePurchaseTransactionHandler(
         if (!validationResult.IsValid)
             return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
-        var transactionRequest = command.ApiRequest;
+        var transactionRequest = command.Request;
 
-        var transactionEntity = PurchaseTransaction.New(
+        var transactionEntity = PurchasesTransaction.New(
             new UserId(transactionRequest.UserId),
             new AccountId(transactionRequest.AccountId),
             transactionRequest.Description,
-            transactionRequest.ExtTransactionId,
+            transactionRequest.ExtTransactionNo,
             transactionRequest.Items
                 .Select(i =>
                     TransactionItem.New(
@@ -58,7 +58,7 @@ internal sealed class CreatePurchaseTransactionHandler(
                         i.Description)
                 ).ToList(),
             new PayerPayeeId(transactionRequest.PayerPayee.Id),
-            new RefTransactionId(transactionRequest.RefTransactionId),
+            //new RefTransactionId(transactionRequest.RefTransactionId),
             transactionRequest.Tags,
             transactionRequest.TransactionDate);
 
@@ -69,27 +69,27 @@ internal sealed class CreatePurchaseTransactionHandler(
 
         var transaction = result.Value;
 
-        if (transaction is not PurchaseTransaction purchaseTransaction)
-            throw new InvalidCastException("Failed to map Transaction to PurchaseTransaction");
+        if (transaction is not PurchasesTransaction purchasesTransaction)
+            throw new InvalidCastException($"Failed to add the {nameof(Transaction)}");
 
-        if (ApplicationMapper.Map(result.Value) is not PurchaseTransactionDto purchaseTransactionDto)
-            throw new InvalidCastException("Failed to map PurchaseTransaction to PurchaseTransactionDto");
+        if (ApplicationMapper.Map(result.Value) is not PurchasesTransactionDto purchasesTransactionDto)
+            throw new InvalidCastException($"Failed to map {nameof(PurchasesTransaction)} to {nameof(PurchasesTransactionDto)}");
 
-        // Iterate over all PurchaseTransaction Items and publish
+        // Iterate over all PurchasesTransaction Items and publish
         // TransactionCreatedIntegrationEvent for category/amount
-        foreach (var transactionItem in purchaseTransaction.Items)
+        foreach (var transactionItem in purchasesTransaction.Items)
         {
             var transactionCreatedIntegrationEvent = new TransactionCreatedIntegrationEvent(
-                purchaseTransaction.Id.Value,
-                purchaseTransaction.UserId.Value,
-                purchaseTransaction.AccountId.Value,
+                purchasesTransaction.Id.Value,
+                purchasesTransaction.UserId.Value,
+                purchasesTransaction.AccountId.Value,
 
                 // transactionItem
                 transactionItem.CategoryId.Value,
                 transactionItem.SubCategoryId.Value,
 
-                purchaseTransaction.PayerPayeeId.Value,
-                purchaseTransaction.TransactionType,
+                purchasesTransaction.PayerPayeeId.Value,
+                purchasesTransaction.TransactionType,
 
                 // transactionItem
                 transactionItem.Amount.Value,
@@ -99,19 +99,19 @@ internal sealed class CreatePurchaseTransactionHandler(
             await _mediator.Publish(transactionCreatedIntegrationEvent, cancellationToken);
         }
 
-        return purchaseTransactionDto;
+        return purchasesTransactionDto;
     }
 
-    public class Validator : AbstractValidator<CreatePurchaseTransactionCommand>
+    public class Validator : AbstractValidator<CreatePurchasesTransactionCommand>
     {
         public Validator()
         {
-            RuleFor(x => x.ApiRequest.UserId).NotEmpty();
-            RuleFor(x => x.ApiRequest.AccountId).NotEmpty();
-            RuleFor(x => x.ApiRequest.TransactionDate).NotEmpty();
-            RuleFor(x => x.ApiRequest.TransactionType).NotNull();
-            RuleFor(x => x.ApiRequest.Items).NotEmpty();
-            RuleFor(x => x.ApiRequest.Items
+            RuleFor(x => x.Request.UserId).NotEmpty();
+            RuleFor(x => x.Request.AccountId).NotEmpty();
+            RuleFor(x => x.Request.TransactionDate).NotEmpty();
+            RuleFor(x => x.Request.TransactionType).NotNull();
+            RuleFor(x => x.Request.Items).NotEmpty();
+            RuleFor(x => x.Request.Items
                     .TrueForAll(i => i.Amount >= 0))
                 .Equal(true);
         }

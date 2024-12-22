@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using Habanerio.Xpnss.Shared.Types;
 
-namespace Habanerio.Xpnss.Shared.DTOs;
+namespace Habanerio.Xpnss.Shared.DTOs.Categories;
 
 public sealed record CategoryDto
 {
@@ -13,7 +13,7 @@ public sealed record CategoryDto
 
     [JsonPropertyName("CategoryType")]
     [JsonConverter(typeof(JsonNumberEnumConverter<CategoryGroupEnums.CategoryKeys>))]
-    public CategoryGroupEnums.CategoryKeys CategoryType { get; set; } = CategoryGroupEnums.CategoryKeys.EXPENSE;
+    public CategoryGroupEnums.CategoryKeys CategoryType { get; set; } = CategoryGroupEnums.CategoryKeys.EXPENSES;
 
     public string CategoryTypeString => CategoryType.ToString();
 

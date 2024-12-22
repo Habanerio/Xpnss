@@ -17,7 +17,6 @@ public static class TransactionsSetup
         //CreateTransactionRequestsJsonConverter
         services.Configure<JsonOptions>(opt =>
         {
-            //opt.SerializerOptions.PropertyNameCaseInsensitive = true;
             opt.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             opt.SerializerOptions.Converters.Add(new CreateTransactionRequestsJsonConverter());
             opt.SerializerOptions.Converters.Add(new TransactionDtoJsonConverter());
@@ -43,10 +42,9 @@ public static class TransactionsSetup
 
         BsonClassMap.RegisterClassMap<CreditTransactionDocument>();
         BsonClassMap.RegisterClassMap<DebitTransactionDocument>();
-        //BsonClassMap.RegisterClassMap<DepositTransactionDocument>();
-        //BsonClassMap.RegisterClassMap<PaymentTransactionDocument>();
-        BsonClassMap.RegisterClassMap<PurchaseTransactionDocument>();
-        //BsonClassMap.RegisterClassMap<WithdrawalTransactionDocument>();
+        BsonClassMap.RegisterClassMap<PaymentInTransactionDocument>();
+        BsonClassMap.RegisterClassMap<PaymentOutTransactionDocument>();
+        BsonClassMap.RegisterClassMap<PurchasesTransactionDocument>();
 
         return services;
     }

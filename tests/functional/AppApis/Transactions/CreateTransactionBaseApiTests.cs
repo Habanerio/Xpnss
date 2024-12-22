@@ -61,13 +61,13 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
                 originalMonthlyTotalDocs,
                 actualTransactionDto);
         }
-        else if (originalRequest is CreatePurchaseTransactionApiRequest createPurchaseRequest)
+        else if (originalRequest is CreatePurchasesTransactionRequest createPurchaseRequest)
         {
             Assert.NotNull(createPurchaseRequest);
 
             actualTransactionDto =
                 await GetCreateTransactionFromApi
-                    <CreatePurchaseTransactionApiRequest, PurchaseTransactionDto>
+                    <CreatePurchasesTransactionRequest, PurchasesTransactionDto>
                     (testUserId, createPurchaseRequest);
 
             await AssertTransactionResultDtoAsync(
@@ -131,11 +131,11 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
         Assert.Equal(createTransactionRequest.UserId, actualTransactionDto.UserId);
         Assert.Equal(createTransactionRequest.AccountId, actualTransactionDto.AccountId);
         Assert.Equal(createTransactionRequest.Description, actualTransactionDto.Description);
-        Assert.Equal(createTransactionRequest.ExtTransactionId, actualTransactionDto.ExtTransactionId);
+        Assert.Equal(createTransactionRequest.ExtTransactionNo, actualTransactionDto.ExtTransactionNo);
         Assert.Equal(createTransactionRequest.IsCredit, actualTransactionDto.IsCredit);
         Assert.Equal(createTransactionRequest.TransactionDate.Date, actualTransactionDto.TransactionDate);
         Assert.Equal(createTransactionRequest.Tags, actualTransactionDto.Tags);
-        Assert.Equal(createTransactionRequest.TotalAmount, actualTransactionDto.TotalAmount);
+        Assert.Equal(createTransactionRequest.Amount, actualTransactionDto.TotalAmount);
         Assert.Equal(createTransactionRequest.TransactionType, actualTransactionDto.TransactionType);
 
         AssertAccount(testUserId,
@@ -152,11 +152,11 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
             AssertDepositTransaction(depositRequest, depositDto);
         }
         else if (createTransactionRequest is
-                     CreatePurchaseTransactionApiRequest purchaseRequest &&
+                     CreatePurchasesTransactionRequest purchaseRequest &&
                  actualTransactionDto is
-                     PurchaseTransactionDto purchaseDto)
+                     PurchasesTransactionDto purchaseDto)
         {
-            AssertPurchaseTransaction(purchaseRequest, purchaseDto);
+            AssertPurchasesTransaction(purchaseRequest, purchaseDto);
         }
         else if (createTransactionRequest is
                      CreateWithdrawalTransactionRequest withdrawalRequest &&
@@ -195,7 +195,7 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
             // TODO: Finish this ...
         }
 
-        //if (actualPurchaseTransactionDto is not null)
+        //if (actualPurchasesTransactionDto is not null)
         //{
         //    var monthlyTotalDoc = updatedMonthlyTotalDocs.Find(t =>
         //        t.Year == createTransactionRequest.TransactionDate.Year &&
@@ -254,24 +254,24 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
     {
         Assert.NotNull(transactionDto);
         Assert.Equal(transactionRequest.TransactionDate, transactionDto.TransactionDate);
-        Assert.Equal(transactionRequest.TotalAmount, transactionDto.TotalAmount);
+        Assert.Equal(transactionRequest.Amount, transactionDto.TotalAmount);
     }
 
-    protected static void AssertPurchaseTransaction(
-        CreatePurchaseTransactionApiRequest transactionApiRequest,
-        PurchaseTransactionDto? transactionDto)
+    protected static void AssertPurchasesTransaction(
+        CreatePurchasesTransactionRequest transactionRequest,
+        PurchasesTransactionDto? transactionDto)
     {
         Assert.NotNull(transactionDto);
-        Assert.Equal(transactionApiRequest.TransactionDate, transactionDto.TransactionDate);
-        Assert.Equal(transactionApiRequest.TotalAmount, transactionDto.TotalAmount);
+        Assert.Equal(transactionRequest.TransactionDate, transactionDto.TransactionDate);
+        Assert.Equal(transactionRequest.Amount, transactionDto.TotalAmount);
 
-        Assert.Equal(transactionApiRequest.Items.Count, transactionApiRequest.Items.Count);
+        Assert.Equal(transactionRequest.Items.Count, transactionRequest.Items.Count);
 
-        Assert.Equal(transactionApiRequest.Items.Sum(i =>
+        Assert.Equal(transactionRequest.Items.Sum(i =>
             i.Amount), transactionDto.TotalAmount);
 
         // New transaction, Total Owing should be the same as Total Amount
-        Assert.Equal(transactionApiRequest.Items.Sum(i =>
+        Assert.Equal(transactionRequest.Items.Sum(i =>
             i.Amount), transactionDto.TotalOwing);
 
         // New transaction, there should be no payments
@@ -279,7 +279,7 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
         Assert.Null(transactionDto.PaidDate);
         Assert.Equal(0, transactionDto.TotalPaid);
 
-        foreach (var item in transactionApiRequest.Items)
+        foreach (var item in transactionRequest.Items)
         {
             var actualTransactionItem = transactionDto.Items.Find(i =>
                 i.CategoryId == item.CategoryId &&
@@ -296,7 +296,7 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
     {
         Assert.NotNull(transactionDto);
         Assert.Equal(transactionRequest.TransactionDate, transactionDto.TransactionDate);
-        Assert.Equal(transactionRequest.TotalAmount, transactionDto.TotalAmount);
+        Assert.Equal(transactionRequest.Amount, transactionDto.TotalAmount);
         Assert.Equal(transactionRequest.PayerPayee.Id, transactionDto.PayerPayeeId);
     }
 

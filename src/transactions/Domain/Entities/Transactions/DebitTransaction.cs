@@ -12,10 +12,9 @@ public class DebitTransaction : Transaction
             UserId userId,
             AccountId accountId,
             string description,
-            string extTransactionId,
+            string extTransactionNo,
             TransactionItem item,
             PayerPayeeId payerPayeeId,
-            RefTransactionId refTransactionId,
             IEnumerable<string>? tags,
             DateTime transactionDate,
             TransactionEnums.TransactionKeys transactionType) :
@@ -23,11 +22,10 @@ public class DebitTransaction : Transaction
             userId,
             accountId,
             description,
-            extTransactionId,
+            extTransactionNo,
             isCredit: false,
             item,
             payerPayeeId,
-            refTransactionId,
             tags,
             transactionDate,
             transactionType)
@@ -40,10 +38,10 @@ public class DebitTransaction : Transaction
         UserId userId,
         AccountId accountId,
         string description,
-        string extTransactionId,
+        string extTransactionNo,
         IEnumerable<TransactionItem> items,
         PayerPayeeId payerPayeeId,
-        RefTransactionId refTransactionId,
+        //RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType) :
@@ -51,11 +49,11 @@ public class DebitTransaction : Transaction
             userId,
             accountId,
             description,
-            extTransactionId,
+            extTransactionNo,
             isCredit: false,
             items,
             payerPayeeId,
-            refTransactionId,
+            //refTransactionId,
             tags,
             transactionDate,
             transactionType)
@@ -69,10 +67,10 @@ public class DebitTransaction : Transaction
             UserId userId,
             AccountId accountId,
             string description,
-            string extTransactionId,
+            string extTransactionNo,
             TransactionItem item,
             PayerPayeeId payerPayeeId,
-            RefTransactionId refTransactionId,
+            //RefTransactionId refTransactionId,
             IEnumerable<string>? tags,
             DateTime transactionDate,
             TransactionEnums.TransactionKeys transactionType,
@@ -84,11 +82,11 @@ public class DebitTransaction : Transaction
             userId,
             accountId,
             description,
-            extTransactionId,
+            extTransactionNo,
             isCredit: false,
             item,
             payerPayeeId,
-            refTransactionId,
+            //refTransactionId,
             tags,
             transactionDate,
             transactionType,
@@ -105,10 +103,9 @@ public class DebitTransaction : Transaction
         UserId userId,
         AccountId accountId,
         string description,
-        string extTransactionId,
+        string extTransactionNo,
         IEnumerable<TransactionItem> items,
         PayerPayeeId payerPayeeId,
-        RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType,
@@ -120,11 +117,10 @@ public class DebitTransaction : Transaction
             userId,
             accountId,
             description,
-            extTransactionId,
+            extTransactionNo,
             isCredit: false,
             items,
             payerPayeeId,
-            refTransactionId,
             tags,
             transactionDate,
             transactionType,
@@ -133,65 +129,93 @@ public class DebitTransaction : Transaction
             dateDeleted)
     { }
 
+    public static DebitTransaction New(
+        UserId userId,
+        TransactionEnums.TransactionKeys transactionType,
+        AccountId accountId,
+        Money amount,
+        CategoryId categoryId,
+        string description,
+        PayerPayeeId payerPayeeId,
+        SubCategoryId subCategoryId,
+        DateTime transactionDate,
+        List<string>? tags = null,
+        string extTransactionNo = "")
+    {
+        return new DebitTransaction(
+            userId,
+            accountId,
+            description,
+            extTransactionNo,
+            TransactionItem.New(amount, categoryId, subCategoryId, description),
+            payerPayeeId,
+            tags,
+            transactionDate,
+            transactionType: transactionType);
+    }
+
     public static DebitTransaction NewWithdrawal(
         UserId userId,
         AccountId accountId,
         Money amount,
+        CategoryId categoryId,
         string description,
         PayerPayeeId payerPayeeId,
-        RefTransactionId refTransactionId,
+        SubCategoryId subCategoryId,
         DateTime transactionDate,
         List<string>? tags = null,
-        string extTransactionId = "")
+        string extTransactionNo = "")
     {
         return new DebitTransaction(
             userId,
             accountId,
             description,
-            extTransactionId,
-            TransactionItem.New(amount, CategoryId.Empty, SubCategoryId.Empty, description),
+            extTransactionNo,
+            TransactionItem.New(amount, categoryId, subCategoryId, description),
             payerPayeeId,
-            refTransactionId,
             tags,
             transactionDate,
-            TransactionEnums.TransactionKeys.WITHDRAWAL);
+            transactionType: TransactionEnums.TransactionKeys.WITHDRAWAL);
     }
 
-    // Payment may be its own transaction type in the future
-    // As a payment can go from one Account to another
-    public static DebitTransaction NewPayment(
-        UserId userId,
-        AccountId accountId,
-        string description,
-        TransactionItem item,
-        PayerPayeeId payerPayeeId,
-        RefTransactionId refTransactionId,
-        DateTime transactionDate,
-        IEnumerable<string>? tags = null,
-        string extTransactionId = "")
-    {
-        return new DebitTransaction(
-            userId,
-            accountId,
-            description,
-            extTransactionId,
-            item,
-            payerPayeeId,
-            refTransactionId,
-            tags,
-            transactionDate,
-            TransactionEnums.TransactionKeys.PAYMENT_OUT);
-    }
+
+    //// Payment may be its own transaction type in the future
+    //// As a payment can go from one Account to another
+    //public static DebitTransaction NewPayment(
+    //    UserId userId,
+    //    AccountId accountId,
+    //    Money amount,
+    //    CategoryId categoryId,
+    //    string description,
+    //    string extTransactionNo,
+    //    PayerPayeeId paidTo,
+    //    SubCategoryId subCategoryId,
+    //    IEnumerable<string>? tags,
+    //    DateTime transactionDate)
+    //{
+    //    return new DebitTransaction(
+    //        userId,
+    //        accountId,
+    //        description,
+    //        extTransactionNo,
+    //        TransactionItem.New(amount, categoryId, subCategoryId, description),
+    //        paidTo,
+    //        tags,
+    //        transactionDate,
+    //        transactionType: TransactionEnums.TransactionKeys.PAYMENT);
+    //}
 
     public static DebitTransaction Load(
         TransactionId id,
         UserId userId,
         AccountId accountId,
+        CategoryId categoryId,
         string description,
-        string extTransactionId,
+        string extTransactionNo,
         TransactionItem item,
         PayerPayeeId payerPayeeId,
-        RefTransactionId refTransactionId,
+        //RefTransactionId refTransactionId,
+        SubCategoryId subCategoryId,
         IEnumerable<string>? tags,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType,
@@ -199,15 +223,18 @@ public class DebitTransaction : Transaction
         DateTime? dateUpdated,
         DateTime? dateDeleted)
     {
+        if (TransactionEnums.IsCreditTransaction(transactionType))
+            throw new InvalidOperationException($"'{transactionType.ToString()}': Transaction type is not a Debit Transaction");
+
         return new DebitTransaction(
             id,
             userId,
             accountId,
             description,
-            extTransactionId,
+            extTransactionNo,
             item,
             payerPayeeId,
-            refTransactionId,
+            //refTransactionId,
             tags,
             transactionDate,
             transactionType,

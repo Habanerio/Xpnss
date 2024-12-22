@@ -18,7 +18,7 @@
         <PackageReference Include="Aspire.Hosting.MongoDB" Version="8.2.2" />
         <PackageReference Include="Aspire.Hosting.RabbitMQ" Version="8.2.1" />
         <PackageReference Include="Aspire.Hosting.Redis" Version="8.2.1" />
-        <PackageReference Include="SonarAnalyzer.CSharp" Version="10.3.0.106239">
+        <PackageReference Include="SonarAnalyzer.CSharp" Version="10.4.0.108396">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

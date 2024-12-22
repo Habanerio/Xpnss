@@ -7,9 +7,9 @@ public sealed record AccountDto
 {
     #region - Common Properties -
 
-    public string Id { get; set; }
+    public string Id { get; set; } = String.Empty;
 
-    public string UserId { get; set; }
+    public string UserId { get; set; } = String.Empty;
 
     [JsonPropertyName("AccountType")]
     [JsonConverter(typeof(JsonNumberEnumConverter<AccountEnums.AccountKeys>))]
@@ -41,7 +41,7 @@ public sealed record AccountDto
     public string LoanAccountTypeString => LoanAccountType.ToString();
 
 
-    public string Name { get; set; }
+    public string Name { get; set; } = String.Empty;
 
     public decimal Balance { get; set; }
 
@@ -56,6 +56,10 @@ public sealed record AccountDto
     public bool IsDefault { get; set; }
 
     public int SortOrder { get; set; }
+
+    public decimal StartingBalance { get; set; }
+
+    public DateTime StartingBalanceDate { get; set; }
 
     #endregion
 
@@ -80,7 +84,6 @@ public sealed record AccountDto
     public bool IsDeleted => DateDeleted.HasValue;
 
     public bool IsOverLimit { get; set; }
-
 
 
     public DateTime DateCreated { get; set; }

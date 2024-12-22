@@ -11,19 +11,19 @@ using MediatR;
 
 namespace Habanerio.Xpnss.Transactions.Application.Commands.Internals;
 
-internal sealed record CreateDepositTransactionCommand(
-    CreateDepositTransactionRequest Request) :
-    ITransactionsCommand<Result<DepositTransactionDto>>;
+internal sealed record CreateCreditTransactionCommand(
+    CreateCreditTransactionRequest Request) :
+    ITransactionsCommand<Result<CreditTransactionDto>>;
 
 /// <summary>
 /// Handles the creation of a Deposit transaction
 /// </summary>
 /// <param name="repository"></param>
-internal sealed class CreateDepositTransactionCommandHandler(
+internal sealed class CreateCreditTransactionCommandHandler(
     ITransactionsRepository repository,
     IMediator mediator) :
-    IRequestHandler<CreateDepositTransactionCommand,
-    Result<DepositTransactionDto>>
+    IRequestHandler<CreateCreditTransactionCommand,
+    Result<CreditTransactionDto>>
 {
     private readonly IMediator _mediator = mediator ??
         throw new ArgumentNullException(nameof(mediator));
@@ -31,8 +31,8 @@ internal sealed class CreateDepositTransactionCommandHandler(
     private readonly ITransactionsRepository _repository = repository ??
         throw new ArgumentNullException(nameof(repository));
 
-    public async Task<Result<DepositTransactionDto>> Handle(
-        CreateDepositTransactionCommand command,
+    public async Task<Result<CreditTransactionDto>> Handle(
+        CreateCreditTransactionCommand command,
         CancellationToken cancellationToken)
     {
         var validator = new Validator();
@@ -44,8 +44,9 @@ internal sealed class CreateDepositTransactionCommandHandler(
 
         var transactionRequest = command.Request;
 
-        var transaction = CreditTransaction.NewDeposit(
+        var transaction = CreditTransaction.New(
             new UserId(transactionRequest.UserId),
+            transactionRequest.TransactionType,
             new AccountId(transactionRequest.AccountId),
             new Money(transactionRequest.Amount),
             new CategoryId(transactionRequest.CategoryId),
@@ -63,9 +64,9 @@ internal sealed class CreateDepositTransactionCommandHandler(
             return Result.Fail(result.Errors?[0].Message ??
                 $"Failed to save the {nameof(CreditTransaction)} transaction");
 
-        if (ApplicationMapper.Map(result.Value) is not DepositTransactionDto transactionDto)
-            throw new InvalidCastException($"{nameof(CreateDepositTransactionCommandHandler)}: " +
-                $"Failed to map {nameof(CreditTransaction)} to {nameof(DepositTransactionDto)}");
+        if (ApplicationMapper.Map(result.Value) is not CreditTransactionDto transactionDto)
+            throw new InvalidCastException($"{nameof(CreateCreditTransactionCommandHandler)}: " +
+                $"Failed to map {nameof(CreditTransaction)} to {nameof(CreditTransactionDto)}");
 
         var transactionCreatedIntegrationEvent = new TransactionCreatedIntegrationEvent(
             transactionDto.Id,
@@ -86,7 +87,7 @@ internal sealed class CreateDepositTransactionCommandHandler(
         return transactionDto;
     }
 
-    public class Validator : AbstractValidator<CreateDepositTransactionCommand>
+    public class Validator : AbstractValidator<CreateCreditTransactionCommand>
     {
         public Validator()
         {

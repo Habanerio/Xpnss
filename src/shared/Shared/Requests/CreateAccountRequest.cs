@@ -3,7 +3,7 @@ using Habanerio.Xpnss.Shared.Types;
 
 namespace Habanerio.Xpnss.Shared.Requests;
 
-public record CreateAccountApiRequest : UserRequiredRequest
+public record CreateAccountRequest : UserRequiredRequest
 {
 
     [JsonPropertyName("AccountType")]
@@ -33,38 +33,43 @@ public record CreateAccountApiRequest : UserRequiredRequest
 
     public string DisplayColor { get; set; }
 
-
     public decimal CreditLimit { get; set; }
 
     public decimal InterestRate { get; set; }
 
     public bool IsDefault { get; set; }
 
+    public int SortOrder { get; set; }
+
+    public decimal StartingBalance { get; set; }
+
+    public DateTime? StartingBalanceDate { get; set; }
+
     public decimal OverdraftAmount { get; set; }
 
     [JsonConstructor]
-    protected CreateAccountApiRequest() { }
+    protected CreateAccountRequest() { }
 
-    public CreateAccountApiRequest(
+    public CreateAccountRequest(
         string userId,
         AllAccountEnums.AllAccountKeys accountType,
         string name,
         string description,
         string displayColor,
-        bool isDefault = false) :
+        bool isDefault = false,
+        int sortOrder = 999,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null) :
         this(
             userId,
             AllAccountEnums.GetTypes(accountType).AccountType,
             AllAccountEnums.GetTypes(accountType).BankType,
             AllAccountEnums.GetTypes(accountType).InvestmentType,
             AllAccountEnums.GetTypes(accountType).LoanType,
-            name,
-            description,
-            displayColor,
-            isDefault)
+            name, description, displayColor, isDefault, sortOrder, startingBalance, startingBalanceDate)
     { }
 
-    protected CreateAccountApiRequest(
+    protected CreateAccountRequest(
         string userId,
         AccountEnums.AccountKeys accountType,
         BankAccountEnums.BankAccountKeys bankAccountType,
@@ -73,7 +78,10 @@ public record CreateAccountApiRequest : UserRequiredRequest
         string name,
         string description,
         string displayColor,
-        bool isDefault = false)
+        bool isDefault,
+        int sortOrder,
+        decimal startingBalance,
+        DateTime? startingBalanceDate)
     {
         UserId = userId;
 
@@ -86,10 +94,15 @@ public record CreateAccountApiRequest : UserRequiredRequest
         Description = description;
         DisplayColor = displayColor;
         IsDefault = isDefault;
+
+        SortOrder = sortOrder;
+
+        StartingBalance = startingBalance;
+        StartingBalanceDate = startingBalanceDate;
     }
 }
 
-public record CreateCashAccountRequest : CreateAccountApiRequest
+public record CreateCashAccountRequest : CreateAccountRequest
 {
     [JsonConstructor]
     public CreateCashAccountRequest()
@@ -105,17 +118,20 @@ public record CreateCashAccountRequest : CreateAccountApiRequest
         string name,
         string description,
         string displayColor,
-        bool isDefault = false) :
+        bool isDefault = false,
+        int sortOrder = 999,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null) :
         base(userId,
             AccountEnums.AccountKeys.CASH,
             BankAccountEnums.BankAccountKeys.NA,
             InvestmentAccountEnums.InvestmentAccountKeys.NA,
             LoanAccountEnums.LoanAccountKeys.NA,
-            name, description, displayColor, isDefault)
+            name, description, displayColor, isDefault, sortOrder, startingBalance, startingBalanceDate)
     { }
 }
 
-public abstract record CreateBankAccountRequest : CreateAccountApiRequest
+public abstract record CreateBankAccountRequest : CreateAccountRequest
 {
     [JsonConstructor]
     protected CreateBankAccountRequest()
@@ -132,14 +148,17 @@ public abstract record CreateBankAccountRequest : CreateAccountApiRequest
         string name,
         string description,
         string displayColor,
-        bool isDefault = false) :
+        bool isDefault = false,
+        int sortOrder = 999,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null) :
         base(
             userId,
             AccountEnums.AccountKeys.BANK,
             bankAccountType,
             InvestmentAccountEnums.InvestmentAccountKeys.NA,
             LoanAccountEnums.LoanAccountKeys.NA,
-            name, description, displayColor, isDefault)
+            name, description, displayColor, isDefault, sortOrder, startingBalance, startingBalanceDate)
     { }
 }
 
@@ -157,11 +176,14 @@ public record CreateCheckingAccountRequest : CreateBankAccountRequest
         string description,
         string displayColor,
         decimal overdraft,
-        bool isDefault = false) :
+        bool isDefault = false,
+        int sortOrder = 999,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null) :
         base(
             userId,
             BankAccountEnums.BankAccountKeys.CHECKING,
-            name, description, displayColor, isDefault)
+            name, description, displayColor, isDefault, sortOrder, startingBalance, startingBalanceDate)
     {
         OverdraftAmount = overdraft;
     }
@@ -181,11 +203,14 @@ public record CreateSavingsAccountRequest : CreateBankAccountRequest
         string description,
         string displayColor,
         decimal interestRate,
-        bool isDefault = false) :
+        bool isDefault = false,
+        int sortOrder = 999,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null) :
         base(
             userId,
             BankAccountEnums.BankAccountKeys.SAVINGS,
-            name, description, displayColor, isDefault)
+            name, description, displayColor, isDefault, sortOrder, startingBalance, startingBalanceDate)
     {
         InterestRate = interestRate;
     }
@@ -206,18 +231,21 @@ public record CreateCreditLineAccountRequest : CreateBankAccountRequest
         string displayColor,
         decimal creditLimit,
         decimal interestRate,
-        bool isDefault = false) :
+        bool isDefault = false,
+        int sortOrder = 999,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null) :
         base(
             userId,
             BankAccountEnums.BankAccountKeys.CREDITLINE,
-            name, description, displayColor, isDefault)
+            name, description, displayColor, isDefault, sortOrder, startingBalance, startingBalanceDate)
     {
         CreditLimit = creditLimit;
         InterestRate = interestRate;
     }
 }
 
-public record CreateCreditCardAccountRequest : CreateAccountApiRequest
+public record CreateCreditCardAccountRequest : CreateAccountRequest
 {
     [JsonConstructor]
     public CreateCreditCardAccountRequest()
@@ -235,21 +263,55 @@ public record CreateCreditCardAccountRequest : CreateAccountApiRequest
         string displayColor,
         decimal creditLimit,
         decimal interestRate,
-        bool isDefault = false) :
+        bool isDefault = false,
+        int sortOrder = 999,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null) :
         base(
             userId,
             AccountEnums.AccountKeys.CREDITCARD,
             BankAccountEnums.BankAccountKeys.NA,
             InvestmentAccountEnums.InvestmentAccountKeys.NA,
             LoanAccountEnums.LoanAccountKeys.NA,
-            name, description, displayColor, isDefault)
+            name, description, displayColor, isDefault, sortOrder, startingBalance, startingBalanceDate)
     {
         CreditLimit = creditLimit;
         InterestRate = interestRate;
     }
 }
 
-public record CreateLoanAccountRequest : CreateAccountApiRequest
+public record CreateInvestmentAccountRequest : CreateAccountRequest
+{
+    [JsonConstructor]
+    public CreateInvestmentAccountRequest()
+    {
+        AccountType = AccountEnums.AccountKeys.INVESTMENT;
+        BankAccountType = BankAccountEnums.BankAccountKeys.NA;
+        InvestmentAccountType = InvestmentAccountEnums.InvestmentAccountKeys.NA;
+        LoanAccountType = LoanAccountEnums.LoanAccountKeys.NA;
+    }
+
+    public CreateInvestmentAccountRequest(
+        string userId,
+        string name,
+        string description,
+        string displayColor,
+        InvestmentAccountEnums.InvestmentAccountKeys investmentType,
+        bool isDefault = false,
+        int sortOrder = 999,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null) :
+        base(
+            userId,
+            AccountEnums.AccountKeys.INVESTMENT,
+            BankAccountEnums.BankAccountKeys.NA,
+            investmentType,
+            LoanAccountEnums.LoanAccountKeys.NA,
+            name, description, displayColor, isDefault, sortOrder, startingBalance, startingBalanceDate)
+    { }
+}
+
+public record CreateLoanAccountRequest : CreateAccountRequest
 {
     [JsonConstructor]
     public CreateLoanAccountRequest()
@@ -268,14 +330,17 @@ public record CreateLoanAccountRequest : CreateAccountApiRequest
         LoanAccountEnums.LoanAccountKeys loanAccountType,
         decimal creditLimit,
         decimal interestRate,
-        bool isDefault = false) :
+        bool isDefault = false,
+        int sortOrder = 999,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null) :
         base(
             userId,
             AccountEnums.AccountKeys.LOAN,
             BankAccountEnums.BankAccountKeys.NA,
             InvestmentAccountEnums.InvestmentAccountKeys.NA,
             loanAccountType,
-            name, description, displayColor, isDefault)
+            name, description, displayColor, isDefault, sortOrder, startingBalance, startingBalanceDate)
     {
         CreditLimit = creditLimit;
         InterestRate = interestRate;

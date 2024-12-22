@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Habanerio.Xpnss.Apis.App.AppApis;
-using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.DTOs.Categories;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis.Categories;

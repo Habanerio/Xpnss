@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.DTOs.Categories;
 using Habanerio.Xpnss.Shared.Requests.Categories;
 using Microsoft.AspNetCore.Mvc.Testing;
 using MongoDB.Bson;
@@ -24,14 +24,14 @@ public class AddSubCategoriesApiTests(WebApplicationFactory<Apis.App.AppApis.Pro
         if (categoryDocs.Count == 0)
             Assert.Fail("Need to add Categories before running the test");
 
-        var addSubCategoryRequests = new List<AddSubCategoriesApiRequest>();
+        var addSubCategoryRequests = new List<AddSubCategoriesRequest>();
 
         var sortOrder = 1;
 
         foreach (var categoryDoc in categoryDocs)
         {
             addSubCategoryRequests.Add(
-                new AddSubCategoriesApiRequest(
+                new AddSubCategoriesRequest(
                     userId.ToString(),
                     categoryDoc.Id.ToString(),
                     new List<AddSubCategoriesRequestItem>

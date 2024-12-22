@@ -4,7 +4,7 @@ using Habanerio.Xpnss.Shared.Requests;
 
 namespace Habanerio.Xpnss.Shared.Requests.Categories;
 
-public record AddSubCategoriesApiRequest : UserRequiredRequest
+public record AddSubCategoriesRequest : UserRequiredRequest
 {
     [Required]
     public string ParentCategoryId { get; set; } = string.Empty;
@@ -13,9 +13,9 @@ public record AddSubCategoriesApiRequest : UserRequiredRequest
     public IEnumerable<AddSubCategoriesRequestItem> SubCategories { get; set; } = [];
 
     [JsonConstructor]
-    public AddSubCategoriesApiRequest() { }
+    public AddSubCategoriesRequest() { }
 
-    public AddSubCategoriesApiRequest(
+    public AddSubCategoriesRequest(
         string userId,
         string parentCategoryId,
         IEnumerable<AddSubCategoriesRequestItem> subCategories)

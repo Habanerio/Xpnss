@@ -28,7 +28,9 @@ public abstract class AbstractBankAccount :
         string bankName = "",
         string extAcctId = "",
         bool isDefault = false,
-        int? sortOrder = null) :
+        int? sortOrder = null,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null) :
         base(
             userId,
             accountName,
@@ -36,7 +38,8 @@ public abstract class AbstractBankAccount :
             displayColor,
             extAcctId,
             isDefault,
-            sortOrder)
+            sortOrder,
+            startingBalance, startingBalanceDate)
     {
         BankName = bankName;
     }
@@ -53,6 +56,8 @@ public abstract class AbstractBankAccount :
         string extAcctId,
         bool isDefault,
         int sortOrder,
+        decimal startingBalance,
+        DateTime? startingBalanceDate,
         DateTime dateCreated,
         DateTime? dateUpdated,
         DateTime? dateDeleted) :
@@ -67,6 +72,8 @@ public abstract class AbstractBankAccount :
             extAcctId,
             isDefault,
             sortOrder,
+            startingBalance,
+            startingBalanceDate,
             dateCreated,
             dateUpdated,
             dateDeleted)

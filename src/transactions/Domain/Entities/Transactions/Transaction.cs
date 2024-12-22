@@ -20,11 +20,36 @@ public class Transaction : AggregateRoot<TransactionId>
 
     public UserId UserId { get; }
 
+    // TODO: Should I store the AccountName too? Then wouldn't need to query that collection to get the name.
     public AccountId AccountId { get; }
+
+    // TODO: Should I store the CategoryName too? Then wouldn't need to query that collection to get the name.
+    public CategoryId CategoryId
+    {
+        get
+        {
+            if (_items.Count is 0 or > 1)
+                return CategoryId.Empty;
+
+            return _items[0]?.CategoryId ?? CategoryId.Empty;
+        }
+    }
+
+    // TODO: Should I store the SubCategory too? Then wouldn't need to query that collection to get the name.
+    public SubCategoryId SubCategoryId
+    {
+        get
+        {
+            if (_items.Count is 0 or > 1)
+                return SubCategoryId.Empty;
+
+            return _items[0]?.SubCategoryId ?? SubCategoryId.Empty;
+        }
+    }
 
     public string Description { get; }
 
-    public string ExtTransactionId { get; }
+    public string ExtTransactionNo { get; }
 
     public bool IsCredit { get; }
 
@@ -37,9 +62,10 @@ public class Transaction : AggregateRoot<TransactionId>
     /// The id of the person, company, or Account that is paying or receiving the money.
     /// Optional
     /// </summary>
+    // TODO: Should I store the PayerPayeeName too? Then wouldn't need to query that collection to get the name.
     public PayerPayeeId PayerPayeeId { get; }
 
-    public RefTransactionId RefTransactionId { get; }
+    //public RefTransactionId RefTransactionId { get; }
 
     public IReadOnlyCollection<string> Tags => _tags.AsReadOnly();
 
@@ -71,11 +97,11 @@ public class Transaction : AggregateRoot<TransactionId>
         UserId userId,
         AccountId accountId,
         string description,
-        string extTransactionId,
+        string extTransactionNo,
         bool isCredit,
         TransactionItem item,
         PayerPayeeId payerPayeeId,
-        RefTransactionId refTransactionId,
+        //RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType) :
@@ -84,17 +110,16 @@ public class Transaction : AggregateRoot<TransactionId>
             userId,
             accountId,
             description,
-            extTransactionId,
+            extTransactionNo,
             isCredit,
             item,
             payerPayeeId,
-            refTransactionId,
             tags,
             transactionDate,
             transactionType,
-            DateTime.UtcNow,
-            null,
-            null)
+            dateCreated: DateTime.UtcNow,
+            dateUpdated: null,
+            dateDeleted: null)
     {
         IsTransient = true;
 
@@ -111,11 +136,11 @@ public class Transaction : AggregateRoot<TransactionId>
         UserId userId,
         AccountId accountId,
         string description,
-        string extTransactionId,
+        string extTransactionNo,
         bool isCredit,
         IEnumerable<TransactionItem> items,
         PayerPayeeId payerPayeeId,
-        RefTransactionId refTransactionId,
+        //RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType) :
@@ -124,21 +149,20 @@ public class Transaction : AggregateRoot<TransactionId>
             userId,
             accountId,
             description,
-            extTransactionId,
+            extTransactionNo,
             isCredit,
             items,
             payerPayeeId,
-            refTransactionId,
             tags,
             transactionDate,
             transactionType,
-            DateTime.UtcNow,
-            null,
-            null)
+            dateCreated: DateTime.UtcNow,
+            dateUpdated: null,
+            dateDeleted: null)
     {
         IsTransient = true;
 
-        _maxItemsPerTransaction = 25;
+        _maxItemsPerTransaction = 10;
 
         // AddDomainEvent(new TransactionCreatedDomainEvent(Id));
     }
@@ -151,11 +175,11 @@ public class Transaction : AggregateRoot<TransactionId>
         UserId userId,
         AccountId accountId,
         string description,
-        string extTransactionId,
+        string extTransactionNo,
         bool isCredit,
         TransactionItem item,
         PayerPayeeId payerPayeeId,
-        RefTransactionId refTransactionId,
+        //RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType,
@@ -167,17 +191,16 @@ public class Transaction : AggregateRoot<TransactionId>
         UserId = userId;
         AccountId = accountId;
         Description = description;
-        ExtTransactionId = extTransactionId;
+        ExtTransactionNo = extTransactionNo;
         IsCredit = isCredit;
         PayerPayeeId = payerPayeeId;
-        RefTransactionId = refTransactionId;
         TransactionDate = transactionDate.Date;
         TransactionType = transactionType;
         DateCreated = dateCreated;
         DateUpdated = dateUpdated;
         DateDeleted = dateDeleted;
 
-        _items = new List<TransactionItem> { item };
+        _items = [item];
 
         _tags = tags?.ToList() ?? [];
     }
@@ -190,11 +213,10 @@ public class Transaction : AggregateRoot<TransactionId>
         UserId userId,
         AccountId accountId,
         string description,
-        string extTransactionId,
+        string extTransactionNo,
         bool isCredit,
         IEnumerable<TransactionItem> items,
         PayerPayeeId payerPayeeId,
-        RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType,
@@ -213,9 +235,9 @@ public class Transaction : AggregateRoot<TransactionId>
         TransactionType = transactionType;
         IsCredit = isCredit;
         Description = description;
-        ExtTransactionId = extTransactionId;
+        ExtTransactionNo = extTransactionNo;
         PayerPayeeId = payerPayeeId;
-        RefTransactionId = refTransactionId;
+        //RefTransactionId = refTransactionId;
         TransactionDate = transactionDate.Date;
         DateCreated = dateCreated;
         DateUpdated = dateUpdated;
@@ -235,7 +257,7 @@ public class Transaction : AggregateRoot<TransactionId>
 
         _items.Add(TransactionItem.New(amount, categoryId, subCategoryId, description));
 
-        // AddDomainEvent(new TransactionUpdatedDomainEvent(Id, TotalAmount, TotalOwing, TotalPaid));
+        // AddDomainEvent(new TransactionUpdatedDomainEvent(Id, Amount, TotalOwing, TotalPaid));
 
         // AddDomainEvent(new TransactionItemAddedDomainEvent(Id, amount, categoryId, description));
     }

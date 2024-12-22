@@ -1,3 +1,4 @@
+using System.Xml.XPath;
 using FluentResults;
 
 using FluentValidation;
@@ -7,6 +8,7 @@ using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts;
 using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts.BankAccounts;
 using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts.CashAccounts;
 using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts.CreditCardAccounts;
+using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts.InvestmentAccounts;
 using Habanerio.Xpnss.Accounts.Domain.Entities.Accounts.LoanAccounts;
 using Habanerio.Xpnss.Accounts.Domain.Interfaces;
 using Habanerio.Xpnss.Shared.DTOs;
@@ -25,7 +27,7 @@ namespace Habanerio.Xpnss.Accounts.Application.Commands.CreateAccount;
 /// </remarks>
 public record CreateAccountCommand(
     string UserId,
-    CreateAccountApiRequest Request) :
+    CreateAccountRequest Request) :
     IAccountsCommand<Result<AccountDto>>;
 
 public sealed class CreateAccountCommandHandler(IAccountsRepository repository, IMediator mediator) :
@@ -47,9 +49,9 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository, 
         if (!validationResult.IsValid)
             return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
-        var account = GetAccountFromRequest(command.UserId, command.Request);
+        var thisAccount = GetAccountFromRequest(command.UserId, command.Request);
 
-        var result = await _repository.AddAsync(account, cancellationToken);
+        var result = await _repository.AddAsync(thisAccount, cancellationToken);
 
         if (result.IsFailed || result.ValueOrDefault is null)
             return Result.Fail(result.Errors?[0].Message ?? "Could not save the Account");
@@ -60,13 +62,13 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository, 
             throw new InvalidCastException("Failed to map AccountDocument to AccountDto");
 
         // Undefault any/all other accounts
-        if (account.IsDefault)
+        if (thisAccount.IsDefault)
         {
             var allAccounts =
                 (await _repository.ListAsync(command.UserId, cancellationToken)).ValueOrDefault?.ToList() ?? [];
 
             var otherDefaultAccounts = allAccounts.Where(a =>
-                a.Id != account.Id.Value)
+                a.Id != thisAccount.Id.Value)
                 .OrderBy(a => a.SortOrder)
                 .ThenBy(a => a.Name.Value)
                 .ToList();
@@ -78,7 +80,7 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository, 
             {
                 var updateDetailsCommand = new UpdateAccountDetailsCommand(
                     command.Request.UserId,
-                    new UpdateAccountDetailsApiRequest
+                    new UpdateAccountDetailsRequest
                     {
                         UserId = command.UserId,
                         AccountId = otherDefaultAccount.Id,
@@ -102,8 +104,12 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository, 
     /// <param name="request"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    private static AbstractAccountBase GetAccountFromRequest(string userId, CreateAccountApiRequest request)
+    private static AbstractAccountBase GetAccountFromRequest(string userId, CreateAccountRequest request)
     {
+        var sortOrder = request.SortOrder;
+        // if the request is the default account, set its sortOrder to 1
+        sortOrder = request.IsDefault ? 1 : sortOrder < 1 ? 999 : sortOrder;
+
         if (request.AccountType is AccountEnums.AccountKeys.CASH)
             return CashAccount.New(
                 new UserId(userId),
@@ -111,7 +117,8 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository, 
                 request.Description,
                 request.DisplayColor,
                 request.IsDefault,
-                request.IsDefault ? 1 : null);
+                sortOrder,
+                request.StartingBalance, request.StartingBalanceDate);
 
         if (request.AccountType is AccountEnums.AccountKeys.BANK)
         {
@@ -122,8 +129,10 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository, 
                     request.Description,
                     request.DisplayColor,
                     new Money(request.OverdraftAmount),
-                isDefault: request.IsDefault,
-                    sortOrder: request.IsDefault ? 1 : null);
+                    isDefault: request.IsDefault,
+                    sortOrder: sortOrder,
+                    startingBalance: request.StartingBalance,
+                    startingBalanceDate: request.StartingBalanceDate);
 
             if (request.BankAccountType is BankAccountEnums.BankAccountKeys.SAVINGS)
                 return SavingsAccount.New(
@@ -133,7 +142,9 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository, 
                     request.DisplayColor,
                     new PercentageRate(request.InterestRate),
                     isDefault: request.IsDefault,
-                    sortOrder: request.IsDefault ? 1 : null);
+                    sortOrder: sortOrder,
+                    startingBalance: request.StartingBalance,
+                    startingBalanceDate: request.StartingBalanceDate);
 
             if (request.BankAccountType is BankAccountEnums.BankAccountKeys.CREDITLINE)
                 return CreditLineAccount.New(
@@ -144,7 +155,9 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository, 
                     new Money(request.CreditLimit),
                     new PercentageRate(request.InterestRate),
                     isDefault: request.IsDefault,
-                    sortOrder: request.IsDefault ? 1 : null);
+                    sortOrder: sortOrder,
+                    startingBalance: request.StartingBalance,
+                    startingBalanceDate: request.StartingBalanceDate);
 
             throw new InvalidOperationException($"Bank Account Type `{request.AccountType}` is not supported");
         }
@@ -158,10 +171,21 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository, 
                 new Money(request.CreditLimit),
                 new PercentageRate(request.InterestRate),
                 isDefault: request.IsDefault,
-                sortOrder: request.IsDefault ? 1 : null);
+                sortOrder: sortOrder,
+                startingBalance: request.StartingBalance,
+                startingBalanceDate: request.StartingBalanceDate);
 
         if (request.AccountType is AccountEnums.AccountKeys.INVESTMENT)
-            throw new InvalidOperationException("Investment Account Type not supported");
+            return InvestmentAccount.New(
+                new UserId(userId),
+                new AccountName(request.Name),
+                request.Description,
+                request.DisplayColor,
+                institutionName: request.Name,
+                isDefault: request.IsDefault,
+                sortOrder: sortOrder,
+                startingBalance: request.StartingBalance,
+                startingBalanceDate: request.StartingBalanceDate);
 
         if (request.AccountType is AccountEnums.AccountKeys.LOAN)
             return LoanAccount.New(
@@ -172,8 +196,11 @@ public sealed class CreateAccountCommandHandler(IAccountsRepository repository, 
                 request.DisplayColor,
                 new Money(request.CreditLimit),
                 new PercentageRate(request.InterestRate),
+                institutionName: request.Name,
                 isDefault: request.IsDefault,
-                sortOrder: request.IsDefault ? 1 : null);
+                sortOrder: sortOrder,
+                startingBalance: request.StartingBalance,
+                startingBalanceDate: request.StartingBalanceDate);
 
         throw new InvalidOperationException($"Account Type `{request.AccountType}` is unknown");
     }

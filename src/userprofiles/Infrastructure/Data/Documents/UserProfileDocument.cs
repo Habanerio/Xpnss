@@ -10,16 +10,16 @@ namespace Habanerio.Xpnss.UserProfiles.Infrastructure.Data.Documents;
 public class UserProfileDocument : MongoDocument
 {
     [BsonElement("ext_user_id")]
-    public string ExtUserId { get; set; }
+    public string ExtUserId { get; set; } = string.Empty;
 
     [BsonElement("first_name")]
-    public string FirstName { get; set; }
+    public string FirstName { get; set; } = string.Empty;
 
     [BsonElement("last_name")]
-    public string LastName { get; set; }
+    public string LastName { get; set; } = string.Empty;
 
     [BsonElement("email")]
-    public string Email { get; set; }
+    public string Email { get; set; } = string.Empty;
 
     [BsonElement("default_currency")]
     [BsonRepresentation(BsonType.String)]

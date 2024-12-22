@@ -1,6 +1,7 @@
 using Habanerio.Core.Dbs.MongoDb;
 using Habanerio.Core.Dbs.MongoDb.Attributes;
 using Habanerio.Xpnss.Shared.Types;
+using Habanerio.Xpnss.Shared.ValueObjects;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -19,17 +20,23 @@ public class TransactionDocument : MongoDocument
     [BsonRepresentation(BsonType.String)]
     public TransactionEnums.TransactionKeys TransactionType { get; set; }
 
+    [BsonElement("category_id")]
+    public ObjectId? CategoryId { get; set; }
+
+    [BsonElement("sub_category_id")]
+    public ObjectId? SubCategoryId { get; set; }
+
     [BsonElement("description")]
     public string Description { get; set; } = "";
 
     [BsonElement("ext_transaction_id")]
-    public string ExtTransactionId { get; set; } = "";
+    public string ExtTransactionNo { get; set; } = "";
 
     [BsonElement("is_credit")]
     public bool IsCredit { get; set; }
 
     [BsonElement("is_deleted")]
-    public bool IsDeleted { get; set; }
+    public bool IsDeleted => DateDeleted.HasValue;
 
     [BsonElement("items")]
     public List<TransactionDocumentItem> Items { get; set; } = [];
@@ -69,6 +76,12 @@ public class TransactionDocument : MongoDocument
     {
         Id = ObjectId.GenerateNewId();
     }
+
+    public TransactionDocument(bool isCredit, TransactionEnums.TransactionKeys transactionType)
+    {
+        IsCredit = isCredit;
+        TransactionType = transactionType;
+    }
 }
 
 
@@ -76,11 +89,13 @@ public class TransactionDocument : MongoDocument
 public class CreditTransactionDocument :
     TransactionDocument
 {
-    public CreditTransactionDocument(TransactionEnums.TransactionKeys transactionType)
-    {
-        IsCredit = true;
-        TransactionType = transactionType;
-    }
+    public CreditTransactionDocument() :
+        base(isCredit: true, transactionType: TransactionEnums.TransactionKeys.DEPOSIT)
+    { }
+
+    public CreditTransactionDocument(TransactionEnums.TransactionKeys transactionType) :
+        base(isCredit: true, transactionType)
+    { }
 }
 
 
@@ -88,17 +103,168 @@ public class CreditTransactionDocument :
 public class DebitTransactionDocument :
     TransactionDocument
 {
-    public DebitTransactionDocument(TransactionEnums.TransactionKeys transactionType)
+    public DebitTransactionDocument() :
+        base(isCredit: false, transactionType: TransactionEnums.TransactionKeys.WITHDRAWAL)
+    { }
+
+    public DebitTransactionDocument(TransactionEnums.TransactionKeys transactionType) :
+        base(isCredit: false, transactionType)
+    { }
+}
+
+public class PaymentTransactionDocument :
+    TransactionDocument
+{
+    /// <summary>
+    /// If the transaction is from the user's own account
+    /// </summary>
+    public bool IsOwnAccount { get; set; }
+
+    public PaymentTransactionDocument(
+        bool isCredit,
+        TransactionEnums.TransactionKeys transactionType) :
+        base(isCredit, transactionType)
+    { }
+
+    public PaymentTransactionDocument(
+        ObjectId userId,
+        ObjectId accountId,
+        CategoryId categoryId,
+        string description,
+        string extTransactionNo,
+        bool isCredit,
+        bool isOwnAccount,
+        TransactionDocumentItem item,
+        PayerPayeeId payerPayeeId,
+        SubCategoryId subCategoryId,
+        IEnumerable<string>? tags,
+        DateTime transactionDate,
+        TransactionEnums.TransactionKeys transactionType,
+        DateTime dateCreated,
+        DateTime? dateUpdated,
+        DateTime? dateDeleted) :
+        base(isCredit, transactionType)
     {
-        IsCredit = false;
-        TransactionType = transactionType;
+        UserId = userId;
+        AccountId = accountId;
+        CategoryId = categoryId;
+        Description = description;
+        ExtTransactionNo = extTransactionNo;
+        IsOwnAccount = isOwnAccount;
+        Items = [item];
+        PayerPayeeId = payerPayeeId;
+        SubCategoryId = subCategoryId;
+        Tags = tags?.ToList() ?? [];
+        TransactionDate = transactionDate;
+        TransactionType = TransactionEnums.TransactionKeys.PAYMENT_IN;
+
+        DateCreated = dateCreated;
+        DateUpdated = dateUpdated;
+        DateDeleted = dateDeleted;
+    }
+}
+
+public class PaymentInTransactionDocument :
+    CreditTransactionDocument
+{
+    /// <summary>
+    /// If the transaction is from the user's own account
+    /// </summary>
+    public bool IsPaidFromOwnAccount { get; set; }
+
+    public PaymentInTransactionDocument() :
+        base(TransactionEnums.TransactionKeys.PAYMENT_IN)
+    { }
+
+    public PaymentInTransactionDocument(
+        ObjectId userId,
+        ObjectId accountId,
+        CategoryId categoryId,
+        string description,
+        string extTransactionNo,
+        bool isPaidFromOwnAccount,
+        TransactionDocumentItem item,
+        PayerPayeeId payerPayeeId,
+        SubCategoryId subCategoryId,
+        IEnumerable<string>? tags,
+        DateTime transactionDate,
+        DateTime dateCreated,
+        DateTime? dateUpdated,
+        DateTime? dateDeleted) :
+        base(TransactionEnums.TransactionKeys.PAYMENT_IN)
+    {
+        UserId = userId;
+        AccountId = accountId;
+        CategoryId = categoryId;
+        Description = description;
+        ExtTransactionNo = extTransactionNo;
+        IsPaidFromOwnAccount = isPaidFromOwnAccount;
+        Items = [item];
+        PayerPayeeId = payerPayeeId;
+        SubCategoryId = subCategoryId;
+        Tags = tags?.ToList() ?? [];
+        TransactionDate = transactionDate;
+        TransactionType = TransactionEnums.TransactionKeys.PAYMENT_IN;
+
+        DateCreated = dateCreated;
+        DateUpdated = dateUpdated;
+        DateDeleted = dateDeleted;
+    }
+}
+
+public class PaymentOutTransactionDocument :
+    DebitTransactionDocument
+{
+    /// <summary>
+    /// If the transaction is to the user's own account
+    /// </summary>
+    public bool IsPaidToOwnAccount { get; set; }
+
+    public PaymentOutTransactionDocument() :
+        base(transactionType: TransactionEnums.TransactionKeys.PAYMENT_OUT)
+    { }
+
+
+    public PaymentOutTransactionDocument(
+        ObjectId userId,
+        ObjectId accountId,
+        CategoryId categoryId,
+        string description,
+        string extTransactionNo,
+        bool isPaidToOwnAccount,
+        TransactionDocumentItem item,
+        PayerPayeeId payerPayeeId,
+        SubCategoryId subCategoryId,
+        IEnumerable<string>? tags,
+        DateTime transactionDate,
+        DateTime dateCreated,
+        DateTime? dateUpdated,
+        DateTime? dateDeleted) :
+        base(TransactionEnums.TransactionKeys.PAYMENT_OUT)
+    {
+        UserId = userId;
+        AccountId = accountId;
+        CategoryId = categoryId;
+        Description = description;
+        ExtTransactionNo = extTransactionNo;
+        IsPaidToOwnAccount = isPaidToOwnAccount;
+        Items = [item];
+        PayerPayeeId = payerPayeeId;
+        SubCategoryId = subCategoryId;
+        Tags = tags?.ToList() ?? [];
+        TransactionDate = transactionDate;
+        TransactionType = TransactionEnums.TransactionKeys.PAYMENT_OUT;
+
+        DateCreated = dateCreated;
+        DateUpdated = dateUpdated;
+        DateDeleted = dateDeleted;
     }
 }
 
 /// <summary>
 /// For when the Account purchases something from a "Merchant"
 /// </summary>
-public sealed class PurchaseTransactionDocument() :
+public sealed class PurchasesTransactionDocument() :
     DebitTransactionDocument(TransactionEnums.TransactionKeys.PURCHASE)
 {
     [BsonElement("total_owing")]
@@ -117,6 +283,7 @@ public sealed class PurchaseTransactionDocument() :
     [BsonDateTimeOptions(DateOnly = true)]
     public DateTime? PaidDate { get; set; } = null;
 }
+
 
 public sealed record TransactionDocumentItem
 {
@@ -168,6 +335,7 @@ public sealed record TransactionDocumentItem
         return new TransactionDocumentItem(ObjectId.GenerateNewId(), amount, categoryObjectId, subCategoryObjectId, description);
     }
 }
+
 
 public sealed record TransactionDocumentPayment(ObjectId Id, decimal Amount, DateTime PaymentDate)
 {

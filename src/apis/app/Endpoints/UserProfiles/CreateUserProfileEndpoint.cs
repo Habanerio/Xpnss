@@ -1,6 +1,5 @@
 using System.Net;
 using Carter;
-using FluentValidation;
 using Habanerio.Xpnss.Shared.DTOs;
 using Habanerio.Xpnss.Shared.Requests;
 using Habanerio.Xpnss.UserProfiles.Application.Commands;

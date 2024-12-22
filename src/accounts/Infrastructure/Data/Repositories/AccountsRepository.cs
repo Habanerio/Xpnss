@@ -158,10 +158,10 @@ public sealed class AccountsRepository(IMongoDatabase mongoDb) :
     }
 
     public async Task<Result> UpdateAsync(
-        AbstractAccountBase updatedAccountBase,
+        AbstractAccountBase updatedAccount,
         CancellationToken cancellationToken = default)
     {
-        var accountDoc = InfrastructureMapper.Map(updatedAccountBase);
+        var accountDoc = InfrastructureMapper.Map(updatedAccount);
 
         if (accountDoc is null)
             return Result.Fail("Could not map the Account to its Document");

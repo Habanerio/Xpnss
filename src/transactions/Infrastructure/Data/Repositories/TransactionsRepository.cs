@@ -30,8 +30,16 @@ public class TransactionsRepository(IMongoDatabase mongoDb)
             if (transactionDoc is null)
                 return Result.Fail("Could not map the Transaction to TransactionDoc");
 
-            await AddDocumentAsync(transactionDoc, cancellationToken);
-
+            try
+            {
+                await AddDocumentAsync(transactionDoc, cancellationToken);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            
             // Do this so we can update the State of the Transaction
             var newTransaction = InfrastructureMapper.Map(transactionDoc);
 

@@ -5,6 +5,7 @@ namespace Habanerio.Xpnss.Shared.ValueObjects;
 /// <summary>
 /// Represents a Transaction's Reference Transaction Id,
 /// the Id of an existing transaction within the system
+/// (good for when a transaction was copied from another)
 /// </summary>
 public sealed record RefTransactionId : EntityObjectId
 {

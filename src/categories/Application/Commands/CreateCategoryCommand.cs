@@ -3,7 +3,7 @@ using FluentValidation;
 using Habanerio.Xpnss.Categories.Application.Mappers;
 using Habanerio.Xpnss.Categories.Domain.Entities;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
-using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.DTOs.Categories;
 using Habanerio.Xpnss.Shared.Requests.Categories;
 using Habanerio.Xpnss.Shared.ValueObjects;
 using MediatR;
@@ -12,7 +12,7 @@ namespace Habanerio.Xpnss.Categories.Application.Commands;
 
 public sealed record CreateCategoryCommand(
     string UserId,
-    CreateCategoryApiRequest Request) :
+    CreateCategoryRequest Request) :
     ICategoriesCommand<Result<CategoryDto>>;
 
 public class CreateCategoryCommandHandler(
@@ -97,7 +97,7 @@ public class CreateCategoryCommandHandler(
         return categoryDto;
     }
 
-    public class Validator : AbstractValidator<CreateCategoryApiRequest>
+    public class Validator : AbstractValidator<CreateCategoryRequest>
     {
         public Validator()
         {

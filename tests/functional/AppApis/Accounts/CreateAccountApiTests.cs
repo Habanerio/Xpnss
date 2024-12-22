@@ -149,7 +149,7 @@ public class CreateAccountApiTests(WebApplicationFactory<Apis.App.AppApis.Progra
         Assert.NotEqual(accountDto.Id, ObjectId.Empty.ToString());
         Assert.Equal(userId.ToString(), accountDto.UserId);
         Assert.Equal(AccountEnums.AccountKeys.BANK, accountDto.AccountType);
-        //BANK ACCOUNT ENUM = SAVINGS
+        //BANK ACCOUNT ENUM = INVESTMENTS
         Assert.Equal(request.Name, accountDto.Name);
         Assert.Equal(0, accountDto.Balance);
         Assert.Equal(request.Description, accountDto.Description);

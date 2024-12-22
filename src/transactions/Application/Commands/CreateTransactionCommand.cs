@@ -34,37 +34,65 @@ public sealed class CreateTransactionCommandHandler(IMediator mediator) :
         if (!validationResult.IsValid)
             return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
-        Result<TransactionDto> result;
-
-        if (command.Request is CreatePurchaseTransactionApiRequest purchaseRequest)
+        if (command.Request is CreatePaymentInTransactionRequest paymentInRequest)
         {
-            result = await SendSpecificCommand
-                <CreatePurchaseTransactionCommand, PurchaseTransactionDto>(
-                new CreatePurchaseTransactionCommand(purchaseRequest),
+            return await SendSpecificCommand
+                <CreatePaymentTransactionCommand, PaymentTransactionDto>(
+                    new CreatePaymentTransactionCommand(paymentInRequest),
+                    cancellationToken);
+        }
+
+        if (command.Request is CreatePaymentOutTransactionRequest paymentOutRequest)
+        {
+            return await SendSpecificCommand
+                <CreatePaymentTransactionCommand, PaymentTransactionDto>(
+                    new CreatePaymentTransactionCommand(paymentOutRequest),
+                    cancellationToken);
+        }
+
+        if (command.Request is CreatePurchasesTransactionRequest purchaseRequest)
+        {
+            return await SendSpecificCommand
+                <CreatePurchasesTransactionCommand, PurchasesTransactionDto>(
+                new CreatePurchasesTransactionCommand(purchaseRequest),
                 cancellationToken);
         }
-        else if (command.Request is CreateDepositTransactionRequest depositRequest)
+
+        if (command.Request is CreateDepositTransactionRequest depositRequest)
         {
-            result = await SendSpecificCommand
+            return await SendSpecificCommand
                 <CreateDepositTransactionCommand, DepositTransactionDto>(
                 new CreateDepositTransactionCommand(depositRequest),
                 cancellationToken);
         }
-        else if (command.Request is CreateWithdrawalTransactionRequest withdrawalRequest)
+
+        if (command.Request is CreateWithdrawalTransactionRequest withdrawalRequest)
         {
-            result = await SendSpecificCommand
+            return await SendSpecificCommand
                 <CreateWithdrawalTransactionCommand, WithdrawalTransactionDto>(
                     new CreateWithdrawalTransactionCommand(withdrawalRequest),
                     cancellationToken);
         }
-        else
+
+        if (command.Request is CreateCreditTransactionRequest creditRequest)
         {
-            return Result.Fail($"{nameof(CreateTransactionCommandHandler)}: " +
-            $"Invalid Transaction Request. '{command.Request.TransactionType}' " +
-            $"is not (yet) a support type");
+            return await SendSpecificCommand
+                <CreateCreditTransactionCommand, CreditTransactionDto>(
+                    new CreateCreditTransactionCommand(creditRequest),
+                    cancellationToken);
         }
 
-        return result;
+        if (command.Request is CreateDebitTransactionRequest debitRequest)
+        {
+            return await SendSpecificCommand
+                <CreateDebitTransactionCommand, DebitTransactionDto>(
+                    new CreateDebitTransactionCommand(debitRequest),
+                    cancellationToken);
+        }
+
+        return Result.Fail($"{nameof(CreateTransactionCommandHandler)}: " +
+            $"Invalid Transaction Request. '{command.Request.TransactionType}' " +
+            $"is not (yet) a support type");
     }
 
     private async Task<Result<TransactionDto>> SendSpecificCommand<TCommand, TDto>(

@@ -10,12 +10,12 @@ namespace Habanerio.Xpnss.Accounts.Application.Commands.UpdateAccountDetails;
 
 public sealed record UpdateAccountDetailsCommand(
     string UserId,
-    UpdateAccountDetailsApiRequest Request) :
+    UpdateAccountDetailsRequest Request) :
     IAccountsCommand<Result<AccountDto>>;
 
 /// <summary>
 /// Only deals with an Account's details, such as name, description, and display color.
-/// Balance, Credit Limit, Interest Rate, and Overdraft TotalAmount are handled separately.
+/// Balance, Credit Limit, Interest Rate, and Overdraft Amount are handled separately.
 /// </summary>
 public sealed class UpdateAccountDetails(IAccountsRepository repository) :
     IRequestHandler<UpdateAccountDetailsCommand, Result<AccountDto>>
@@ -59,7 +59,7 @@ public sealed class UpdateAccountDetails(IAccountsRepository repository) :
         return Result.Ok(dto);
     }
 
-    internal sealed class Validator : AbstractValidator<UpdateAccountDetailsApiRequest>
+    internal sealed class Validator : AbstractValidator<UpdateAccountDetailsRequest>
     {
         public Validator()
         {

@@ -28,21 +28,24 @@ public class GetTransactionsHandler(ITransactionsRepository repository) :
         if (!validationResult.IsValid)
             return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
+        // Need local DateTime Kind
         var request = query.Request;
 
-        if (request.FromDate is null
-            || request.FromDate?.Date.ToUniversalTime() > (request.ToDate ?? DateTime.UtcNow))
-            request.FromDate = DateTime.UtcNow.AddDays(-30);
+        var toDate = (request.ToDate is null ||
+                     request.ToDate.Value.Date > DateTime.Now.Date ?
+                DateTime.Now.Date :
+                request.ToDate).Value.Date;
 
-        if (request.ToDate is null
-            || request.ToDate?.Date.ToUniversalTime() > DateTime.UtcNow)
-            request.ToDate = DateTime.UtcNow;
+        var fromDate = request.FromDate is null ||
+                       request.FromDate.Value.Date > toDate ?
+                DateTime.Now.AddDays(-30) :
+                request.FromDate;
 
         var docsResult = await _repository.FindAsync(
             request.UserId,
             request.AccountId,
-            request.FromDate,
-            request.ToDate,
+            fromDate,
+            toDate,
             request.TimeZone,
             cancellationToken);
 

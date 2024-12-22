@@ -11,19 +11,18 @@ using MediatR;
 
 namespace Habanerio.Xpnss.Transactions.Application.Commands.Internals;
 
-internal sealed record CreateDepositTransactionCommand(
-    CreateDepositTransactionRequest Request) :
-    ITransactionsCommand<Result<DepositTransactionDto>>;
+internal sealed record CreateDebitTransactionCommand(
+    CreateDebitTransactionRequest Request) :
+    ITransactionsCommand<Result<DebitTransactionDto>>;
 
 /// <summary>
-/// Handles the creation of a Deposit transaction
+/// Handles the creation of a Withdrawal transaction
 /// </summary>
 /// <param name="repository"></param>
-internal sealed class CreateDepositTransactionCommandHandler(
+internal sealed class CreateDebitTransactionCommandHandler(
     ITransactionsRepository repository,
     IMediator mediator) :
-    IRequestHandler<CreateDepositTransactionCommand,
-    Result<DepositTransactionDto>>
+    IRequestHandler<CreateDebitTransactionCommand, Result<DebitTransactionDto>>
 {
     private readonly IMediator _mediator = mediator ??
         throw new ArgumentNullException(nameof(mediator));
@@ -31,8 +30,8 @@ internal sealed class CreateDepositTransactionCommandHandler(
     private readonly ITransactionsRepository _repository = repository ??
         throw new ArgumentNullException(nameof(repository));
 
-    public async Task<Result<DepositTransactionDto>> Handle(
-        CreateDepositTransactionCommand command,
+    public async Task<Result<DebitTransactionDto>> Handle(
+        CreateDebitTransactionCommand command,
         CancellationToken cancellationToken)
     {
         var validator = new Validator();
@@ -44,35 +43,38 @@ internal sealed class CreateDepositTransactionCommandHandler(
 
         var transactionRequest = command.Request;
 
-        var transaction = CreditTransaction.NewDeposit(
+        var withdrawalDoc = DebitTransaction.New(
             new UserId(transactionRequest.UserId),
+            transactionRequest.TransactionType,
             new AccountId(transactionRequest.AccountId),
             new Money(transactionRequest.Amount),
             new CategoryId(transactionRequest.CategoryId),
             transactionRequest.Description,
-            transactionRequest.ExtTransactionNo,
             new PayerPayeeId(transactionRequest.PayerPayee.Id),
             //new RefTransactionId(transactionRequest.RefTransactionId),
             new SubCategoryId(transactionRequest.SubCategoryId),
-            transactionRequest.Tags,
-            transactionRequest.TransactionDate);
+            transactionRequest.TransactionDate,
+            transactionRequest.Tags);
 
-        var result = await _repository.AddAsync(transaction, cancellationToken);
+        var result = await _repository.AddAsync(withdrawalDoc, cancellationToken);
 
         if (result.IsFailed || result.ValueOrDefault is null)
             return Result.Fail(result.Errors?[0].Message ??
-                $"Failed to save the {nameof(CreditTransaction)} transaction");
+                $"Failed to save the {nameof(DebitTransaction)} transaction");
 
-        if (ApplicationMapper.Map(result.Value) is not DepositTransactionDto transactionDto)
-            throw new InvalidCastException($"{nameof(CreateDepositTransactionCommandHandler)}: " +
-                $"Failed to map {nameof(CreditTransaction)} to {nameof(DepositTransactionDto)}");
+        if (ApplicationMapper.Map(result.Value) is not DebitTransactionDto transactionDto)
+            throw new InvalidCastException($"{nameof(CreateDebitTransactionCommandHandler)}: " +
+                $"Failed to map {nameof(DebitTransaction)} to {nameof(DebitTransactionDto)}");
 
+        //TODO: Create a `WithdrawalTransactionCreatedIntegrationEvent`
+        // and try to update the account that the transaction was deposited into?
+        // Or should I just let the user do it?
         var transactionCreatedIntegrationEvent = new TransactionCreatedIntegrationEvent(
             transactionDto.Id,
             transactionDto.UserId,
             transactionDto.AccountId,
-            transactionDto.CategoryId,
-            transactionDto.SubCategoryId,
+            string.Empty,
+            string.Empty,
             transactionDto.PayerPayeeId,
             transactionDto.TransactionType,
             transactionDto.TotalAmount,
@@ -86,14 +88,15 @@ internal sealed class CreateDepositTransactionCommandHandler(
         return transactionDto;
     }
 
-    public class Validator : AbstractValidator<CreateDepositTransactionCommand>
+    public class Validator : AbstractValidator<CreateDebitTransactionCommand>
     {
         public Validator()
         {
             RuleFor(x => x.Request.UserId).NotEmpty();
             RuleFor(x => x.Request.AccountId).NotEmpty();
+            RuleFor(x => x.Request.Amount).GreaterThan(0);
+            RuleFor(x => x.Request.Description).NotEmpty();
             RuleFor(x => x.Request.TransactionDate).NotEmpty();
-            RuleFor(x => x.Request.TransactionType).NotNull();
         }
     }
 }

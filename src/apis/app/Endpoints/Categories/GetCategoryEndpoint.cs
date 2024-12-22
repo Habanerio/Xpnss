@@ -1,8 +1,8 @@
 using System.Net;
 using Carter;
-using Habanerio.Xpnss.Shared.DTOs;
 using Habanerio.Xpnss.Categories.Application.Queries.GetCategory;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
+using Habanerio.Xpnss.Shared.DTOs.Categories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Categories;

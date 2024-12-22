@@ -6,7 +6,7 @@ namespace Habanerio.Xpnss.Categories.Domain.Entities;
 
 public class Category : AggregateRoot<CategoryId>
 {
-    private readonly List<SubCategory> _subCategories;
+    private readonly List<SubCategory> _subCategories = [];
 
     public UserId UserId { get; private set; }
 
@@ -60,29 +60,83 @@ public class Category : AggregateRoot<CategoryId>
         DateTime? dateUpdated = null,
         DateTime? dateDeleted = null) : base(id)
     {
-        if (id is null)
-            throw new ArgumentNullException(nameof(id), $"{nameof(id)} cannot be null or whitespace.");
+        try
+        {
+            if (id is null)
+                throw new ArgumentNullException(nameof(id), $"{nameof(id)} cannot be null or whitespace.");
 
-        if (string.IsNullOrWhiteSpace(id) || id.Equals(CategoryId.Empty))
-            throw new ArgumentException($"{nameof(id)} cannot be null or whitespace.", nameof(id));
+            if (string.IsNullOrWhiteSpace(id) || id.Equals(CategoryId.Empty))
+                throw new ArgumentException($"{nameof(id)} cannot be null or whitespace.", nameof(id));
 
-        if (userId is null || id.Equals(UserId.Empty))
-            throw new ArgumentNullException(nameof(userId), $"{nameof(userId)} cannot be null or whitespace.");
+            if (userId is null || id.Equals(UserId.Empty))
+                throw new ArgumentNullException(nameof(userId), $"{nameof(userId)} cannot be null or whitespace.");
 
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException($"{nameof(name)} cannot be null or whitespace.", nameof(name));
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException($"{nameof(name)} cannot be null or whitespace.", nameof(name));
 
-        Id = id;
-        UserId = userId;
-        Name = name;
-        CategoryType = categoryType;
-        Description = description;
-        SortOrder = sortOrder < 0 ? 99 : sortOrder;
-        DateCreated = dateCreated;
-        DateUpdated = dateUpdated;
-        DateDeleted = dateDeleted;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
 
-        _subCategories = [.. subCategories];
+        try
+        {
+            Id = id;
+            UserId = userId;
+            Name = name;
+            CategoryType = categoryType;
+            Description = description;
+            SortOrder = sortOrder < 0 ? 99 : sortOrder;
+            DateCreated = dateCreated;
+            DateUpdated = dateUpdated;
+            DateDeleted = dateDeleted;
+
+            _subCategories = new List<SubCategory>();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+
+        var subCategoriesList = new List<SubCategory>();
+
+        try
+        {
+            subCategoriesList = subCategories?.ToList() ?? [];
+
+            if (subCategoriesList.Any())
+            {
+                foreach (var subCategory in subCategoriesList)
+                {
+                    try
+                    {
+                        _subCategories.Add(subCategory);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        throw;
+                    }
+                }
+            }
+            else
+            {
+                var z = false;
+            }
+
+
+            //_subCategories = [.. subCategories];
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+
+
 
         ReSortSubCategories();
     }
@@ -187,6 +241,11 @@ public class Category : AggregateRoot<CategoryId>
         var existingSubCategory = _subCategories.Find(c =>
             c.Name.Equals(subCategoryName));
 
+        if (sortOrder <= 0)
+        {
+            var z = false;
+        }
+
         // If the SubCategory already exists, then maybe it has a new description?
         if (existingSubCategory is not null)
         {
@@ -282,17 +341,35 @@ public class Category : AggregateRoot<CategoryId>
         // Reorder the SubCategories
         var idx = 1;
 
-        var sortedCategories = _subCategories
-            .OrderBy(c => c.SortOrder)
-            .ThenBy(c => c.Name.Value)
-            .ToList();
-
-        foreach (var subCategory in sortedCategories)
+        try
         {
-            subCategory.SortOrder = idx;
+            var sortedCategories = _subCategories
+                .OrderBy(c => c.SortOrder)
+                .ThenBy(c => c.Name.Value)
+                .ToList();
 
-            idx++;
+            try
+            {
+                foreach (var subCategory in sortedCategories)
+                {
+                    subCategory.SortOrder = idx;
+
+                    idx++;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+
+
     }
 }
 

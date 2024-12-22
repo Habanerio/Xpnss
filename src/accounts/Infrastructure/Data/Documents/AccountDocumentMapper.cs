@@ -33,6 +33,9 @@ public partial class AccountDocument
 
             SortOrder = account.SortOrder,
 
+            StartingBalance = account.StartingBalance,
+            StartingBalanceDate = account.StartingBalanceDate,
+
             DateCreated = account.DateCreated,
             DateUpdated = account.DateUpdated,
             DateDeleted = account.DateDeleted
@@ -67,6 +70,9 @@ public partial class AccountDocument
 
             SortOrder = account.SortOrder,
 
+            StartingBalance = account.StartingBalance,
+            StartingBalanceDate = account.StartingBalanceDate,
+
             DateCreated = account.DateCreated,
             DateUpdated = account.DateUpdated,
             DateDeleted = account.DateDeleted
@@ -97,7 +103,11 @@ public partial class AccountDocument
 
             IsCredit = account.IsCredit,
             IsDefault = account.IsDefault,
+
             SortOrder = account.SortOrder,
+
+            StartingBalance = account.StartingBalance,
+            StartingBalanceDate = account.StartingBalanceDate,
 
             DateCreated = account.DateCreated,
             DateUpdated = account.DateUpdated,
@@ -134,6 +144,9 @@ public partial class AccountDocument
 
             SortOrder = account.SortOrder,
 
+            StartingBalance = account.StartingBalance,
+            StartingBalanceDate = account.StartingBalanceDate,
+
             DateCreated = account.DateCreated,
             DateUpdated = account.DateUpdated,
             DateDeleted = account.DateDeleted
@@ -169,6 +182,9 @@ public partial class AccountDocument
 
             SortOrder = account.SortOrder,
 
+            StartingBalance = account.StartingBalance,
+            StartingBalanceDate = account.StartingBalanceDate,
+
             DateCreated = account.DateCreated,
             DateUpdated = account.DateUpdated,
             DateDeleted = account.DateDeleted
@@ -199,6 +215,9 @@ public partial class AccountDocument
             IsDefault = account.IsDefault,
 
             SortOrder = account.SortOrder,
+
+            StartingBalance = account.StartingBalance,
+            StartingBalanceDate = account.StartingBalanceDate,
 
             DateCreated = account.DateCreated,
             DateUpdated = account.DateUpdated,
@@ -235,11 +254,15 @@ public partial class AccountDocument
 
             SortOrder = account.SortOrder,
 
+            StartingBalance = account.StartingBalance,
+            StartingBalanceDate = account.StartingBalanceDate,
+
             DateCreated = account.DateCreated,
             DateUpdated = account.DateUpdated,
             DateDeleted = account.DateDeleted
         };
     }
+
 
 
     public static explicit operator CashAccount(AccountDocument document)
@@ -253,6 +276,8 @@ public partial class AccountDocument
             document.DisplayColor,
             document.IsDefault,
             document.SortOrder,
+            document.StartingBalance,
+            document.StartingBalanceDate,
             document.DateCreated,
             document.DateUpdated,
             document.DateDeleted);
@@ -271,8 +296,10 @@ public partial class AccountDocument
             document.DisplayColor,
             document.ExtAcctId,
             document.IsDefault,
-            new Money(document.OverdraftLimit),
+            overDraftLimit: new Money(document.OverdraftLimit),
             document.SortOrder,
+            document.StartingBalance,
+            document.StartingBalanceDate,
             document.DateCreated,
             document.DateUpdated,
             document.DateDeleted);
@@ -293,6 +320,8 @@ public partial class AccountDocument
             new PercentageRate(document.InterestRate),
             document.IsDefault,
             document.SortOrder,
+            document.StartingBalance,
+            document.StartingBalanceDate,
             document.DateCreated,
             document.DateUpdated,
             document.DateDeleted);
@@ -304,16 +333,18 @@ public partial class AccountDocument
             new AccountId(document.Id),
             new UserId(document.UserId),
             new AccountName(document.Name),
-            new Money(document.Balance),
+            balance: new Money(document.Balance),
             document.InstitutionName,
             document.ClosedDate,
             document.Description,
             document.DisplayColor,
             document.ExtAcctId,
-            new Money(document.CreditLimit),
-            new PercentageRate(document.InterestRate),
+            creditLimit: new Money(document.CreditLimit),
+            interestRate: new PercentageRate(document.InterestRate),
             document.IsDefault,
             document.SortOrder,
+            document.StartingBalance,
+            document.StartingBalanceDate,
             document.DateCreated,
             document.DateUpdated,
             document.DateDeleted);
@@ -335,6 +366,8 @@ public partial class AccountDocument
             new PercentageRate(document.InterestRate),
             document.IsDefault,
             document.SortOrder,
+            document.StartingBalance,
+            document.StartingBalanceDate,
             document.DateCreated,
             document.DateUpdated,
             document.DateDeleted);
@@ -354,6 +387,8 @@ public partial class AccountDocument
             document.InstitutionName,
             document.IsDefault,
             document.SortOrder,
+            document.StartingBalance,
+            document.StartingBalanceDate,
             document.DateCreated,
             document.DateUpdated,
             document.DateDeleted);
@@ -376,6 +411,8 @@ public partial class AccountDocument
             new PercentageRate(document.InterestRate),
             document.IsDefault,
             document.SortOrder,
+            document.StartingBalance,
+            document.StartingBalanceDate,
             document.DateCreated,
             document.DateUpdated,
             document.DateDeleted);

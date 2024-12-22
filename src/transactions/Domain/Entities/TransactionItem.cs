@@ -9,7 +9,7 @@ public sealed class TransactionItem : Entity
 
     public CategoryId CategoryId { get; set; }
 
-    public CategoryId SubCategoryId { get; set; }
+    public SubCategoryId SubCategoryId { get; set; }
 
     public string Description { get; init; }
 

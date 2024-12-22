@@ -3,7 +3,7 @@ using Carter;
 using FluentValidation;
 using Habanerio.Xpnss.Categories.Application.Commands;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
-using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.DTOs.Categories;
 using Habanerio.Xpnss.Shared.Requests.Categories;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,7 +18,7 @@ public class CreateCategoryEndpoint : BaseEndpoint
             app.MapPost("/api/v1/users/{userId}/categories",
                 async (
                     [FromRoute] string userId,
-                    [FromBody] CreateCategoryApiRequest request,
+                    [FromBody] CreateCategoryRequest request,
                     [FromServices] ICategoriesService service,
                     CancellationToken cancellationToken) =>
                 {
@@ -35,7 +35,7 @@ public class CreateCategoryEndpoint : BaseEndpoint
 
     public static async Task<IResult> HandleAsync(
         string userId,
-        CreateCategoryApiRequest request,
+        CreateCategoryRequest request,
         ICategoriesService service,
         CancellationToken cancellationToken)
     {
@@ -61,7 +61,7 @@ public class CreateCategoryEndpoint : BaseEndpoint
         return Results.Ok(result.Value);
     }
 
-    public class Validator : AbstractValidator<CreateCategoryApiRequest>
+    public class Validator : AbstractValidator<CreateCategoryRequest>
     {
         public Validator()
         {

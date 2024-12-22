@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using Carter;
 using Habanerio.Xpnss.PayerPayees.Application.Commands.CreatePayerPayee;
@@ -26,17 +27,41 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
                         [FromServices] ILogger<CreateTransactionEndpoint> logger,
                         CancellationToken cancellationToken) =>
                     {
-                        return await HandleAsync(userId, request, transactionsService, payerPayeesService, logger, cancellationToken);
+                        return await HandleAsync(
+                            userId,
+                            request,
+                            transactionsService,
+                            payerPayeesService,
+                            logger,
+                            cancellationToken);
                     }
                 )
-                .Produces<PurchaseTransactionDto>((int)HttpStatusCode.OK)
+                .Produces<PurchasesTransactionDto>((int)HttpStatusCode.OK)
                 .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
                 .WithDisplayName("New Transaction")
-                .WithName("CreateTransactionCommand")
+                .WithName("CreateTransaction")
+                .WithTags("Transactions")
+                .WithOpenApi();
+        }
+
+        //TODO: Somehow dynamically generate each specific endpoint
+        private void AddRoute<TDto>(
+            IEndpointRouteBuilder app,
+            string name,
+            [StringSyntax("Route")] string pattern,
+            Delegate handler) where TDto : TransactionDto
+        {
+            app.MapPost(pattern, handler)
+                .Produces<TDto>((int)HttpStatusCode.OK)
+                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
+                .WithDisplayName($"New {name} Transaction")
+                .WithName($"{name}Transaction")
                 .WithTags("Transactions")
                 .WithOpenApi();
         }
     }
+
+
 
     public static async Task<IResult> HandleAsync(
         string userId,
@@ -60,6 +85,9 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
 
         PayerPayeeDto? payerPayeeDto = null;
 
+        // Not sure that I like this. Ideally, I would like to place the Transaction Api Endpoints
+        // within the Transaction 'Module'. And if I do that, then this would not be possible.
+        // Unless PayerPayee becomes part of the same module.
         if (!string.IsNullOrWhiteSpace(payerPayeeName))
         {
             var payerPayeeCommand = new CreatePayerPayeeCommand(
@@ -98,7 +126,8 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
 
             if (transactionDto is null)
                 return BadRequestWithErrors(
-                    $"An error occurred while trying to return Transaction #{transactionResult.Value.Id}");
+                    $"An error occurred while trying to return Transaction " +
+                    $"#{transactionResult.Value.Id}");
 
             // Assign the PayerPayee, if not null, to the TransactionDto.
             if (payerPayeeDto is not null)
@@ -111,14 +140,14 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
         catch (Exception e)
         {
             logger.LogCritical(e, $"An error occurred while trying to create a new Transaction:" +
-                                    "\r\n UserId: {UserId}" +
-                                    "\r\n AccountId: {AccountId}" +
-                                    "\r\n TransactionType: {TransactionType}" +
-                                    "\r\n TotalAmount: {TotalAmount}",
+                                    "\r\n UserId: {@UserId}" +
+                                    "\r\n AccountId: {@AccountId}" +
+                                    "\r\n TransactionType: {@TransactionType}" +
+                                    "\r\n Amount: {@Amount}",
                                     request.UserId,
                                     request.AccountId,
                                     request.TransactionType,
-                                    request.TotalAmount);
+                                    request.Amount);
             return Results.BadRequest(e.Message);
         }
     }

@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Habanerio.Xpnss.Shared.Requests;
 
-public record UpdateAccountDetailsApiRequest : UserRequiredRequest
+public record UpdateAccountDetailsRequest : UserRequiredRequest
 {
     public string AccountId { get; init; }
 
@@ -17,9 +17,9 @@ public record UpdateAccountDetailsApiRequest : UserRequiredRequest
     public int? SortOrder { get; set; } = null;
 
     [JsonConstructor]
-    public UpdateAccountDetailsApiRequest() { }
+    public UpdateAccountDetailsRequest() { }
 
-    public UpdateAccountDetailsApiRequest(
+    public UpdateAccountDetailsRequest(
         string userId,
         string accountId,
         string? name = null,

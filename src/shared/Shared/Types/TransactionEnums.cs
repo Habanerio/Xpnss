@@ -77,7 +77,7 @@ public static class TransactionEnums
 
         // Can this be a Deposit on a Cash Account, and assigned to an "Income" Category?
         //[Display(Name = "Income", Description = "Money earned from doing work (or selling something)")]
-        //INCOME,
+        //REVENUE,
         [JsonPropertyName("Interest Charge")]
         [Display(Name = "Interest Charge", Description = "Interest charges to an Account such as a Credit Card, Line of Credit, Loan, ...")]
         INTEREST_CHARGE,
@@ -98,13 +98,17 @@ public static class TransactionEnums
         [Display(Description = "")]
         PAYMENT,
 
-        [JsonPropertyName("Payment In")]
+        [JsonPropertyName("Payment Received")]
         [Display(Name = "Payment In", Description = "A payment made to an Account")]
         PAYMENT_IN,
 
-        [JsonPropertyName("Payment Out")]
+        [JsonPropertyName("Payment Paid")]
         [Display(Name = "Payment Out", Description = "A payment made from an Account")]
         PAYMENT_OUT,
+
+        [JsonPropertyName("Bill Paymen")]
+        [Display(Name = "Payment Out External", Description = "A payment made from an Account to an external account")]
+        PAYMENT_BILL,
 
         [JsonPropertyName("Purchase")]
         [Display(Description = "Spending money for goods or services.")]
@@ -138,6 +142,8 @@ public static class TransactionEnums
         [JsonPropertyName("Withdrawal")]
         [Display(Description = "Taking money out of the Account (e.g., ATM or cash withdrawal).")]
         WITHDRAWAL,
+
+        CANCELED
     }
 
     public static Dictionary<int, string> ToDictionary()
@@ -153,6 +159,7 @@ public static class TransactionEnums
     {
         TransactionKeys.ADJUSTMENT_CREDIT,
         TransactionKeys.BALANCE_TRANSFER_IN,
+        TransactionKeys.CANCELED,
         TransactionKeys.DEPOSIT,
         TransactionKeys.DIVIDEND,
         TransactionKeys.INTEREST_EARNED,
@@ -172,6 +179,7 @@ public static class TransactionEnums
         TransactionKeys.CHARGE_FEE,
         TransactionKeys.INTEREST_CHARGE,
         TransactionKeys.PAYMENT,
+        TransactionKeys.PAYMENT_BILL,
         TransactionKeys.PAYMENT_OUT,
         TransactionKeys.PURCHASE,
         TransactionKeys.TRANSFER,
@@ -184,6 +192,7 @@ public static class TransactionEnums
     /// </summary>
     public static IReadOnlyCollection<TransactionKeys> AllUserTransactionKeys => new[]
     {
+        TransactionKeys.ADJUSTMENT_CREDIT,
         TransactionKeys.BALANCE_TRANSFER,
         TransactionKeys.CHARGE_FEE,
         TransactionKeys.DEPOSIT,
@@ -200,7 +209,8 @@ public static class TransactionEnums
     public static IReadOnlyDictionary<int, string> CreditTransactionTypes => new Dictionary<int, string>()
     {
         {(int) TransactionKeys.ADJUSTMENT_CREDIT, TransactionKeys.ADJUSTMENT_CREDIT.ToString().Replace("_", " ")},
-        { (int) TransactionKeys.BALANCE_TRANSFER_IN, TransactionKeys.BALANCE_TRANSFER_IN.ToString().Replace("_", " ")},
+        {(int) TransactionKeys.BALANCE_TRANSFER_IN, TransactionKeys.BALANCE_TRANSFER_IN.ToString().Replace("_", " ")},
+        {(int) TransactionKeys.CANCELED, TransactionKeys.CANCELED.ToString().Replace("_", " ")},
         {(int) TransactionKeys.DEPOSIT, TransactionKeys.DEPOSIT.ToString().Replace("_", " ")},
         {(int) TransactionKeys.DIVIDEND, TransactionKeys.DIVIDEND.ToString().Replace("_", " ")},
         {(int) TransactionKeys.INTEREST_EARNED, TransactionKeys.INTEREST_EARNED.ToString().Replace("_", " ")},
@@ -213,6 +223,7 @@ public static class TransactionEnums
     {
         { (int)TransactionKeys.ADJUSTMENT_DEBIT, TransactionKeys.ADJUSTMENT_DEBIT.ToString().Replace("_", " ")},
         { (int) TransactionKeys.BALANCE_TRANSFER_OUT, TransactionKeys.BALANCE_TRANSFER_OUT.ToString().Replace("_", " ")},
+        { (int) TransactionKeys.PAYMENT_BILL, TransactionKeys.PAYMENT_BILL.ToString().Replace("_", " ")},
         { (int) TransactionKeys.CHARGE_FEE, TransactionKeys.CHARGE_FEE.ToString().Replace("_", " ")},
         { (int) TransactionKeys.INTEREST_CHARGE, TransactionKeys.INTEREST_CHARGE.ToString().Replace("_", " ")},
         { (int) TransactionKeys.PAYMENT_OUT, TransactionKeys.PAYMENT_OUT.ToString().Replace("_", " ")},
@@ -270,8 +281,8 @@ public static class TransactionEnums
     //    // DIVIDEND: IF there's an Investment Account, then we may need this,
     //    // instead of putting it under "Deposit" (or "Income") and applying a "Dividend" category?
     //    TransactionKeys.DIVIDEND,
-    //    // INCOME: Can this be a DEPOSIT and fall under an "INCOME" Category?
-    //    //AccountEnums.CurrencyKeys.INCOME,
+    //    // REVENUE: Can this be a DEPOSIT and fall under an "REVENUE" Category?
+    //    //AccountEnums.CurrencyKeys.REVENUE,
     //    // INTEREST_CHARGE: Can this be a SERVICE_FEE and fall under an "INTEREST" Category?
     //    // AccountEnums.CurrencyKeys.INTEREST_CHARGE,
     //    // INTEREST_EARNED: Can this be a DEPOSIT and fall under an "INTEREST" Category? If there's an Investment Account, then we may need this,

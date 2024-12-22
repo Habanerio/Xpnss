@@ -25,7 +25,7 @@ public class UpdateAccountDetailsApiTests(WebApplicationFactory<Apis.App.AppApis
         var newDisplayColor = "#f0f0f0";
 
         // Arrange
-        var updateAccountDetailsRequest = new UpdateAccountDetailsApiRequest(
+        var updateAccountDetailsRequest = new UpdateAccountDetailsRequest(
             account.UserId.ToString(),
             account.Id.ToString(),
             newName,

@@ -1,10 +1,10 @@
 using FluentResults;
 using FluentValidation;
-using Habanerio.Xpnss.Shared.DTOs;
 using Habanerio.Xpnss.Categories.Application.Mappers;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
 using Habanerio.Xpnss.Shared.ValueObjects;
 using MediatR;
+using Habanerio.Xpnss.Shared.DTOs.Categories;
 
 namespace Habanerio.Xpnss.Categories.Application.Commands;
 

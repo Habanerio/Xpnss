@@ -1,5 +1,4 @@
 using Habanerio.Xpnss.Shared.DTOs;
-using Habanerio.Xpnss.Shared.Types;
 using Habanerio.Xpnss.Transactions.Domain.Entities;
 using Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 
@@ -12,7 +11,7 @@ internal static class ApplicationMapper
         new Dictionary<TransactionEnums.TransactionKeys, Type>
         {
             { TransactionEnums.TransactionKeys.DEPOSIT, typeof(DepositTransactionDto) },
-            { TransactionEnums.TransactionKeys.PURCHASE, typeof(PurchaseTransactionDto) },
+            { TransactionEnums.TransactionKeys.PURCHASE, typeof(PurchasesTransactionDto) },
             { TransactionEnums.TransactionKeys.WITHDRAWAL, typeof(WithdrawalTransactionDto) }
         };
     */
@@ -37,21 +36,36 @@ internal static class ApplicationMapper
         if (entity is null)
             return default;
 
-        switch (entity.TransactionType)
+        if (entity is CreditTransaction creditEntity)
         {
-            case TransactionEnums.TransactionKeys.PURCHASE:
-                return PopulateCommonDtoProperties<PurchaseTransactionDto>(entity);
+            // Payments received from some other account
+            if (creditEntity is PaymentInTransaction paymentInEntity)
+            {
+                return PopulateCommonProperties<PaymentInTransactionDto>(paymentInEntity);
+            }
 
-            case TransactionEnums.TransactionKeys.DEPOSIT:
-                return PopulateCommonDtoProperties<DepositTransactionDto>(entity);
-
-            case TransactionEnums.TransactionKeys.WITHDRAWAL:
-                return PopulateCommonDtoProperties<WithdrawalTransactionDto>(entity);
-
-            default:
-                throw new InvalidOperationException($"{nameof(ApplicationMapper)}: " +
-                    $"'{entity.TransactionType}' is not yet support");
+            return PopulateCommonProperties<CreditTransactionDto>(creditEntity);
         }
+
+        if (entity is DebitTransaction debitEntity)
+        {
+            // Payments sent out to some other account
+            if (debitEntity is PaymentOutTransaction paymentOutEntity)
+            {
+                return PopulateCommonProperties<PaymentOutTransactionDto>(paymentOutEntity);
+            }
+
+
+            if (debitEntity is PurchasesTransaction purchasesEntity)
+            {
+                return PopulateCommonProperties<PurchasesTransactionDto>(purchasesEntity);
+            }
+
+            return PopulateCommonProperties<DebitTransactionDto>(debitEntity);
+        }
+
+        throw new InvalidOperationException($"{nameof(ApplicationMapper)}: " +
+            $"'{entity.TransactionType}' is not yet support");
     }
 
     public static TransactionItemDto? Map(TransactionItem? item)
@@ -85,29 +99,59 @@ internal static class ApplicationMapper
     }
 
 
-    private static TransactionDto PopulateCommonDtoProperties<TDto>(Transaction entity)
+    private static TransactionDto PopulateCommonProperties<TDto>(Transaction entity)
         where TDto : TransactionDto, new()
     {
         var transactionDto = new TDto
         {
-            Id = entity.Id,
-            UserId = entity.UserId,
-            AccountId = entity.AccountId,
+            Id = entity.Id.Value,
+            UserId = entity.UserId.Value,
+            AccountId = entity.AccountId.Value,
+            CategoryId = entity.CategoryId.Value,
             Description = entity.Description,
-            ExtTransactionId = entity.ExtTransactionId,
-            PayerPayeeId = entity.PayerPayeeId,
-            RefTransactionId = entity.RefTransactionId,
+            ExtTransactionNo = entity.ExtTransactionNo,
+            IsCredit = entity.IsCredit,
+            PayerPayeeId = entity.PayerPayeeId.Value,
+            SubCategoryId = entity.SubCategoryId.Value,
+            //RefTransactionId = entity.RefTransactionId,
             Tags = entity.Tags.ToList(),
-            TransactionDate = entity.TransactionDate
+            TotalAmount = entity.TotalAmount,
+            TransactionDate = entity.TransactionDate,
+            TransactionType = entity.TransactionType
         };
 
-        if (entity is PurchaseTransaction purchaseEntity &&
-            transactionDto is PurchaseTransactionDto purchaseDto)
+        if (entity is PaymentInTransaction paymentInTransaction &&
+            transactionDto is PaymentInTransactionDto paymentInDto)
+        {
+            paymentInDto.IsOwnAccount = paymentInTransaction.IsOwnAccount;
+        }
+
+        if (entity is PaymentOutTransaction paymentOutTransaction &&
+            transactionDto is PaymentOutTransactionDto paymentOutDto)
+        {
+            paymentOutDto.IsOwnAccount = paymentOutTransaction.IsPaidToOwnAccount;
+        }
+
+        if (entity is PurchasesTransaction purchaseEntity &&
+            transactionDto is PurchasesTransactionDto purchaseDto)
         {
             purchaseDto.Items = Map(purchaseEntity.Items).ToList();
             purchaseDto.TotalPaid = purchaseEntity.TotalPaid;
 
             return purchaseDto;
+        }
+
+        if (entity is CreditTransaction creditEntity &&
+            transactionDto is CreditTransactionDto creditDto)
+        {
+            creditDto.TransactionType = entity.TransactionType;
+            return creditDto;
+        }
+
+        if (entity is DebitTransaction debitEntity &&
+                 transactionDto is DebitTransactionDto debitDto)
+        {
+            return debitDto;
         }
 
         transactionDto.TotalAmount = entity.TotalAmount;

@@ -140,11 +140,13 @@ public class CreateDepositTransactionApiTests(WebApplicationFactory<Program> fac
             testUserId.ToString(),
             existingAccount.Id.ToString(),
             999,
+            string.Empty,
             transactionDescription,
             randomPayerPayeeRequest ?? new PayerPayeeRequest(),
+            string.Empty,
             transactionDate,
             tags,
-            "extTransactionId");
+            "extTransactionNo");
 
         // Assert
         await AssertTransactionAsync(testUserId, existingAccount, createTransactionRequest, TRANSACTION_TYPE);

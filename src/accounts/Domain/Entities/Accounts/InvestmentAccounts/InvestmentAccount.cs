@@ -35,7 +35,9 @@ public class InvestmentAccount :
         string extAcctId,
         string institutionName,
         bool isDefault,
-        int? sortOrder) :
+        int? sortOrder,
+        decimal startingBalance,
+        DateTime? startingBalanceDate) :
         base(
             userId,
             accountName,
@@ -43,7 +45,7 @@ public class InvestmentAccount :
             displayColor,
             extAcctId,
             isDefault,
-            sortOrder)
+            sortOrder, startingBalance, startingBalanceDate)
     {
         InstitutionName = institutionName;
 
@@ -62,6 +64,8 @@ public class InvestmentAccount :
         string institutionName,
         bool isDefault,
         int sortOrder,
+        decimal startingBalance,
+        DateTime? startingBalanceDate,
         DateTime dateCreated,
         DateTime? dateUpdated,
         DateTime? dateDeleted) :
@@ -76,6 +80,8 @@ public class InvestmentAccount :
             extAcctId,
             isDefault,
             sortOrder,
+            startingBalance,
+            startingBalanceDate,
             dateCreated,
             dateUpdated,
             dateDeleted)
@@ -91,7 +97,9 @@ public class InvestmentAccount :
         string extAcctId = "",
         string institutionName = "",
         bool isDefault = false,
-        int? sortOrder = null)
+        int? sortOrder = null,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null)
     {
         return new InvestmentAccount(
             userId,
@@ -101,7 +109,7 @@ public class InvestmentAccount :
             extAcctId,
             institutionName,
             isDefault,
-            sortOrder);
+            sortOrder, startingBalance, startingBalanceDate);
     }
 
     public static InvestmentAccount Load(
@@ -116,6 +124,8 @@ public class InvestmentAccount :
         string institutionName,
         bool isDefault,
         int sortOrder,
+        decimal startingBalance,
+        DateTime? startingBalanceDate,
         DateTime dateCreated,
         DateTime? dateUpdated,
         DateTime? dateDeleted)
@@ -132,63 +142,10 @@ public class InvestmentAccount :
             institutionName,
             isDefault,
             sortOrder,
+            startingBalance,
+            startingBalanceDate,
             dateCreated,
             dateUpdated,
             dateDeleted);
-    }
-
-
-
-    /// <summary>
-    /// Applies a Transaction CreditLimit to the Account's Balance.<br />
-    /// When the Transaction is a Credit, the creditLimit is added to the Balance.<br />
-    /// When the Transaction is a Debit, the creditLimit is subtracted from the Balance.
-    /// </summary>
-    /// <param name="amount">The creditLimit of the Transaction</param>
-    /// <param name="transactionType">The type of Transaction that occurred</param>
-    public override void AddTransactionAmount(Money amount, TransactionEnums.TransactionKeys transactionType)
-    {
-        if (IsDeleted)
-            throw new InvalidOperationException("Cannot add a transaction to a deleted Account");
-
-        if (amount.Value < 0)
-            throw new ArgumentOutOfRangeException(nameof(amount), $"AddTransactionAmount value cannot be negative ({amount})");
-
-        // For default Credit Accounts
-        if (TransactionEnums.IsCreditTransaction(transactionType))
-        {
-            Balance += amount;
-        }
-        else
-        {
-            Balance -= amount;
-        }
-    }
-
-    /// <summary>
-    /// Undoes a previously applied Transaction CreditLimit from the Account's Balance (eg: for when a Transaction is deleted).<br />
-    /// When the Transaction is a Credit, the creditLimit will be SUBTRACTED from the Balance.<br />
-    /// When the Transaction is a Debit, the creditLimit will be ADDED to the Balance.
-    /// </summary>
-    /// <param name="amount">The creditLimit of the original Transaction</param>
-    /// <param name="transactionType">The original Transaction Type</param>
-    /// <exception cref="InvalidOperationException"></exception>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public override void RemoveTransactionAmount(Money amount, TransactionEnums.TransactionKeys transactionType)
-    {
-        if (IsDeleted)
-            throw new InvalidOperationException("Cannot remove a transaction from a deleted Account");
-
-        if (amount.Value < 0)
-            throw new ArgumentOutOfRangeException(nameof(amount), $"RemoveTransaction value cannot be negative ({amount})");
-
-        if (TransactionEnums.IsCreditTransaction(transactionType))
-        {
-            Balance -= amount;
-        }
-        else
-        {
-            Balance += amount;
-        }
     }
 }

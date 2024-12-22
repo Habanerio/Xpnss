@@ -56,23 +56,23 @@ public sealed class CopyTransactionCommandHandler(ITransactionsRepository reposi
         {
             var refTransactionId = actualTransaction.Id.Value;
 
-            if (actualTransaction is PurchaseTransaction purchaseTransaction)
+            if (actualTransaction is PurchasesTransaction purchasesTransaction)
             {
-                var createPurchaseRequest = new CreatePurchaseTransactionApiRequest(
+                var createPurchaseRequest = new CreatePurchasesTransactionRequest(
                     command.UserId,
-                    accountId: purchaseTransaction.AccountId,
-                    new PayerPayeeRequest() { Id = purchaseTransaction.PayerPayeeId.Value },
-                    purchaseTransaction.Description,
+                    accountId: purchasesTransaction.AccountId,
+                    new PayerPayeeRequest() { Id = purchasesTransaction.PayerPayeeId.Value },
+                    purchasesTransaction.Description,
                     newTransactionDate,
-                    purchaseTransaction.Items.Select(i => new TransactionApiRequestItem
+                    purchasesTransaction.Items.Select(i => new TransactionRequestItem
                     {
                         Amount = i.Amount,
                         CategoryId = i.CategoryId,
                         SubCategoryId = i.SubCategoryId,
                         Description = i.Description,
                     }).ToList(),
-                    purchaseTransaction.Tags?.ToList() ?? [],
-                    purchaseTransaction.ExtTransactionId,
+                    purchasesTransaction.Tags?.ToList() ?? [],
+                    purchasesTransaction.ExtTransactionNo,
                     refTransactionId);
 
                 var newCommand = new CreateTransactionCommand(command.UserId, createPurchaseRequest);
@@ -88,12 +88,14 @@ public sealed class CopyTransactionCommandHandler(ITransactionsRepository reposi
                         command.UserId,
                         creditTransaction.AccountId.Value,
                         creditTransaction.TotalAmount.Value,
+                        creditTransaction.CategoryId,
                         creditTransaction.Description,
                         depositFrom: new PayerPayeeRequest()
                         { Id = creditTransaction.PayerPayeeId.Value },
+                        creditTransaction.SubCategoryId,
                         newTransactionDate,
                         creditTransaction.Tags?.ToList() ?? [],
-                        creditTransaction.ExtTransactionId,
+                        creditTransaction.ExtTransactionNo,
                         refTransactionId);
 
                     var newCommand = new CreateTransactionCommand(command.UserId, createDepositRequest);
@@ -110,12 +112,14 @@ public sealed class CopyTransactionCommandHandler(ITransactionsRepository reposi
                         command.UserId,
                         accountId: debitTransaction.AccountId.Value,
                         amount: debitTransaction.TotalAmount.Value,
+                        categoryId: debitTransaction.CategoryId,
                         debitTransaction.Description,
                         withdrewTo: new PayerPayeeRequest()
                         { Id = debitTransaction.PayerPayeeId.Value },
+                        subCategoryId: debitTransaction.SubCategoryId,
                         newTransactionDate,
                         debitTransaction.Tags?.ToList() ?? [],
-                        debitTransaction.ExtTransactionId,
+                        debitTransaction.ExtTransactionNo,
                         refTransactionId);
 
                     var newCommand = new CreateTransactionCommand(command.UserId, createWithdrawalRequest);
