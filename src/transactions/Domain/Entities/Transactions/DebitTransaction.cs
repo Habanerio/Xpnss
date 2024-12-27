@@ -16,6 +16,7 @@ public class DebitTransaction : Transaction
             TransactionItem item,
             PayerPayeeId payerPayeeId,
             IEnumerable<string>? tags,
+            string title,
             DateTime transactionDate,
             TransactionEnums.TransactionKeys transactionType) :
         base(
@@ -27,6 +28,7 @@ public class DebitTransaction : Transaction
             item,
             payerPayeeId,
             tags,
+            title,
             transactionDate,
             transactionType)
     { }
@@ -43,6 +45,7 @@ public class DebitTransaction : Transaction
         PayerPayeeId payerPayeeId,
         //RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType) :
         base(
@@ -55,6 +58,7 @@ public class DebitTransaction : Transaction
             payerPayeeId,
             //refTransactionId,
             tags,
+            title,
             transactionDate,
             transactionType)
     { }
@@ -72,6 +76,7 @@ public class DebitTransaction : Transaction
             PayerPayeeId payerPayeeId,
             //RefTransactionId refTransactionId,
             IEnumerable<string>? tags,
+            string title,
             DateTime transactionDate,
             TransactionEnums.TransactionKeys transactionType,
             DateTime dateCreated,
@@ -88,6 +93,7 @@ public class DebitTransaction : Transaction
             payerPayeeId,
             //refTransactionId,
             tags,
+            title,
             transactionDate,
             transactionType,
             dateCreated,
@@ -107,6 +113,7 @@ public class DebitTransaction : Transaction
         IEnumerable<TransactionItem> items,
         PayerPayeeId payerPayeeId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType,
         DateTime dateCreated,
@@ -122,6 +129,7 @@ public class DebitTransaction : Transaction
             items,
             payerPayeeId,
             tags,
+            title,
             transactionDate,
             transactionType,
             dateCreated,
@@ -138,6 +146,7 @@ public class DebitTransaction : Transaction
         string description,
         PayerPayeeId payerPayeeId,
         SubCategoryId subCategoryId,
+        string title,
         DateTime transactionDate,
         List<string>? tags = null,
         string extTransactionNo = "")
@@ -150,6 +159,7 @@ public class DebitTransaction : Transaction
             TransactionItem.New(amount, categoryId, subCategoryId, description),
             payerPayeeId,
             tags,
+            title,
             transactionDate,
             transactionType: transactionType);
     }
@@ -162,6 +172,7 @@ public class DebitTransaction : Transaction
         string description,
         PayerPayeeId payerPayeeId,
         SubCategoryId subCategoryId,
+        string title,
         DateTime transactionDate,
         List<string>? tags = null,
         string extTransactionNo = "")
@@ -174,6 +185,7 @@ public class DebitTransaction : Transaction
             TransactionItem.New(amount, categoryId, subCategoryId, description),
             payerPayeeId,
             tags,
+            title,
             transactionDate,
             transactionType: TransactionEnums.TransactionKeys.WITHDRAWAL);
     }
@@ -217,6 +229,7 @@ public class DebitTransaction : Transaction
         //RefTransactionId refTransactionId,
         SubCategoryId subCategoryId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType,
         DateTime dateCreated,
@@ -236,6 +249,7 @@ public class DebitTransaction : Transaction
             payerPayeeId,
             //refTransactionId,
             tags,
+            title,
             transactionDate,
             transactionType,
             dateCreated,

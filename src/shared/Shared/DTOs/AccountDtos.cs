@@ -7,9 +7,9 @@ public sealed record AccountDto
 {
     #region - Common Properties -
 
-    public string Id { get; set; } = String.Empty;
+    public string Id { get; set; } = string.Empty;
 
-    public string UserId { get; set; } = String.Empty;
+    public string UserId { get; set; } = string.Empty;
 
     [JsonPropertyName("AccountType")]
     [JsonConverter(typeof(JsonNumberEnumConverter<AccountEnums.AccountKeys>))]
@@ -41,7 +41,7 @@ public sealed record AccountDto
     public string LoanAccountTypeString => LoanAccountType.ToString();
 
 
-    public string Name { get; set; } = String.Empty;
+    public string Name { get; set; } = string.Empty;
 
     public decimal Balance { get; set; }
 

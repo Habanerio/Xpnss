@@ -27,8 +27,10 @@ public record CreateTransactionRequest : UserRequiredRequest
 
     public List<string> Tags { get; init; } = [];
 
+    public string Title { get; init; } = string.Empty;
+
     [Required]
-    public virtual decimal Amount { get; init; }
+    public virtual decimal TotalAmount { get; init; }
 
     public DateTime TransactionDate
     {
@@ -64,7 +66,7 @@ public record CreateTransactionRequest : UserRequiredRequest
         string userId,
         TransactionEnums.TransactionKeys transactionType,
         string accountId,
-        decimal amount,
+        decimal totalAmount,
         string categoryId,
         string description,
         string extTransactionNo,
@@ -73,12 +75,13 @@ public record CreateTransactionRequest : UserRequiredRequest
         string refTransactionId,
         string subCategoryId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate)
     {
         UserId = userId;
         AccountId = accountId;
         CategoryId = categoryId;
-        Amount = amount;
+        TotalAmount = totalAmount;
         Description = description;
         IsCredit = isCredit;
         ExtTransactionNo = extTransactionNo;
@@ -86,6 +89,7 @@ public record CreateTransactionRequest : UserRequiredRequest
         RefTransactionId = refTransactionId;
         SubCategoryId = subCategoryId;
         Tags = tags?.ToList() ?? [];
+        Title = title;
         TransactionDate = transactionDate;
         TransactionType = transactionType;
     }
@@ -116,6 +120,7 @@ public record CreateCreditTransactionRequest :
         string description,
         PayerPayeeRequest payerPayee,
         string subCategoryId,
+        string title,
         DateTime transactionDate,
         IEnumerable<string>? tags = null,
         string extTransactionNo = "",
@@ -133,6 +138,7 @@ public record CreateCreditTransactionRequest :
             refTransactionId,
             subCategoryId,
             tags,
+            title,
             transactionDate)
     { }
 }
@@ -158,6 +164,7 @@ public sealed record CreateDepositTransactionRequest :
         string description,
         PayerPayeeRequest depositFrom,
         string subCategoryId,
+        string title,
         DateTime transactionDate,
         IEnumerable<string>? tags = null,
         string extTransactionNo = "",
@@ -171,6 +178,7 @@ public sealed record CreateDepositTransactionRequest :
             description,
             depositFrom,
             subCategoryId,
+            title,
             transactionDate,
             tags,
             extTransactionNo,
@@ -202,6 +210,7 @@ public sealed record CreatePaymentInTransactionRequest :
         bool isPaidTFromOwnAccount,
         PayerPayeeRequest paymentInFrom,
         string subCategoryId,
+        string title,
         DateTime transactionDate,
         IEnumerable<string>? tags = null,
         string extTransactionNo = "",
@@ -215,6 +224,7 @@ public sealed record CreatePaymentInTransactionRequest :
             description,
             payerPayee: paymentInFrom,
             subCategoryId,
+            title,
             transactionDate,
             tags,
             extTransactionNo,
@@ -248,11 +258,12 @@ public record CreateDebitTransactionRequest :
         string userId,
         TransactionEnums.TransactionKeys transactionType,
         string accountId,
-        decimal amount,
+        decimal totalAmount,
         string categoryId,
         string description,
         PayerPayeeRequest payerPayee,
         string subCategoryId,
+        string title,
         DateTime transactionDate,
         IEnumerable<string>? tags = null,
         string extTransactionNo = "",
@@ -261,7 +272,7 @@ public record CreateDebitTransactionRequest :
             userId,
             transactionType,
             accountId,
-            amount,
+            totalAmount,
             categoryId,
             description,
             extTransactionNo,
@@ -270,6 +281,7 @@ public record CreateDebitTransactionRequest :
             refTransactionId,
             subCategoryId,
             tags,
+            title,
             transactionDate)
     { }
 }
@@ -293,25 +305,27 @@ public sealed record CreatePaymentOutTransactionRequest :
     public CreatePaymentOutTransactionRequest(
         string userId,
         string accountId,
-        decimal amount,
+        decimal totalAmount,
         string categoryId,
         string description,
         PayerPayeeRequest paymentOutTo,
         bool isPaidToOwnAccount,
         string subCategoryId,
+        string title,
         DateTime transactionDate,
         IEnumerable<string>? tags = null,
         string extTransactionNo = "",
         string refTransactionId = "") :
         base(
             userId,
-            TransactionEnums.TransactionKeys.PAYMENT_OUT,
+            transactionType: TransactionEnums.TransactionKeys.PAYMENT_OUT,
             accountId,
-            amount,
+            totalAmount,
             categoryId,
             description,
             payerPayee: paymentOutTo,
             subCategoryId,
+            title,
             transactionDate,
             tags,
             extTransactionNo,
@@ -330,7 +344,7 @@ public sealed record CreatePurchasesTransactionRequest :
 {
     public List<TransactionRequestItem> Items { get; set; } = [];
 
-    public override decimal Amount => Items.Sum(i => i.Amount);
+    public override decimal TotalAmount => Items.Sum(i => i.Amount);
 
     [JsonConstructor]
     public CreatePurchasesTransactionRequest() :
@@ -344,6 +358,7 @@ public sealed record CreatePurchasesTransactionRequest :
         string description,
         DateTime transactionDate,
         IEnumerable<TransactionRequestItem> items,
+        string title,
         IEnumerable<string>? tags = null,
         string extTransactionNo = "",
         string refTransactionId = "") :
@@ -358,7 +373,8 @@ public sealed record CreatePurchasesTransactionRequest :
         Items = items?.ToList() ?? [];
         RefTransactionId = refTransactionId;
         Tags = tags?.ToList() ?? [];
-        Amount = Items.Sum(i => i.Amount);
+        Title = title;
+        TotalAmount = Items.Sum(i => i.Amount);
     }
 }
 
@@ -377,11 +393,12 @@ public sealed record CreateWithdrawalTransactionRequest :
     public CreateWithdrawalTransactionRequest(
         string userId,
         string accountId,
-        decimal amount,
+        decimal totalAmount,
         string categoryId,
         string description,
         PayerPayeeRequest withdrewTo,
         string subCategoryId,
+        string title,
         DateTime transactionDate,
         IEnumerable<string>? tags = null,
         string extTransactionNo = "",
@@ -390,11 +407,12 @@ public sealed record CreateWithdrawalTransactionRequest :
             userId,
             TransactionEnums.TransactionKeys.WITHDRAWAL,
             accountId,
-            amount,
+            totalAmount,
             categoryId,
             description,
             withdrewTo,
             subCategoryId,
+            title,
             transactionDate,
             tags,
             extTransactionNo,

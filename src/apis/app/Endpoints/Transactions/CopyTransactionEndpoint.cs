@@ -1,6 +1,6 @@
 using System.Net;
 using Carter;
-using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.DTOs.Transactions;
 using Habanerio.Xpnss.Shared.Requests.Transactions;
 using Habanerio.Xpnss.Transactions.Application.Commands;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;

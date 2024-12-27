@@ -9,11 +9,18 @@ public interface ITransactionsRepository
         Transaction transaction,
         CancellationToken cancellationToken = default);
 
-    Task<Result<IEnumerable<Transaction>>> FindAsync(
+    //TODO: Return a PagedResults<T>
+    //TODO: Pass in the SearchRequest
+    Task<Result<(IEnumerable<Transaction> Results, int PageNo, int PageSize, int TotalPages, int TotalCount)>>
+        SearchAsync(
         string userId,
-        string accountId = "",
-        DateTime? startDate = null,
-        DateTime? endDate = null,
+        string forAccountId = "",
+        string forCategoryId = "",
+        string forPayerPayeeId = "",
+        DateTime? fromDate = null,
+        DateTime? toDate = null,
+        int pageNo = 1,
+        int pageSize = 100,
         string userTimeZone = "",
         CancellationToken cancellationToken = default);
 

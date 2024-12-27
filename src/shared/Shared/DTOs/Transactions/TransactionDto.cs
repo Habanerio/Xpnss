@@ -1,8 +1,7 @@
 using System.Text.Json.Serialization;
-
 using Habanerio.Xpnss.Shared.Types;
 
-namespace Habanerio.Xpnss.Shared.DTOs;
+namespace Habanerio.Xpnss.Shared.DTOs.Transactions;
 
 public record TransactionDto
 {
@@ -29,6 +28,8 @@ public record TransactionDto
     public string SubCategoryId { get; set; } = "";
 
     public List<string> Tags { get; set; } = [];
+
+    public string Title { get; set; }
 
     public virtual decimal TotalAmount { get; set; }
 
@@ -62,6 +63,7 @@ public record TransactionDto
         //string refTransactionId,
         string subCategoryId,
         IEnumerable<string>? tags,
+        string title,
         decimal totalAmount,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType)
@@ -76,6 +78,7 @@ public record TransactionDto
         //RefTransactionId = refTransactionId;
         SubCategoryId = subCategoryId;
         Tags = tags?.ToList() ?? [];
+        Title = title;
         TotalAmount = totalAmount;
         TransactionDate = transactionDate;
         TransactionType = transactionType;
@@ -112,6 +115,7 @@ public record CreditTransactionDto : TransactionDto
         //string refTransactionId,
         string subCategoryId,
         IEnumerable<string>? tags,
+        string title,
         decimal totalAmount,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType) :
@@ -126,6 +130,7 @@ public record CreditTransactionDto : TransactionDto
             //refTransactionId,
             subCategoryId,
             tags,
+            title,
             totalAmount,
             transactionDate,
             transactionType)
@@ -155,6 +160,7 @@ public sealed record DepositTransactionDto :
         //string refTransactionId,
         string subCategoryId,
         IEnumerable<string>? tags,
+        string title,
         decimal totalAmount,
         DateTime transactionDate) :
         base(
@@ -167,6 +173,7 @@ public sealed record DepositTransactionDto :
             //refTransactionId,
             subCategoryId,
             tags,
+            title,
             totalAmount,
             transactionDate,
             TransactionEnums.TransactionKeys.DEPOSIT)
@@ -205,6 +212,7 @@ public record DebitTransactionDto : TransactionDto
         //string refTransactionId,
         string subCategoryId,
         IEnumerable<string>? tags,
+        string title,
         decimal totalAmount,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType) :
@@ -219,6 +227,7 @@ public record DebitTransactionDto : TransactionDto
             //refTransactionId,
             subCategoryId,
             tags,
+            title,
             totalAmount,
             transactionDate,
             transactionType)
@@ -256,6 +265,7 @@ public sealed record PurchasesTransactionDto :
         string payerPayeeId,
         //string refTransactionId,
         IEnumerable<string>? tags,
+        string title,
         decimal totalPaid,
         DateTime transactionDate) :
         base(
@@ -268,6 +278,7 @@ public sealed record PurchasesTransactionDto :
             //refTransactionId,
             subCategoryId: string.Empty,
             tags,
+            title,
             totalAmount: 0,
             transactionDate,
             transactionType: TransactionEnums.TransactionKeys.PURCHASE)
@@ -302,6 +313,7 @@ public sealed record WithdrawalTransactionDto :
         //string refTransactionId,
         string subCategoryId,
         IEnumerable<string>? tags,
+        string title,
         decimal totalAmount,
         DateTime transactionDate) :
         base(
@@ -314,6 +326,7 @@ public sealed record WithdrawalTransactionDto :
             //refTransactionId,
             subCategoryId,
             tags,
+            title,
             totalAmount,
             transactionDate,
             TransactionEnums.TransactionKeys.WITHDRAWAL)
@@ -353,6 +366,7 @@ public abstract record PaymentTransactionDto :
         //string refTransactionId,
         string subCategoryId,
         IEnumerable<string>? tags,
+        string title,
         decimal totalAmount,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType) :
@@ -367,6 +381,7 @@ public abstract record PaymentTransactionDto :
             //refTransactionId,
             subCategoryId,
             tags,
+            title,
             totalAmount,
             transactionDate,
             transactionType)
@@ -394,6 +409,7 @@ public sealed record PaymentOutTransactionDto :
         //string refTransactionId,
         string subCategoryId,
         IEnumerable<string>? tags,
+        string title,
         decimal totalAmount,
         DateTime transactionDate) :
         base(
@@ -407,6 +423,7 @@ public sealed record PaymentOutTransactionDto :
             //refTransactionId,
             subCategoryId,
             tags,
+            title,
             totalAmount,
             transactionDate,
             transactionType: TransactionEnums.TransactionKeys.PAYMENT)
@@ -432,6 +449,7 @@ public sealed record PaymentInTransactionDto :
         //string refTransactionId,
         string subCategoryId,
         IEnumerable<string>? tags,
+        string title,
         decimal totalAmount,
         DateTime transactionDate) :
         base(
@@ -445,6 +463,7 @@ public sealed record PaymentInTransactionDto :
             //refTransactionId,
             subCategoryId,
             tags,
+            title,
             totalAmount,
             transactionDate,
             transactionType: TransactionEnums.TransactionKeys.PAYMENT_IN)

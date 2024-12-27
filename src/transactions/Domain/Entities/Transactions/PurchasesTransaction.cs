@@ -18,7 +18,7 @@ public class PurchasesTransaction :
 
     public IReadOnlyCollection<TransactionPaymentItem> Payments => _payments.AsReadOnly();
 
-    //public override Money Amount => new(_items.Sum(i => i.Amount.Value));
+    //public override Money TotalAmount => new(_items.Sum(i => i.TotalAmount.Value));
 
     public Money TotalOwing => TotalAmount - TotalPaid;
 
@@ -49,6 +49,7 @@ public class PurchasesTransaction :
         PayerPayeeId payerPayeeId,
         //RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate)
         : base(
             userId,
@@ -59,6 +60,7 @@ public class PurchasesTransaction :
             payerPayeeId,
             //refTransactionId,
             tags,
+            title,
             transactionDate,
             TransactionEnums.TransactionKeys.PURCHASE)
     {
@@ -79,6 +81,7 @@ public class PurchasesTransaction :
         PayerPayeeId payerPayeeId,
         //RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate,
         DateTime dateCreated,
         DateTime? dateUpdated,
@@ -93,6 +96,7 @@ public class PurchasesTransaction :
             payerPayeeId,
             //refTransactionId,
             tags,
+            title,
             transactionDate,
             TransactionEnums.TransactionKeys.PURCHASE,
             dateCreated,
@@ -112,6 +116,7 @@ public class PurchasesTransaction :
         PayerPayeeId payerPayeeId,
         //RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate,
         DateTime dateCreated,
         DateTime? dateUpdated,
@@ -127,6 +132,7 @@ public class PurchasesTransaction :
             payerPayeeId,
             //refTransactionId,
             tags,
+            title,
             transactionDate,
             dateCreated,
             dateUpdated,
@@ -142,6 +148,7 @@ public class PurchasesTransaction :
         PayerPayeeId payerPayeeId,
         //RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate)
     {
         return new PurchasesTransaction(
@@ -153,6 +160,7 @@ public class PurchasesTransaction :
             payerPayeeId,
             //refTransactionId,
             tags,
+            title,
             transactionDate);
     }
 
@@ -174,7 +182,7 @@ public class PurchasesTransaction :
         // AddDomainEvent(new TransactionPaymentAddedEvent(Id, paymentToApply, paymentDate));
 
         //if(TotalOwing <= 0)
-        // AddDomainEvent(new TransactionPaidEvent(Id, userId, Amount, paymentDate));
+        // AddDomainEvent(new TransactionPaidEvent(Id, userId, TotalAmount, paymentDate));
 
         return remaining;
     }

@@ -35,7 +35,7 @@
 
 //        var Account = accountResult.Value;
 
-//        Account.ApplyTransactionAmount(new Money(@event.Amount), @event.TransactionType);
+//        Account.ApplyTransactionAmount(new Money(@event.TotalAmount), @event.TransactionType);
 
 //        //var isCreditTransaction = TransactionEnums.DoesBalanceIncrease(Account.AccountType, TransactionEnums.ToTransactionType(@event.TransactionType));
 

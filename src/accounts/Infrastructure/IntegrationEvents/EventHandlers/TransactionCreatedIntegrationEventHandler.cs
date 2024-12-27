@@ -30,7 +30,7 @@ public class TransactionCreatedIntegrationEventHandler(
             await UpdateAccountBalanceAsync(@event, cancellationToken);
 
             _logger.LogInformation(@event.Id.ToString(),
-                "A '{@transactionType}' Transaction ({@transactionId}) was added to Account {@accountId} for the amount of {@Amount}",
+                "A '{@transactionType}' Transaction ({@transactionId}) was added to Account {@accountId} for the amount of {@TotalAmount}",
                 @event.TransactionType,
                 @event.TransactionId,
                 @event.AccountId,

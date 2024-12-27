@@ -1,4 +1,4 @@
-using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.DTOs.Transactions;
 using Habanerio.Xpnss.Transactions.Domain.Entities;
 using Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 
@@ -68,6 +68,42 @@ internal static class ApplicationMapper
             $"'{entity.TransactionType}' is not yet support");
     }
 
+    //TODO: Use generics <TDto>
+    public static TransactionLineItemDto? MapLineItem(Transaction? entity)
+    {
+        if (entity is null)
+            return default;
+
+        var lineItem = new TransactionLineItemDto(
+            entity.Id.Value,
+            entity.AccountId.Value,
+            entity.CategoryId.Value,
+            entity.IsCredit,
+            entity.PayerPayeeId.Value,
+            entity.SubCategoryId.Value,
+            entity.Title,
+            entity.TotalAmount.Value,
+            entity.TransactionDate,
+            entity.TransactionType.ToString());
+
+        return lineItem;
+    }
+
+    public static IEnumerable<TransactionLineItemDto> MapLineItems(IEnumerable<Transaction> entities)
+    {
+        var results = new List<TransactionLineItemDto>();
+
+        foreach (var entity in entities)
+        {
+            TransactionLineItemDto? dto = MapLineItem(entity);
+
+            if (dto is not null)
+                results.Add(dto);
+        }
+
+        return results;
+    }
+
     public static TransactionItemDto? Map(TransactionItem? item)
     {
         if (item is null)
@@ -115,6 +151,7 @@ internal static class ApplicationMapper
             SubCategoryId = entity.SubCategoryId.Value,
             //RefTransactionId = entity.RefTransactionId,
             Tags = entity.Tags.ToList(),
+            Title = entity.Title,
             TotalAmount = entity.TotalAmount,
             TransactionDate = entity.TransactionDate,
             TransactionType = entity.TransactionType

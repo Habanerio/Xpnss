@@ -82,7 +82,7 @@
 //                @event.DateOfTransaction.Year,
 //                @event.DateOfTransaction.Month,
 //                isCreditTransaction,
-//                new Money(@event.Amount));
+//                new Money(@event.TotalAmount));
 //        }
 //        else
 //        {
@@ -90,12 +90,12 @@
 //            if (isCreditTransaction)
 //            {
 //                existingMonthlyTotal.CreditCount += 1;
-//                existingMonthlyTotal.CreditTotalAmount += new Money(@event.Amount);
+//                existingMonthlyTotal.CreditTotalAmount += new Money(@event.TotalAmount);
 //            }
 //            else
 //            {
 //                existingMonthlyTotal.DebitCount += 1;
-//                existingMonthlyTotal.DebitTotalAmount += new Money(@event.Amount);
+//                existingMonthlyTotal.DebitTotalAmount += new Money(@event.TotalAmount);
 //            }
 //        }
 

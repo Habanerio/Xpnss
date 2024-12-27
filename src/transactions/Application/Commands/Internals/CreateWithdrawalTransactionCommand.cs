@@ -1,6 +1,6 @@
 using FluentResults;
 using FluentValidation;
-using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.DTOs.Transactions;
 using Habanerio.Xpnss.Shared.IntegrationEvents.Transactions;
 using Habanerio.Xpnss.Shared.Requests.Transactions;
 using Habanerio.Xpnss.Shared.ValueObjects;
@@ -46,12 +46,13 @@ internal sealed class CreateWithdrawalTransactionCommandHandler(
         var withdrawalDoc = DebitTransaction.NewWithdrawal(
             new UserId(transactionRequest.UserId),
             new AccountId(transactionRequest.AccountId),
-            new Money(transactionRequest.Amount),
+            new Money(transactionRequest.TotalAmount),
             new CategoryId(transactionRequest.CategoryId),
             transactionRequest.Description,
             new PayerPayeeId(transactionRequest.PayerPayee.Id),
             //new RefTransactionId(transactionRequest.RefTransactionId),
             new SubCategoryId(transactionRequest.SubCategoryId),
+            transactionRequest.Title,
             transactionRequest.TransactionDate,
             transactionRequest.Tags);
 
@@ -93,7 +94,7 @@ internal sealed class CreateWithdrawalTransactionCommandHandler(
         {
             RuleFor(x => x.Request.UserId).NotEmpty();
             RuleFor(x => x.Request.AccountId).NotEmpty();
-            RuleFor(x => x.Request.Amount).GreaterThan(0);
+            RuleFor(x => x.Request.TotalAmount).GreaterThan(0);
             RuleFor(x => x.Request.Description).NotEmpty();
             RuleFor(x => x.Request.TransactionDate).NotEmpty();
         }

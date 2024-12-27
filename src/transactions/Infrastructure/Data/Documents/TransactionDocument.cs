@@ -2,6 +2,7 @@ using Habanerio.Core.Dbs.MongoDb;
 using Habanerio.Core.Dbs.MongoDb.Attributes;
 using Habanerio.Xpnss.Shared.Types;
 using Habanerio.Xpnss.Shared.ValueObjects;
+using Microsoft.Extensions.Primitives;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -52,6 +53,9 @@ public class TransactionDocument : MongoDocument
 
     [BsonElement("tags")]
     public List<string> Tags { get; set; } = [];
+
+    [BsonElement("title")]
+    public string Title { get; set; }
 
     [BsonElement("total_amount")]
     public decimal TotalAmount => Items.Sum(i => i.Amount);
@@ -138,6 +142,7 @@ public class PaymentTransactionDocument :
         PayerPayeeId payerPayeeId,
         SubCategoryId subCategoryId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType,
         DateTime dateCreated,
@@ -155,6 +160,7 @@ public class PaymentTransactionDocument :
         PayerPayeeId = payerPayeeId;
         SubCategoryId = subCategoryId;
         Tags = tags?.ToList() ?? [];
+        Title = title;
         TransactionDate = transactionDate;
         TransactionType = TransactionEnums.TransactionKeys.PAYMENT_IN;
 
@@ -187,6 +193,7 @@ public class PaymentInTransactionDocument :
         PayerPayeeId payerPayeeId,
         SubCategoryId subCategoryId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate,
         DateTime dateCreated,
         DateTime? dateUpdated,
@@ -203,6 +210,7 @@ public class PaymentInTransactionDocument :
         PayerPayeeId = payerPayeeId;
         SubCategoryId = subCategoryId;
         Tags = tags?.ToList() ?? [];
+        Title = title;
         TransactionDate = transactionDate;
         TransactionType = TransactionEnums.TransactionKeys.PAYMENT_IN;
 
@@ -224,7 +232,6 @@ public class PaymentOutTransactionDocument :
         base(transactionType: TransactionEnums.TransactionKeys.PAYMENT_OUT)
     { }
 
-
     public PaymentOutTransactionDocument(
         ObjectId userId,
         ObjectId accountId,
@@ -236,6 +243,7 @@ public class PaymentOutTransactionDocument :
         PayerPayeeId payerPayeeId,
         SubCategoryId subCategoryId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate,
         DateTime dateCreated,
         DateTime? dateUpdated,
@@ -252,6 +260,7 @@ public class PaymentOutTransactionDocument :
         PayerPayeeId = payerPayeeId;
         SubCategoryId = subCategoryId;
         Tags = tags?.ToList() ?? [];
+        Title = title;
         TransactionDate = transactionDate;
         TransactionType = TransactionEnums.TransactionKeys.PAYMENT_OUT;
 

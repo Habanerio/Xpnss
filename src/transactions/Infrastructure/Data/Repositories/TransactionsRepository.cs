@@ -39,7 +39,7 @@ public class TransactionsRepository(IMongoDatabase mongoDb)
                 Console.WriteLine(e);
                 throw;
             }
-            
+
             // Do this so we can update the State of the Transaction
             var newTransaction = InfrastructureMapper.Map(transactionDoc);
 
@@ -56,11 +56,16 @@ public class TransactionsRepository(IMongoDatabase mongoDb)
         }
     }
 
-    public async Task<Result<IEnumerable<Transaction>>> FindAsync(
+    //TODO: Need a PagedResults<T>
+    public async Task<Result<(IEnumerable<Transaction> Results, int PageNo, int PageSize, int TotalPages, int TotalCount)>> SearchAsync(
         string userId,
-        string accountId = "",
-        DateTime? startDate = null,
-        DateTime? endDate = null,
+        string forAccountId = "",
+        string forCategoryId = "",
+        string forPayerPayeeId = "",
+        DateTime? fromDate = null,
+        DateTime? toDate = null,
+        int pageNo = 1,
+        int pageSize = 100,
         string userTimeZone = "",
         CancellationToken cancellationToken = default)
     {
@@ -68,38 +73,70 @@ public class TransactionsRepository(IMongoDatabase mongoDb)
             userObjectId.Equals(ObjectId.Empty))
             return Result.Fail($"Invalid UserId: `{userId}`");
 
-        var newEndDate = string.IsNullOrWhiteSpace(userTimeZone) ?
-            DateTime.UtcNow :
-            TimeZoneInfo.ConvertTimeToUtc(endDate ??
-                                          DateTime.Now,
-                TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
+        if (userObjectId.Equals(ObjectId.Empty))
+            return Result.Fail($"Invalid UserId: UserId cannot be empty");
 
-        var newStartDate = string.IsNullOrWhiteSpace(userTimeZone) ?
-            startDate ?? newEndDate.AddMonths(-1) :
-            TimeZoneInfo.ConvertTimeToUtc(startDate ??
-                                          newEndDate.AddMonths(-1),
-                TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
-
-        ObjectId? accountObjectId = !string.IsNullOrWhiteSpace(accountId) ?
-            ObjectId.Parse(accountId) :
+        ObjectId? accountObjectId = !string.IsNullOrWhiteSpace(forAccountId) ?
+            ObjectId.Parse(forAccountId) :
             null;
 
+        ObjectId? categoryObjectId = !string.IsNullOrWhiteSpace(forCategoryId) ?
+            ObjectId.Parse(forCategoryId) :
+            null;
 
-        var transactionDocs = (await FindDocumentsAsync(t =>
+        ObjectId? payerPayeeObjectId = !string.IsNullOrWhiteSpace(forPayerPayeeId) ?
+            ObjectId.Parse(forPayerPayeeId) :
+            null;
+
+        DateTime newToDate = toDate ?? DateTime.UtcNow;
+        if (!string.IsNullOrWhiteSpace(userTimeZone))
+        {
+            newToDate = TimeZoneInfo.ConvertTimeToUtc(
+                newToDate,
+                TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
+        }
+
+        DateTime newFromDate = fromDate ?? DateTime.UtcNow.AddMonths(-1);
+        if (!string.IsNullOrWhiteSpace(userTimeZone))
+        {
+            newFromDate = TimeZoneInfo.ConvertTimeToUtc(
+                newFromDate,
+                TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
+        }
+
+        var transactionResults = (await FindDocumentsAsync(t => (
                 t.UserId.Equals(userObjectId) &&
+
                 (accountObjectId == null || t.AccountId.Equals(accountObjectId)) &&
-                t.TransactionDate.Date >= newStartDate.Date &&
-                t.TransactionDate.Date <= newEndDate.Date,
-            cancellationToken))?
-            .OrderBy(t => t.TransactionDate)
-            .ToList() ?? [];
+                (categoryObjectId == null || t.CategoryId.Equals(categoryObjectId)) &&
+                (payerPayeeObjectId == null || t.PayerPayeeId.Equals(payerPayeeObjectId)) &&
+
+                (
+                    t.TransactionDate.Date >= newFromDate.Date && t.TransactionDate.Date <= newToDate.Date
+                )),
+
+            pageNo,
+            pageSize,
+            true,
+            t => t.TransactionDate,
+            cancellationToken));
+
+        var transactionDocs = transactionResults.Results?.ToList() ?? [];
 
         if (!transactionDocs.Any())
-            return Result.Ok<IEnumerable<Transaction>>(new List<Transaction>());
+            return Result.Ok<(IEnumerable<Transaction> Results, int PageNo, int PageSize, int TotalPages, int TotalCount)>
+                (([], pageNo, pageSize, 0, 0));
 
         var transactions = InfrastructureMapper.Map(transactionDocs);
 
-        return Result.Ok(transactions);
+        var results = (
+            transactions,
+            pageNo,
+            pageSize,
+            transactionResults.TotalPages,
+            transactionResults.TotalCount);
+
+        return Result.Ok(results);
     }
 
     public async Task<Result<Transaction?>> GetAsync(

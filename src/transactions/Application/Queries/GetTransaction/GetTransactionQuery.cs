@@ -1,6 +1,6 @@
 using FluentResults;
 using FluentValidation;
-using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.DTOs.Transactions;
 using Habanerio.Xpnss.Transactions.Application.Mappers;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using MediatR;

@@ -1,6 +1,5 @@
 using FluentResults;
 using FluentValidation;
-using Habanerio.Xpnss.Shared.DTOs;
 using Habanerio.Xpnss.Shared.ValueObjects;
 using Habanerio.Xpnss.Shared.IntegrationEvents.Transactions;
 using Habanerio.Xpnss.Transactions.Application.Mappers;
@@ -9,6 +8,7 @@ using Habanerio.Xpnss.Transactions.Domain.Entities.Transactions;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
 using MediatR;
 using Habanerio.Xpnss.Shared.Requests.Transactions;
+using Habanerio.Xpnss.Shared.DTOs.Transactions;
 
 namespace Habanerio.Xpnss.Transactions.Application.Commands.Internals;
 
@@ -60,6 +60,7 @@ internal sealed class CreatePurchasesTransactionHandler(
             new PayerPayeeId(transactionRequest.PayerPayee.Id),
             //new RefTransactionId(transactionRequest.RefTransactionId),
             transactionRequest.Tags,
+            transactionRequest.Title,
             transactionRequest.TransactionDate);
 
         var result = await _repository.AddAsync(transactionEntity, cancellationToken);

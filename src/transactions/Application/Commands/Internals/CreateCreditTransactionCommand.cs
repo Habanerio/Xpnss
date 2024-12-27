@@ -1,6 +1,6 @@
 using FluentResults;
 using FluentValidation;
-using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.DTOs.Transactions;
 using Habanerio.Xpnss.Shared.IntegrationEvents.Transactions;
 using Habanerio.Xpnss.Shared.Requests.Transactions;
 using Habanerio.Xpnss.Shared.ValueObjects;
@@ -48,13 +48,14 @@ internal sealed class CreateCreditTransactionCommandHandler(
             new UserId(transactionRequest.UserId),
             transactionRequest.TransactionType,
             new AccountId(transactionRequest.AccountId),
-            new Money(transactionRequest.Amount),
+            new Money(transactionRequest.TotalAmount),
             new CategoryId(transactionRequest.CategoryId),
             transactionRequest.Description,
             transactionRequest.ExtTransactionNo,
             new PayerPayeeId(transactionRequest.PayerPayee.Id),
             //new RefTransactionId(transactionRequest.RefTransactionId),
             new SubCategoryId(transactionRequest.SubCategoryId),
+            transactionRequest.Title,
             transactionRequest.Tags,
             transactionRequest.TransactionDate);
 

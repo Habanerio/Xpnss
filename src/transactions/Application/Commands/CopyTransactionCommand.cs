@@ -1,6 +1,6 @@
 using FluentResults;
 using FluentValidation;
-using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.DTOs.Transactions;
 using Habanerio.Xpnss.Shared.Requests;
 using Habanerio.Xpnss.Shared.Requests.Transactions;
 using Habanerio.Xpnss.Shared.Types;
@@ -71,6 +71,7 @@ public sealed class CopyTransactionCommandHandler(ITransactionsRepository reposi
                         SubCategoryId = i.SubCategoryId,
                         Description = i.Description,
                     }).ToList(),
+                    purchasesTransaction.Title,
                     purchasesTransaction.Tags?.ToList() ?? [],
                     purchasesTransaction.ExtTransactionNo,
                     refTransactionId);
@@ -93,6 +94,7 @@ public sealed class CopyTransactionCommandHandler(ITransactionsRepository reposi
                         depositFrom: new PayerPayeeRequest()
                         { Id = creditTransaction.PayerPayeeId.Value },
                         creditTransaction.SubCategoryId,
+                        creditTransaction.Title,
                         newTransactionDate,
                         creditTransaction.Tags?.ToList() ?? [],
                         creditTransaction.ExtTransactionNo,
@@ -111,12 +113,13 @@ public sealed class CopyTransactionCommandHandler(ITransactionsRepository reposi
                     var createWithdrawalRequest = new CreateWithdrawalTransactionRequest(
                         command.UserId,
                         accountId: debitTransaction.AccountId.Value,
-                        amount: debitTransaction.TotalAmount.Value,
+                        totalAmount: debitTransaction.TotalAmount.Value,
                         categoryId: debitTransaction.CategoryId,
                         debitTransaction.Description,
                         withdrewTo: new PayerPayeeRequest()
                         { Id = debitTransaction.PayerPayeeId.Value },
                         subCategoryId: debitTransaction.SubCategoryId,
+                        debitTransaction.Title,
                         newTransactionDate,
                         debitTransaction.Tags?.ToList() ?? [],
                         debitTransaction.ExtTransactionNo,

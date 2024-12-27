@@ -17,6 +17,7 @@ public class CreditTransaction : Transaction
             PayerPayeeId payerPayeeId,
             //RefTransactionId refTransactionId,
             IEnumerable<string>? tags,
+            string title,
             DateTime transactionDate,
             TransactionEnums.TransactionKeys transactionType) :
         base(
@@ -29,6 +30,7 @@ public class CreditTransaction : Transaction
             payerPayeeId,
             //refTransactionId,
             tags,
+            title,
             transactionDate,
             transactionType)
     { }
@@ -46,6 +48,7 @@ public class CreditTransaction : Transaction
             PayerPayeeId payerPayeeId,
             //RefTransactionId refTransactionId,
             IEnumerable<string>? tags,
+            string title,
             DateTime transactionDate,
             TransactionEnums.TransactionKeys transactionType,
             DateTime dateCreated,
@@ -62,6 +65,7 @@ public class CreditTransaction : Transaction
             payerPayeeId,
             //refTransactionId,
             tags,
+            title,
             transactionDate,
             transactionType,
             dateCreated,
@@ -80,6 +84,7 @@ public class CreditTransaction : Transaction
         PayerPayeeId payerPayeeId,
         //RefTransactionId refTransactionId,
         SubCategoryId subCategoryId,
+        string title,
         IEnumerable<string>? tags,
         DateTime transactionDate)
     {
@@ -96,6 +101,7 @@ public class CreditTransaction : Transaction
             payerPayeeId,
             //refTransactionId,
             tags,
+            title,
             transactionDate,
             transactionType);
     }
@@ -111,6 +117,7 @@ public class CreditTransaction : Transaction
         //RefTransactionId refTransactionId,
         SubCategoryId subCategoryId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate)
     {
         return new CreditTransaction(
@@ -126,6 +133,7 @@ public class CreditTransaction : Transaction
             payerPayeeId,
             //refTransactionId,
             tags,
+            title,
             transactionDate,
             TransactionEnums.TransactionKeys.DEPOSIT);
     }
@@ -141,6 +149,7 @@ public class CreditTransaction : Transaction
         PayerPayeeId payerPayeeId,
         //RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType,
         DateTime dateCreated,
@@ -161,6 +170,7 @@ public class CreditTransaction : Transaction
             payerPayeeId,
             //refTransactionId,
             tags,
+            title,
             transactionDate,
             transactionType,
             dateCreated,

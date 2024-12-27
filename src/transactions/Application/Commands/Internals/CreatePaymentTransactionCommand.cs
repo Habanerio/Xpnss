@@ -1,6 +1,6 @@
 using FluentResults;
 using FluentValidation;
-using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.DTOs.Transactions;
 using Habanerio.Xpnss.Shared.IntegrationEvents.Transactions;
 using Habanerio.Xpnss.Shared.Requests.Transactions;
 using Habanerio.Xpnss.Shared.ValueObjects;
@@ -61,7 +61,7 @@ internal sealed class CreatePaymentTransactionCommandHandler(
             var paymentMadeTransaction = PaymentOutTransaction.New(
                 new UserId(paymentOutRequest.UserId),
                 new AccountId(paymentOutRequest.AccountId),
-                new Money(paymentOutRequest.Amount),
+                new Money(paymentOutRequest.TotalAmount),
                 new CategoryId(paymentOutRequest.CategoryId),
                 paymentOutRequest.Description,
                 paymentOutRequest.ExtTransactionNo,
@@ -70,6 +70,7 @@ internal sealed class CreatePaymentTransactionCommandHandler(
                 //new RefTransactionId(transactionRequest.RefTransactionId),
                 new SubCategoryId(paymentOutRequest.SubCategoryId),
                 paymentOutRequest.Tags,
+                paymentOutRequest.Title,
                 paymentOutRequest.TransactionDate);
 
             var paymentMadeResult = await _repository.AddAsync(paymentMadeTransaction, cancellationToken);
@@ -89,7 +90,7 @@ internal sealed class CreatePaymentTransactionCommandHandler(
             var paymentReceivedTransaction = PaymentInTransaction.New(
                 new UserId(paymentInRequest.UserId),
                 new AccountId(paymentInRequest.AccountId),
-                new Money(paymentInRequest.Amount),
+                new Money(paymentInRequest.TotalAmount),
                 new CategoryId(paymentInRequest.CategoryId),
                 paymentInRequest.Description,
                 paymentInRequest.ExtTransactionNo,
@@ -98,6 +99,7 @@ internal sealed class CreatePaymentTransactionCommandHandler(
                 //new RefTransactionId(transactionRequest.RefTransactionId),
                 new SubCategoryId(paymentInRequest.SubCategoryId),
                 paymentInRequest.Tags,
+                paymentInRequest.Title,
                 paymentInRequest.TransactionDate);
 
             var paymentReceivedResult = await _repository.AddAsync(paymentReceivedTransaction, cancellationToken);
@@ -146,7 +148,7 @@ internal sealed class CreatePaymentTransactionCommandHandler(
             RuleFor(x => x.Request).NotNull();
             RuleFor(x => x.Request.UserId).NotEmpty();
             RuleFor(x => x.Request.AccountId).NotEmpty();
-            RuleFor(x => x.Request.Amount).GreaterThan(0);
+            RuleFor(x => x.Request.TotalAmount).GreaterThan(0);
             RuleFor(x => x.Request.Description).NotEmpty();
             RuleFor(x => x.Request.TransactionDate).NotEmpty();
         }

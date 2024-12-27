@@ -12,20 +12,18 @@ public record SearchTransactionsRequest
 
     public string CategoryId { get; set; }
 
-    //[Range(1, int.MaxValue, ErrorMessage = "Please select a category.")]
+    public string PayerPayeeId { get; set; }
+
     public DateTime? FromDate { get; set; }
 
     public DateTime? ToDate { get; set; }
+
+    public int PageNo { get; set; } = 1;
+
+    public int PerPage { get; set; } = 100;
 
     public string TimeZone { get; set; } = string.Empty;
 
     [JsonConstructor]
     public SearchTransactionsRequest() { }
-
-
-    public SearchTransactionsRequest(string userId, string accountId)
-    {
-        UserId = userId;
-        AccountId = accountId;
-    }
 }

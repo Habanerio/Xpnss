@@ -1,6 +1,6 @@
 using FluentResults;
 using FluentValidation;
-using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.DTOs.Transactions;
 using Habanerio.Xpnss.Shared.IntegrationEvents.Transactions;
 using Habanerio.Xpnss.Shared.Requests.Transactions;
 using Habanerio.Xpnss.Shared.ValueObjects;
@@ -47,7 +47,7 @@ internal sealed class CreateDepositTransactionCommandHandler(
         var transaction = CreditTransaction.NewDeposit(
             new UserId(transactionRequest.UserId),
             new AccountId(transactionRequest.AccountId),
-            new Money(transactionRequest.Amount),
+            new Money(transactionRequest.TotalAmount),
             new CategoryId(transactionRequest.CategoryId),
             transactionRequest.Description,
             transactionRequest.ExtTransactionNo,
@@ -55,6 +55,7 @@ internal sealed class CreateDepositTransactionCommandHandler(
             //new RefTransactionId(transactionRequest.RefTransactionId),
             new SubCategoryId(transactionRequest.SubCategoryId),
             transactionRequest.Tags,
+            transactionRequest.Title,
             transactionRequest.TransactionDate);
 
         var result = await _repository.AddAsync(transaction, cancellationToken);

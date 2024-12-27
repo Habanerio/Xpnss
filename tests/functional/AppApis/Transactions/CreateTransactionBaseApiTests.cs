@@ -3,7 +3,7 @@ using System.Text.Json;
 
 using Habanerio.Xpnss.Accounts.Infrastructure.Data.Documents;
 using Habanerio.Xpnss.Apis.App.AppApis;
-using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.DTOs.Transactions;
 using Habanerio.Xpnss.Shared.Requests;
 using Habanerio.Xpnss.Shared.Requests.Transactions;
 using Habanerio.Xpnss.Shared.Types;
@@ -135,7 +135,7 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
         Assert.Equal(createTransactionRequest.IsCredit, actualTransactionDto.IsCredit);
         Assert.Equal(createTransactionRequest.TransactionDate.Date, actualTransactionDto.TransactionDate);
         Assert.Equal(createTransactionRequest.Tags, actualTransactionDto.Tags);
-        Assert.Equal(createTransactionRequest.Amount, actualTransactionDto.TotalAmount);
+        Assert.Equal(createTransactionRequest.TotalAmount, actualTransactionDto.TotalAmount);
         Assert.Equal(createTransactionRequest.TransactionType, actualTransactionDto.TransactionType);
 
         AssertAccount(testUserId,
@@ -254,7 +254,7 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
     {
         Assert.NotNull(transactionDto);
         Assert.Equal(transactionRequest.TransactionDate, transactionDto.TransactionDate);
-        Assert.Equal(transactionRequest.Amount, transactionDto.TotalAmount);
+        Assert.Equal(transactionRequest.TotalAmount, transactionDto.TotalAmount);
     }
 
     protected static void AssertPurchasesTransaction(
@@ -263,14 +263,14 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
     {
         Assert.NotNull(transactionDto);
         Assert.Equal(transactionRequest.TransactionDate, transactionDto.TransactionDate);
-        Assert.Equal(transactionRequest.Amount, transactionDto.TotalAmount);
+        Assert.Equal(transactionRequest.TotalAmount, transactionDto.TotalAmount);
 
         Assert.Equal(transactionRequest.Items.Count, transactionRequest.Items.Count);
 
         Assert.Equal(transactionRequest.Items.Sum(i =>
             i.Amount), transactionDto.TotalAmount);
 
-        // New transaction, Total Owing should be the same as Total Amount
+        // New transaction, Total Owing should be the same as Total TotalAmount
         Assert.Equal(transactionRequest.Items.Sum(i =>
             i.Amount), transactionDto.TotalOwing);
 
@@ -296,7 +296,7 @@ public class CreateTransactionBaseApiTests(WebApplicationFactory<Program> factor
     {
         Assert.NotNull(transactionDto);
         Assert.Equal(transactionRequest.TransactionDate, transactionDto.TransactionDate);
-        Assert.Equal(transactionRequest.Amount, transactionDto.TotalAmount);
+        Assert.Equal(transactionRequest.TotalAmount, transactionDto.TotalAmount);
         Assert.Equal(transactionRequest.PayerPayee.Id, transactionDto.PayerPayeeId);
     }
 

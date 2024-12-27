@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using Habanerio.Xpnss.Apis.App.AppApis;
-using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.DTOs.Transactions;
 using Habanerio.Xpnss.Shared.Requests.Transactions;
 using Habanerio.Xpnss.Shared.Types;
 using Microsoft.AspNetCore.Mvc.Testing;

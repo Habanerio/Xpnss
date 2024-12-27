@@ -150,7 +150,7 @@ public class CreateWithdrawalTransactionApiTests(WebApplicationFactory<Program> 
         {
             UserId = testUserId.ToString(),
             AccountId = existingAccount.Id.ToString(),
-            Amount = 999,
+            TotalAmount = 999,
             TransactionDate = transactionDate,
             Description = transactionDescription,
             PayerPayee = randomPayerPayeeRequest

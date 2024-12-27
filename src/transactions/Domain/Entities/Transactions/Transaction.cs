@@ -69,6 +69,8 @@ public class Transaction : AggregateRoot<TransactionId>
 
     public IReadOnlyCollection<string> Tags => _tags.AsReadOnly();
 
+    public string Title { get; }
+
     public virtual Money TotalAmount => new(Items.Sum(i => i.Amount.Value));
 
     public DateTime TransactionDate { get; }
@@ -103,6 +105,7 @@ public class Transaction : AggregateRoot<TransactionId>
         PayerPayeeId payerPayeeId,
         //RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType) :
         this(
@@ -115,6 +118,7 @@ public class Transaction : AggregateRoot<TransactionId>
             item,
             payerPayeeId,
             tags,
+            title,
             transactionDate,
             transactionType,
             dateCreated: DateTime.UtcNow,
@@ -142,6 +146,7 @@ public class Transaction : AggregateRoot<TransactionId>
         PayerPayeeId payerPayeeId,
         //RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType) :
         this(
@@ -154,6 +159,7 @@ public class Transaction : AggregateRoot<TransactionId>
             items,
             payerPayeeId,
             tags,
+            title,
             transactionDate,
             transactionType,
             dateCreated: DateTime.UtcNow,
@@ -181,6 +187,7 @@ public class Transaction : AggregateRoot<TransactionId>
         PayerPayeeId payerPayeeId,
         //RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType,
         DateTime dateCreated,
@@ -194,6 +201,7 @@ public class Transaction : AggregateRoot<TransactionId>
         ExtTransactionNo = extTransactionNo;
         IsCredit = isCredit;
         PayerPayeeId = payerPayeeId;
+        Title = title;
         TransactionDate = transactionDate.Date;
         TransactionType = transactionType;
         DateCreated = dateCreated;
@@ -218,6 +226,7 @@ public class Transaction : AggregateRoot<TransactionId>
         IEnumerable<TransactionItem> items,
         PayerPayeeId payerPayeeId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType,
         DateTime dateCreated,
@@ -239,6 +248,7 @@ public class Transaction : AggregateRoot<TransactionId>
         PayerPayeeId = payerPayeeId;
         //RefTransactionId = refTransactionId;
         TransactionDate = transactionDate.Date;
+        Title = title;
         DateCreated = dateCreated;
         DateUpdated = dateUpdated;
         DateDeleted = dateDeleted;
@@ -257,7 +267,7 @@ public class Transaction : AggregateRoot<TransactionId>
 
         _items.Add(TransactionItem.New(amount, categoryId, subCategoryId, description));
 
-        // AddDomainEvent(new TransactionUpdatedDomainEvent(Id, Amount, TotalOwing, TotalPaid));
+        // AddDomainEvent(new TransactionUpdatedDomainEvent(Id, TotalAmount, TotalOwing, TotalPaid));
 
         // AddDomainEvent(new TransactionItemAddedDomainEvent(Id, amount, categoryId, description));
     }

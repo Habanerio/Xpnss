@@ -4,6 +4,7 @@ using Carter;
 using Habanerio.Xpnss.PayerPayees.Application.Commands.CreatePayerPayee;
 using Habanerio.Xpnss.PayerPayees.Domain.Interfaces;
 using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.DTOs.Transactions;
 using Habanerio.Xpnss.Shared.Requests;
 using Habanerio.Xpnss.Shared.Requests.Transactions;
 using Habanerio.Xpnss.Transactions.Application.Commands;
@@ -143,11 +144,11 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
                                     "\r\n UserId: {@UserId}" +
                                     "\r\n AccountId: {@AccountId}" +
                                     "\r\n TransactionType: {@TransactionType}" +
-                                    "\r\n Amount: {@Amount}",
+                                    "\r\n TotalAmount: {@TotalAmount}",
                                     request.UserId,
                                     request.AccountId,
                                     request.TransactionType,
-                                    request.Amount);
+                                    request.TotalAmount);
             return Results.BadRequest(e.Message);
         }
     }

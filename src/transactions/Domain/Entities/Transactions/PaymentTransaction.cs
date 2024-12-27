@@ -18,6 +18,7 @@ public abstract class PaymentTransaction :
         TransactionItem item,
         PayerPayeeId payerPayeeId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType) :
         base(
@@ -29,6 +30,7 @@ public abstract class PaymentTransaction :
             item,
             payerPayeeId,
             tags,
+            title,
             transactionDate,
             transactionType)
     {
@@ -46,6 +48,7 @@ public abstract class PaymentTransaction :
         TransactionItem item,
         PayerPayeeId payerPayeeId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate,
         TransactionEnums.TransactionKeys transactionType,
         DateTime dateCreated,
@@ -61,6 +64,7 @@ public abstract class PaymentTransaction :
             item,
             payerPayeeId,
             tags,
+            title,
             transactionDate,
             transactionType,
             dateCreated,
@@ -90,6 +94,7 @@ public sealed class PaymentInTransaction :
         PayerPayeeId paidFromId,
         //RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate) :
         base(
             userId,
@@ -100,6 +105,7 @@ public sealed class PaymentInTransaction :
             paidFromId,
             //refTransactionId,
             tags,
+            title,
             transactionDate,
             transactionType: TransactionEnums.TransactionKeys.PAYMENT_IN)
     {
@@ -117,6 +123,7 @@ public sealed class PaymentInTransaction :
         bool isPaidFromOwnAccount,
         //RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate,
         DateTime dateCreated,
         DateTime? dateUpdated,
@@ -131,6 +138,7 @@ public sealed class PaymentInTransaction :
             paidFromId,
             //refTransactionId,
             tags,
+            title,
             transactionDate,
             transactionType: TransactionEnums.TransactionKeys.PAYMENT_IN,
             dateCreated,
@@ -152,6 +160,7 @@ public sealed class PaymentInTransaction :
         //RefTransactionId refTransactionId,
         SubCategoryId subCategoryId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate)
     {
         return new PaymentInTransaction(
@@ -167,6 +176,7 @@ public sealed class PaymentInTransaction :
                 description),
             paidFromId,
             tags,
+            title,
             transactionDate);
     }
 }
@@ -189,6 +199,7 @@ public sealed class PaymentOutTransaction :
         PayerPayeeId paidToId,
         //RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate) :
         base(
             userId,
@@ -199,6 +210,7 @@ public sealed class PaymentOutTransaction :
             paidToId,
             //refTransactionId,
             tags,
+            title,
             transactionDate,
             transactionType: TransactionEnums.TransactionKeys.PAYMENT_OUT)
     {
@@ -219,6 +231,7 @@ public sealed class PaymentOutTransaction :
         PayerPayeeId paidToId,
         //RefTransactionId refTransactionId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate,
         DateTime dateCreated,
         DateTime? dateUpdated,
@@ -233,6 +246,7 @@ public sealed class PaymentOutTransaction :
             paidToId,
             //refTransactionId,
             tags,
+            title,
             transactionDate,
             transactionType: TransactionEnums.TransactionKeys.PAYMENT_OUT,
             dateCreated,
@@ -254,6 +268,7 @@ public sealed class PaymentOutTransaction :
         //RefTransactionId refTransactionId,
         SubCategoryId subCategoryId,
         IEnumerable<string>? tags,
+        string title,
         DateTime transactionDate)
     {
         return new PaymentOutTransaction(
@@ -269,6 +284,7 @@ public sealed class PaymentOutTransaction :
                 description),
             paidToId,
             tags,
+            title,
             transactionDate);
     }
 }
