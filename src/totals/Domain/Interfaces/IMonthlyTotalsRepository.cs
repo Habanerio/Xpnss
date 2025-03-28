@@ -16,9 +16,9 @@ public interface IMonthlyTotalsRepository
     /// <returns></returns>
     Task<Result<MonthlyTotal?>> GetAsync(
         string userId,
+        EntityEnums.Keys entityType,
         string entityId,
         string subEntityId,
-        EntityEnums.Keys entityType,
         int year,
         int month,
         CancellationToken cancellationToken = default);
@@ -34,8 +34,8 @@ public interface IMonthlyTotalsRepository
     /// <returns></returns>
     Task<Result<IEnumerable<MonthlyTotal>>> ListAsync(
         string userId,
-        string entityId,
         EntityEnums.Keys entityType,
+        string entityId,
         int year,
         CancellationToken cancellationToken = default);
 
@@ -51,8 +51,8 @@ public interface IMonthlyTotalsRepository
     /// <returns></returns>
     Task<Result<IEnumerable<MonthlyTotal>>> RangeAsync(
         string userId,
-        string entityId,
         EntityEnums.Keys entityType,
+        string entityId,
         (int Year, int Month) startMonth,
         (int Year, int Month) endMonth,
         CancellationToken cancellationToken = default);

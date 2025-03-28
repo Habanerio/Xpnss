@@ -23,7 +23,7 @@ public class CreateAccountEndpoint : BaseEndpoint
             app.MapPost("/api/v1/users/{userId}/accounts",
                     async (
                         [FromRoute] string userId,
-                        [FromBody] CreateAccountApiRequest request,
+                        [FromBody] CreateAccountRequest request,
                         [FromServices] IAccountsService service,
                         [FromServices] IUserProfilesService userProfilesService,
                         CancellationToken cancellationToken) =>
@@ -41,7 +41,7 @@ public class CreateAccountEndpoint : BaseEndpoint
 
     public static async Task<IResult> HandleAsync(
         string userId,
-        CreateAccountApiRequest request,
+        CreateAccountRequest request,
         IAccountsService service,
         IUserProfilesService userProfilesService,
         CancellationToken cancellationToken)
@@ -79,7 +79,7 @@ public class CreateAccountEndpoint : BaseEndpoint
         return Results.Ok(result.Value);
     }
 
-    public sealed class Validator : AbstractValidator<CreateAccountApiRequest>
+    public sealed class Validator : AbstractValidator<CreateAccountRequest>
     {
         public Validator()
         {

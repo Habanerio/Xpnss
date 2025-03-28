@@ -7,8 +7,6 @@ namespace Habanerio.Xpnss.Accounts.Domain.Entities.Accounts;
 public abstract class AbstractAccountBase :
     AggregateRoot<AccountId>
 {
-
-
     public UserId UserId { get; }
 
     /// <summary>
@@ -48,13 +46,17 @@ public abstract class AbstractAccountBase :
     /// </summary>
     public int SortOrder { get; private set; }
 
+    public Money StartingBalance { get; }
+
+    public DateTime StartingBalanceDate { get; }
+
     public IReadOnlyCollection<TransactionEnums.TransactionKeys> CreditTransactionTypes =>
-        IsCredit ? TransactionEnums.CreditTransactionKeys
-            : TransactionEnums.DebitTransactionKeys;
+        IsCredit ? TransactionEnums.AllCreditTransactionKeys
+            : TransactionEnums.AllDebitTransactionKeys;
 
     public IReadOnlyCollection<TransactionEnums.TransactionKeys> DebitTransactionTypes =>
-        IsCredit ? TransactionEnums.DebitTransactionKeys
-            : TransactionEnums.CreditTransactionKeys;
+        IsCredit ? TransactionEnums.AllDebitTransactionKeys
+            : TransactionEnums.AllCreditTransactionKeys;
 
     // New Accounts
     // Adds a Domain Event for the creation of a new Account
@@ -64,19 +66,23 @@ public abstract class AbstractAccountBase :
         string description,
         string displayColor,
         bool isDefault = false,
-        int? sortOrder = null) :
+        int? sortOrder = null,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null) :
         base(AccountId.New)
     {
         IsTransient = true;
 
         UserId = userId ?? throw new ArgumentNullException(nameof(userId));
         Name = accountName;
-        Balance = Money.Zero;
+        Balance = new Money(startingBalance);
         DisplayColor = displayColor?.Trim() ?? string.Empty;
         Description = description?.Trim() ?? string.Empty;
         DateCreated = DateTime.UtcNow;
         IsDefault = isDefault;
         SortOrder = sortOrder.GetValueOrDefault(-1) < 0 ? 999 : sortOrder!.Value;
+        StartingBalance = new Money(startingBalance);
+        StartingBalanceDate = startingBalanceDate ?? DateTime.MinValue;
 
         // Add `AccountCreated` Domain Event
     }
@@ -90,9 +96,11 @@ public abstract class AbstractAccountBase :
         string displayColor,
         bool isDefault,
         int sortOrder,
+        decimal startingBalance,
+        DateTime? startingBalanceDate,
         DateTime dateCreated,
-        DateTime? dateUpdated = null,
-        DateTime? dateDeleted = null) : base(id)
+        DateTime? dateUpdated,
+        DateTime? dateDeleted) : base(id)
     {
         Id = id ?? throw new ArgumentNullException(nameof(id));
         UserId = userId ?? throw new ArgumentNullException(nameof(userId));
@@ -102,34 +110,93 @@ public abstract class AbstractAccountBase :
         Description = description?.Trim() ?? string.Empty;
         IsDefault = isDefault;
         SortOrder = sortOrder;
+        StartingBalance = new Money(startingBalance);
+        StartingBalanceDate = startingBalanceDate ?? DateTime.MinValue;
+
         DateCreated = dateCreated;
         DateDeleted = dateDeleted;
         DateUpdated = dateUpdated;
     }
 
-    /// <summary>
-    /// Applies a Transaction CreditLimit to the Account's Balance.<br />
-    /// When the Transaction is a Credit, the creditLimit is added to the Balance.<br />
-    /// When the Transaction is a Debit, the creditLimit is subtracted from the Balance.
-    /// </summary>
-    /// <param name="amount">The creditLimit of the Transaction</param>
-    /// <param name="transactionType">The type of Transaction that occurred</param>
-    public abstract void AddTransactionAmount(
+    //TODO: This doesn't need to be abstract.
+    // Abstract Account has IsCredit, so it can determine what to do.
+    public virtual void AddTransactionAmount(
+        DateTime transactionDate,
         Money amount,
-        TransactionEnums.TransactionKeys transactionType);
+        TransactionEnums.TransactionKeys transactionType)
+    {
+        if (IsDeleted)
+            throw new InvalidOperationException("Cannot add a transaction amount to a deleted Account");
 
-    /// <summary>
-    /// Undoes a previously applied Transaction CreditLimit from the Account's Balance (eg: for when a Transaction is deleted).<br />
-    /// When the Transaction is a Credit, the creditLimit will be SUBTRACTED from the Balance.<br />
-    /// When the Transaction is a Debit, the creditLimit will be ADDED to the Balance.
-    /// </summary>
-    /// <param name="amount">The creditLimit of the original Transaction</param>
-    /// <param name="transactionType">The original Transaction Type</param>
-    /// <exception cref="InvalidOperationException"></exception>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public abstract void RemoveTransactionAmount(
+        if (amount.Value < 0)
+            throw new ArgumentOutOfRangeException(nameof(amount), $"AddTransactionAmount value cannot be negative ({amount})");
+
+        if (transactionDate > StartingBalanceDate)
+        {
+            if (IsCredit)
+            {
+                // If a Credit Account (Credit Card), and the transaction is a Credit,
+                // then the balance (money owed) decreases (Nay!)
+                if (TransactionEnums.IsCreditTransaction(transactionType))
+                {
+                    Balance -= amount;
+                }
+                else
+                {
+                    Balance += amount;
+                }
+            }
+            // Else, the balance increases (Yay!)
+            else
+            {
+                if (TransactionEnums.IsCreditTransaction(transactionType))
+                {
+                    Balance += amount;
+                }
+                else
+                {
+                    Balance -= amount;
+                }
+            }
+        }
+    }
+
+    public virtual void RemoveTransactionAmount(
+        DateTime transactionDate,
         Money amount,
-        TransactionEnums.TransactionKeys transactionType);
+        TransactionEnums.TransactionKeys transactionType)
+    {
+        if (IsDeleted)
+            throw new InvalidOperationException("Cannot remove a transaction amount to a deleted Account");
+
+        if (amount.Value < 0)
+            throw new ArgumentOutOfRangeException(nameof(amount), $"RemoveTransactionAmount value cannot be negative ({amount})");
+
+        if (transactionDate > StartingBalanceDate)
+        {
+            if (IsCredit)
+                // For default Credit Accounts
+                if (TransactionEnums.IsCreditTransaction(transactionType))
+                {
+                    Balance -= amount;
+                }
+                else
+                {
+                    Balance += amount;
+                }
+            else
+            {
+                if (TransactionEnums.IsCreditTransaction(transactionType))
+                {
+                    Balance += amount;
+                }
+                else
+                {
+                    Balance -= amount;
+                }
+            }
+        }
+    }
 
     /// <summary>
     /// Values will only be updated if they are not null.
@@ -208,14 +275,17 @@ public abstract class AbstractAccount : AbstractAccountBase
         string displayColor,
         string extAcctId,
         bool isDefault,
-        int? sortOrder) :
+        int? sortOrder,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null) :
         base(
             userId,
             accountName,
             description,
             displayColor,
             isDefault,
-            sortOrder)
+            sortOrder,
+            startingBalance, startingBalanceDate)
     {
         ExtAcctId = extAcctId;
 
@@ -233,6 +303,8 @@ public abstract class AbstractAccount : AbstractAccountBase
         string extAcctId,
         bool isDefault,
         int sortOrder,
+        decimal startingBalance,
+        DateTime? startingBalanceDate,
         DateTime dateCreated,
         DateTime? dateUpdated,
         DateTime? dateDeleted) :
@@ -245,6 +317,8 @@ public abstract class AbstractAccount : AbstractAccountBase
             displayColor,
             isDefault,
             sortOrder,
+            startingBalance,
+            startingBalanceDate,
             dateCreated,
             dateUpdated,
             dateDeleted)

@@ -4,22 +4,29 @@ public static class CategoryGroupEnums
 {
     public enum CategoryKeys
     {
+        NA = -1,
+
         /// <summary>
-        /// Anything earned
+        /// Anything earned from work or services provided
         /// </summary>
-        INCOME,
+        REVENUE,
+
         /// <summary>
-        /// Anything saved ... could be investments too?
+        /// Anything earned through investments
         /// </summary>
-        SAVINGS,
+        INVESTMENTS,
+
         /// <summary>
-        /// Anything owed ... credit cards, loans, mortgages, etc.
+        /// Anything paid towards debts, such as interest.
         /// </summary>
-        DEBT,
+        DEBTS,
+
         /// <summary>
         /// Anything spent
         /// </summary>
-        EXPENSE,
+        EXPENSES,
+
+
     }
 
     public static Dictionary<int, string> ToDictionary()

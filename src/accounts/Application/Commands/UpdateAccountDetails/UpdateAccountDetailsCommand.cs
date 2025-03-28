@@ -10,7 +10,7 @@ namespace Habanerio.Xpnss.Accounts.Application.Commands.UpdateAccountDetails;
 
 public sealed record UpdateAccountDetailsCommand(
     string UserId,
-    UpdateAccountDetailsApiRequest Request) :
+    UpdateAccountDetailsRequest Request) :
     IAccountsCommand<Result<AccountDto>>;
 
 /// <summary>
@@ -59,7 +59,7 @@ public sealed class UpdateAccountDetails(IAccountsRepository repository) :
         return Result.Ok(dto);
     }
 
-    internal sealed class Validator : AbstractValidator<UpdateAccountDetailsApiRequest>
+    internal sealed class Validator : AbstractValidator<UpdateAccountDetailsRequest>
     {
         public Validator()
         {

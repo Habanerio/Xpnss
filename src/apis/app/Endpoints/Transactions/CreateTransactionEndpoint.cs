@@ -1,16 +1,14 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
-
 using Carter;
-
-using FluentValidation;
-
-using Habanerio.Xpnss.Shared.DTOs;
-using Habanerio.Xpnss.Shared.Requests;
 using Habanerio.Xpnss.PayerPayees.Application.Commands.CreatePayerPayee;
 using Habanerio.Xpnss.PayerPayees.Domain.Interfaces;
+using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.DTOs.Transactions;
+using Habanerio.Xpnss.Shared.Requests;
+using Habanerio.Xpnss.Shared.Requests.Transactions;
 using Habanerio.Xpnss.Transactions.Application.Commands;
 using Habanerio.Xpnss.Transactions.Domain.Interfaces;
-
 using Microsoft.AspNetCore.Mvc;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Transactions;
@@ -24,27 +22,51 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
             app.MapPost("/api/v1/users/{userId}/transactions/",
                     async (
                         [FromRoute] string userId,
-                        [FromBody] CreateTransactionApiRequest request,
+                        [FromBody] CreateTransactionRequest request,
                         [FromServices] ITransactionsService transactionsService,
                         [FromServices] IPayerPayeesService payerPayeesService,
                         [FromServices] ILogger<CreateTransactionEndpoint> logger,
                         CancellationToken cancellationToken) =>
                     {
-                        return await HandleAsync(userId, request, transactionsService, payerPayeesService, logger, cancellationToken);
+                        return await HandleAsync(
+                            userId,
+                            request,
+                            transactionsService,
+                            payerPayeesService,
+                            logger,
+                            cancellationToken);
                     }
                 )
-                .Produces<PurchaseTransactionDto>((int)HttpStatusCode.OK)
+                .Produces<PurchasesTransactionDto>((int)HttpStatusCode.OK)
                 .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
                 .WithDisplayName("New Transaction")
-                .WithName("CreateTransactionCommand")
+                .WithName("CreateTransaction")
+                .WithTags("Transactions")
+                .WithOpenApi();
+        }
+
+        //TODO: Somehow dynamically generate each specific endpoint
+        private void AddRoute<TDto>(
+            IEndpointRouteBuilder app,
+            string name,
+            [StringSyntax("Route")] string pattern,
+            Delegate handler) where TDto : TransactionDto
+        {
+            app.MapPost(pattern, handler)
+                .Produces<TDto>((int)HttpStatusCode.OK)
+                .Produces<IEnumerable<string>>((int)HttpStatusCode.BadRequest)
+                .WithDisplayName($"New {name} Transaction")
+                .WithName($"{name}Transaction")
                 .WithTags("Transactions")
                 .WithOpenApi();
         }
     }
 
+
+
     public static async Task<IResult> HandleAsync(
         string userId,
-        CreateTransactionApiRequest request,
+        CreateTransactionRequest request,
         ITransactionsService transactionsService,
         IPayerPayeesService payerPayeesService,
         ILogger<CreateTransactionEndpoint> logger,
@@ -59,14 +81,19 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
             return BadRequestWithErrors("User Id is required");
 
         // Would like to associate the new/existing PayerPayee with the Transaction somehow differently.//
+        var payerPayeeId = request.PayerPayee?.Id ?? string.Empty;
         var payerPayeeName = request.PayerPayee?.Name ?? string.Empty;
 
         PayerPayeeDto? payerPayeeDto = null;
 
+        // Not sure that I like this. Ideally, I would like to place the Transaction Api Endpoints
+        // within the Transaction 'Module'. And if I do that, then this would not be possible.
+        // Unless PayerPayee becomes part of the same module.
         if (!string.IsNullOrWhiteSpace(payerPayeeName))
         {
             var payerPayeeCommand = new CreatePayerPayeeCommand(
                 userId,
+                payerPayeeId,
                 payerPayeeName);
 
             var payerPayeeResult = await payerPayeesService
@@ -78,18 +105,16 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
 
                 request = request with
                 {
-                    PayerPayee = new PayerPayeeApiRequest
+                    PayerPayee = new PayerPayeeRequest
                     {
                         Id = payerPayeeDto.Id,
-                        Name = payerPayeeDto.Name,
-                        Description = payerPayeeDto.Description,
-                        Location = payerPayeeDto.Location
+                        Name = payerPayeeDto.Name
                     }
                 };
             }
         }
 
-        var command = new CreateTransactionCommand(request);
+        var command = new CreateTransactionCommand(userId, request);
 
         try
         {
@@ -102,23 +127,24 @@ public sealed class CreateTransactionEndpoint : BaseEndpoint
 
             if (transactionDto is null)
                 return BadRequestWithErrors(
-                    $"An error occurred while trying to return Transaction #{transactionResult.Value.Id}");
+                    $"An error occurred while trying to return Transaction " +
+                    $"#{transactionResult.Value.Id}");
 
             // Assign the PayerPayee, if not null, to the TransactionDto.
             if (payerPayeeDto is not null)
             {
-                transactionDto.PayerPayee = payerPayeeDto;
+                transactionDto.PayerPayeeId = payerPayeeDto.Id;
             }
 
             return Results.Ok(transactionDto);
         }
         catch (Exception e)
         {
-            logger.LogCritical(e, "An error occurred while trying to create a new Transaction:" +
-                                    "\r\n UserId: {UserId}" +
-                                    "\r\n AccountId: {AccountId}" +
-                                    "\r\n TransactionType: {TransactionType}" +
-                                    "\r\n TotalAmount: {TotalAmount}",
+            logger.LogCritical(e, $"An error occurred while trying to create a new Transaction:" +
+                                    "\r\n UserId: {@UserId}" +
+                                    "\r\n AccountId: {@AccountId}" +
+                                    "\r\n TransactionType: {@TransactionType}" +
+                                    "\r\n TotalAmount: {@TotalAmount}",
                                     request.UserId,
                                     request.AccountId,
                                     request.TransactionType,

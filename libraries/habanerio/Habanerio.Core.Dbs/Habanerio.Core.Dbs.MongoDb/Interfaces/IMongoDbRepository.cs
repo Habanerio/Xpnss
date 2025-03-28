@@ -16,15 +16,20 @@ public interface IMongoDbRepository<TDocument, in TId> where TDocument : IMongoD
     /// Attempts to find one or more documents that match the given predicate.
     /// </summary>
     /// <param name="predicate">The predicate</param>
+    /// <param name="descending"></param>
     /// <param name="pageNo">The number of the page of results to return</param>
     /// <param name="pageSize">The size of the page of results to return</param>
+    /// <param name="orderBy"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)> FindDocumentsAsync(
-    Expression<Func<TDocument, bool>> predicate,
-    int pageNo,
-    int pageSize,
-    CancellationToken cancellationToken = default);
+    Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)>
+        FindDocumentsAsync(
+            Expression<Func<TDocument, bool>> predicate,
+            int pageNo,
+            int pageSize,
+            bool descending,
+            Expression<Func<TDocument, object>>? orderBy = null,
+            CancellationToken cancellationToken = default);
 
     Task<IEnumerable<TDocument>> FindDocumentsAsync(
         Expression<Func<TDocument, bool>> predicate,

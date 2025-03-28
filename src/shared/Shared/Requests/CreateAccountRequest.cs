@@ -1,0 +1,350 @@
+using System.Text.Json.Serialization;
+using Habanerio.Xpnss.Shared.Types;
+
+namespace Habanerio.Xpnss.Shared.Requests;
+
+public record CreateAccountRequest : UserRequiredRequest
+{
+
+    [JsonPropertyName("AccountType")]
+    [JsonConverter(typeof(JsonNumberEnumConverter<AccountEnums.AccountKeys>))]
+    public AccountEnums.AccountKeys AccountType { get; set; } =
+        AccountEnums.AccountKeys.UNKNOWN;
+
+    [JsonPropertyName("BankAccountType")]
+    [JsonConverter(typeof(JsonNumberEnumConverter<BankAccountEnums.BankAccountKeys>))]
+    public BankAccountEnums.BankAccountKeys BankAccountType { get; set; } =
+        BankAccountEnums.BankAccountKeys.NA;
+
+    [JsonPropertyName("InvestmentAccountType")]
+    [JsonConverter(typeof(JsonNumberEnumConverter<InvestmentAccountEnums.InvestmentAccountKeys>))]
+    public InvestmentAccountEnums.InvestmentAccountKeys InvestmentAccountType { get; set; } =
+        InvestmentAccountEnums.InvestmentAccountKeys.NA;
+
+    [JsonPropertyName("LoanAccountType")]
+    [JsonConverter(typeof(JsonNumberEnumConverter<LoanAccountEnums.LoanAccountKeys>))]
+    public LoanAccountEnums.LoanAccountKeys LoanAccountType { get; set; } =
+        LoanAccountEnums.LoanAccountKeys.NA;
+
+
+    public string Name { get; set; }
+
+    public string Description { get; set; }
+
+    public string DisplayColor { get; set; }
+
+    public decimal CreditLimit { get; set; }
+
+    public decimal InterestRate { get; set; }
+
+    public bool IsDefault { get; set; }
+
+    public int SortOrder { get; set; }
+
+    public decimal StartingBalance { get; set; }
+
+    public DateTime? StartingBalanceDate { get; set; }
+
+    public decimal OverdraftAmount { get; set; }
+
+    [JsonConstructor]
+    protected CreateAccountRequest() { }
+
+    public CreateAccountRequest(
+        string userId,
+        AllAccountEnums.AllAccountKeys accountType,
+        string name,
+        string description,
+        string displayColor,
+        bool isDefault = false,
+        int sortOrder = 999,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null) :
+        this(
+            userId,
+            AllAccountEnums.GetTypes(accountType).AccountType,
+            AllAccountEnums.GetTypes(accountType).BankType,
+            AllAccountEnums.GetTypes(accountType).InvestmentType,
+            AllAccountEnums.GetTypes(accountType).LoanType,
+            name, description, displayColor, isDefault, sortOrder, startingBalance, startingBalanceDate)
+    { }
+
+    protected CreateAccountRequest(
+        string userId,
+        AccountEnums.AccountKeys accountType,
+        BankAccountEnums.BankAccountKeys bankAccountType,
+        InvestmentAccountEnums.InvestmentAccountKeys investmentAccountType,
+        LoanAccountEnums.LoanAccountKeys loanAccountType,
+        string name,
+        string description,
+        string displayColor,
+        bool isDefault,
+        int sortOrder,
+        decimal startingBalance,
+        DateTime? startingBalanceDate)
+    {
+        UserId = userId;
+
+        AccountType = accountType;
+        BankAccountType = bankAccountType;
+        InvestmentAccountType = investmentAccountType;
+        LoanAccountType = loanAccountType;
+
+        Name = name;
+        Description = description;
+        DisplayColor = displayColor;
+        IsDefault = isDefault;
+
+        SortOrder = sortOrder;
+
+        StartingBalance = startingBalance;
+        StartingBalanceDate = startingBalanceDate;
+    }
+}
+
+public record CreateCashAccountRequest : CreateAccountRequest
+{
+    [JsonConstructor]
+    public CreateCashAccountRequest()
+    {
+        AccountType = AccountEnums.AccountKeys.CASH;
+        BankAccountType = BankAccountEnums.BankAccountKeys.NA;
+        InvestmentAccountType = InvestmentAccountEnums.InvestmentAccountKeys.NA;
+        LoanAccountType = LoanAccountEnums.LoanAccountKeys.NA;
+    }
+
+    public CreateCashAccountRequest(
+        string userId,
+        string name,
+        string description,
+        string displayColor,
+        bool isDefault = false,
+        int sortOrder = 999,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null) :
+        base(userId,
+            AccountEnums.AccountKeys.CASH,
+            BankAccountEnums.BankAccountKeys.NA,
+            InvestmentAccountEnums.InvestmentAccountKeys.NA,
+            LoanAccountEnums.LoanAccountKeys.NA,
+            name, description, displayColor, isDefault, sortOrder, startingBalance, startingBalanceDate)
+    { }
+}
+
+public abstract record CreateBankAccountRequest : CreateAccountRequest
+{
+    [JsonConstructor]
+    protected CreateBankAccountRequest()
+    {
+        AccountType = AccountEnums.AccountKeys.BANK;
+        BankAccountType = BankAccountEnums.BankAccountKeys.NA;
+        InvestmentAccountType = InvestmentAccountEnums.InvestmentAccountKeys.NA;
+        LoanAccountType = LoanAccountEnums.LoanAccountKeys.NA;
+    }
+
+    protected CreateBankAccountRequest(
+        string userId,
+        BankAccountEnums.BankAccountKeys bankAccountType,
+        string name,
+        string description,
+        string displayColor,
+        bool isDefault = false,
+        int sortOrder = 999,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null) :
+        base(
+            userId,
+            AccountEnums.AccountKeys.BANK,
+            bankAccountType,
+            InvestmentAccountEnums.InvestmentAccountKeys.NA,
+            LoanAccountEnums.LoanAccountKeys.NA,
+            name, description, displayColor, isDefault, sortOrder, startingBalance, startingBalanceDate)
+    { }
+}
+
+public record CreateCheckingAccountRequest : CreateBankAccountRequest
+{
+    [JsonConstructor]
+    public CreateCheckingAccountRequest()
+    {
+        BankAccountType = BankAccountEnums.BankAccountKeys.CHECKING;
+    }
+
+    public CreateCheckingAccountRequest(
+        string userId,
+        string name,
+        string description,
+        string displayColor,
+        decimal overdraft,
+        bool isDefault = false,
+        int sortOrder = 999,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null) :
+        base(
+            userId,
+            BankAccountEnums.BankAccountKeys.CHECKING,
+            name, description, displayColor, isDefault, sortOrder, startingBalance, startingBalanceDate)
+    {
+        OverdraftAmount = overdraft;
+    }
+}
+
+public record CreateSavingsAccountRequest : CreateBankAccountRequest
+{
+    [JsonConstructor]
+    public CreateSavingsAccountRequest()
+    {
+        BankAccountType = BankAccountEnums.BankAccountKeys.SAVINGS;
+    }
+
+    public CreateSavingsAccountRequest(
+        string userId,
+        string name,
+        string description,
+        string displayColor,
+        decimal interestRate,
+        bool isDefault = false,
+        int sortOrder = 999,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null) :
+        base(
+            userId,
+            BankAccountEnums.BankAccountKeys.SAVINGS,
+            name, description, displayColor, isDefault, sortOrder, startingBalance, startingBalanceDate)
+    {
+        InterestRate = interestRate;
+    }
+}
+
+public record CreateCreditLineAccountRequest : CreateBankAccountRequest
+{
+    [JsonConstructor]
+    public CreateCreditLineAccountRequest()
+    {
+        BankAccountType = BankAccountEnums.BankAccountKeys.CREDITLINE;
+    }
+
+    public CreateCreditLineAccountRequest(
+        string userId,
+        string name,
+        string description,
+        string displayColor,
+        decimal creditLimit,
+        decimal interestRate,
+        bool isDefault = false,
+        int sortOrder = 999,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null) :
+        base(
+            userId,
+            BankAccountEnums.BankAccountKeys.CREDITLINE,
+            name, description, displayColor, isDefault, sortOrder, startingBalance, startingBalanceDate)
+    {
+        CreditLimit = creditLimit;
+        InterestRate = interestRate;
+    }
+}
+
+public record CreateCreditCardAccountRequest : CreateAccountRequest
+{
+    [JsonConstructor]
+    public CreateCreditCardAccountRequest()
+    {
+        AccountType = AccountEnums.AccountKeys.CREDITCARD;
+        BankAccountType = BankAccountEnums.BankAccountKeys.NA;
+        InvestmentAccountType = InvestmentAccountEnums.InvestmentAccountKeys.NA;
+        LoanAccountType = LoanAccountEnums.LoanAccountKeys.NA;
+    }
+
+    public CreateCreditCardAccountRequest(
+        string userId,
+        string name,
+        string description,
+        string displayColor,
+        decimal creditLimit,
+        decimal interestRate,
+        bool isDefault = false,
+        int sortOrder = 999,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null) :
+        base(
+            userId,
+            AccountEnums.AccountKeys.CREDITCARD,
+            BankAccountEnums.BankAccountKeys.NA,
+            InvestmentAccountEnums.InvestmentAccountKeys.NA,
+            LoanAccountEnums.LoanAccountKeys.NA,
+            name, description, displayColor, isDefault, sortOrder, startingBalance, startingBalanceDate)
+    {
+        CreditLimit = creditLimit;
+        InterestRate = interestRate;
+    }
+}
+
+public record CreateInvestmentAccountRequest : CreateAccountRequest
+{
+    [JsonConstructor]
+    public CreateInvestmentAccountRequest()
+    {
+        AccountType = AccountEnums.AccountKeys.INVESTMENT;
+        BankAccountType = BankAccountEnums.BankAccountKeys.NA;
+        InvestmentAccountType = InvestmentAccountEnums.InvestmentAccountKeys.NA;
+        LoanAccountType = LoanAccountEnums.LoanAccountKeys.NA;
+    }
+
+    public CreateInvestmentAccountRequest(
+        string userId,
+        string name,
+        string description,
+        string displayColor,
+        InvestmentAccountEnums.InvestmentAccountKeys investmentType,
+        bool isDefault = false,
+        int sortOrder = 999,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null) :
+        base(
+            userId,
+            AccountEnums.AccountKeys.INVESTMENT,
+            BankAccountEnums.BankAccountKeys.NA,
+            investmentType,
+            LoanAccountEnums.LoanAccountKeys.NA,
+            name, description, displayColor, isDefault, sortOrder, startingBalance, startingBalanceDate)
+    { }
+}
+
+public record CreateLoanAccountRequest : CreateAccountRequest
+{
+    [JsonConstructor]
+    public CreateLoanAccountRequest()
+    {
+        AccountType = AccountEnums.AccountKeys.LOAN;
+        BankAccountType = BankAccountEnums.BankAccountKeys.NA;
+        InvestmentAccountType = InvestmentAccountEnums.InvestmentAccountKeys.NA;
+        LoanAccountType = LoanAccountEnums.LoanAccountKeys.NA;
+    }
+
+    public CreateLoanAccountRequest(
+        string userId,
+        string name,
+        string description,
+        string displayColor,
+        LoanAccountEnums.LoanAccountKeys loanAccountType,
+        decimal creditLimit,
+        decimal interestRate,
+        bool isDefault = false,
+        int sortOrder = 999,
+        decimal startingBalance = 0,
+        DateTime? startingBalanceDate = null) :
+        base(
+            userId,
+            AccountEnums.AccountKeys.LOAN,
+            BankAccountEnums.BankAccountKeys.NA,
+            InvestmentAccountEnums.InvestmentAccountKeys.NA,
+            loanAccountType,
+            name, description, displayColor, isDefault, sortOrder, startingBalance, startingBalanceDate)
+    {
+        CreditLimit = creditLimit;
+        InterestRate = interestRate;
+
+        LoanAccountType = loanAccountType;
+    }
+}

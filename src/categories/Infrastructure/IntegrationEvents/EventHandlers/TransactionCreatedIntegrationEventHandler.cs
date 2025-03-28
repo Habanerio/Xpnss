@@ -1,4 +1,4 @@
-////TODO: Need to know if it's a credit or debit transaction. Don't have that without querying for the account first.
+////TODO: Need to know if it's a credit or debit transaction. Don't have that without querying for the Account first.
 
 //using Habanerio.Xpnss.Categories.Domain.Interfaces;
 //using Habanerio.Xpnss.Shared.Types;
@@ -57,7 +57,7 @@
 //        TransactionCreatedIntegrationEvent @event,
 //        CancellationToken cancellationToken = default)
 //    {
-//        var isCreditTransaction = TransactionEnums.DoesBalanceIncrease(account.AccountType, @event.TransactionType);
+//        var isCreditTransaction = TransactionEnums.DoesBalanceIncrease(Account.AccountType, @event.TransactionType);
 
 //        var monthlyTotalResult = await _categoryMonthlyTotalsRepository
 //            .GetAsync(
@@ -82,7 +82,7 @@
 //                @event.DateOfTransaction.Year,
 //                @event.DateOfTransaction.Month,
 //                isCreditTransaction,
-//                new Money(@event.Amount));
+//                new Money(@event.TotalAmount));
 //        }
 //        else
 //        {
@@ -90,12 +90,12 @@
 //            if (isCreditTransaction)
 //            {
 //                existingMonthlyTotal.CreditCount += 1;
-//                existingMonthlyTotal.CreditTotalAmount += new Money(@event.Amount);
+//                existingMonthlyTotal.CreditTotalAmount += new Money(@event.TotalAmount);
 //            }
 //            else
 //            {
 //                existingMonthlyTotal.DebitCount += 1;
-//                existingMonthlyTotal.DebitTotalAmount += new Money(@event.Amount);
+//                existingMonthlyTotal.DebitTotalAmount += new Money(@event.TotalAmount);
 //            }
 //        }
 

@@ -37,7 +37,7 @@ public class TransactionUpdatedIntegrationEventHandler(
 
         // If @event.NewAmount is 0, then Transaction is considered deleted?
         // If so, it should have been validated prior, and not reach this point.
-        account.AddTransactionAmount(new Money(@event.Difference), @event.TransactionType);
+        account.AddTransactionAmount(@event.DateOfTransaction, new Money(@event.Difference), @event.TransactionType);
 
         //var isCreditTransaction = TransactionEnums.DoesBalanceIncrease(accountBase.AccountType, TransactionEnums.ToTransactionType(@event.TransactionType));
 

@@ -12,9 +12,9 @@ public class RegisterEndpoint : BaseEndpoint
 {
     public sealed class Endpoint : ICarterModule
     {
-        public void AddRoutes(IEndpointRouteBuilder builder)
+        public void AddRoutes(IEndpointRouteBuilder app)
         {
-            builder.MapPost("/api/v1/register",
+            app.MapPost("/api/v1/register",
                     async (
                         [FromBody] CreateUserProfileApiRequest request,
                         [FromServices] IUserProfilesService userProfilesService,
@@ -44,7 +44,7 @@ public class RegisterEndpoint : BaseEndpoint
 
             var createUserProfileCommand = new CreateUserProfileCommand(request);
 
-            var userProfileResult = 
+            var userProfileResult =
                 await userProfilesService.CommandAsync(createUserProfileCommand, cancellationToken);
 
             if (userProfileResult.IsFailed)

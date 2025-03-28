@@ -38,7 +38,9 @@ public class UserProfileCreatedIntegrationEventHandler(
                 new UserId(userId),
                 new AccountName("Wallet"),
                 "Wallet Account",
-                "#E3FCD9")
+                "#E3FCD9",
+                isDefault: true,
+                sortOrder: 1)
         };
 
         foreach (var account in accounts)

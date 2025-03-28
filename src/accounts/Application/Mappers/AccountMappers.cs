@@ -126,6 +126,8 @@ internal static partial class ApplicationMapper
 
             accountDto.ExtAcctId = investmentAccount.ExtAcctId;
             accountDto.InstitutionName = investmentAccount.InstitutionName;
+
+            return accountDto;
         }
 
         if (entity.AccountType == AccountEnums.AccountKeys.LOAN)
@@ -177,6 +179,8 @@ internal static partial class ApplicationMapper
             IsCredit = entity.IsCredit,
             IsDefault = entity.IsDefault,
             SortOrder = entity.SortOrder,
+            StartingBalance = entity.StartingBalance,
+            StartingBalanceDate = entity.StartingBalanceDate,
             DateCreated = entity.DateCreated,
             DateUpdated = entity.DateUpdated,
             DateDeleted = entity.DateDeleted

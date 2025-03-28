@@ -1,10 +1,10 @@
 using System.Net;
 using Carter;
-using Habanerio.Xpnss.Shared.DTOs;
 using Habanerio.Xpnss.Shared.Requests.Categories;
 using Habanerio.Xpnss.Categories.Application.Commands;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Habanerio.Xpnss.Shared.DTOs.Categories;
 
 namespace Habanerio.Xpnss.Apis.App.AppApis.Endpoints.Categories;
 

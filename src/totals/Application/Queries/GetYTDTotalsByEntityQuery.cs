@@ -14,7 +14,7 @@ namespace Habanerio.Xpnss.Totals.Application.Queries;
 public sealed record GetYTDTotalsByEntityQuery(
     string UserId,
     EntityEnums.Keys EntityType,
-    string EntityId) :
+    string? EntityId = "") :
     IMonthlyTotalsQuery<Result<IEnumerable<MonthlyTotalDto>>>;
 
 /// <summary>
@@ -30,6 +30,8 @@ public class GetYTDTotalsByEntityQueryHandler(IMonthlyTotalsRepository repositor
         GetYTDTotalsByEntityQuery query,
         CancellationToken cancellationToken)
     {
+        var entityId = query.EntityId ?? string.Empty;
+
         var validator = new Validator();
         var validationResult = await validator.ValidateAsync(query, cancellationToken);
 
@@ -40,8 +42,8 @@ public class GetYTDTotalsByEntityQueryHandler(IMonthlyTotalsRepository repositor
         var results =
             await _repository.ListAsync(
                 query.UserId,
-                query.EntityId,
                 query.EntityType,
+                entityId,
                 DateTime.Now.Year,
                 cancellationToken);
 
@@ -69,7 +71,7 @@ public class GetYTDTotalsByEntityQueryHandler(IMonthlyTotalsRepository repositor
         {
             RuleFor(x => x).NotNull();
             RuleFor(x => x.UserId).NotEmpty();
-            RuleFor(x => x.EntityId).NotEmpty();
+            //RuleFor(x => x.EntityId).NotEmpty();
         }
     }
 }

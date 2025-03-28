@@ -15,18 +15,27 @@ public static partial class InfrastructureMapper
         if (document is null)
             return null;
 
-        return Category.Load(
-            new CategoryId(document.Id),
-            new UserId(document.UserId),
-            new CategoryName(document.Name),
-            document.CategoryType,
-            document.Description,
-            document.SortOrder,
-            Map(document.SubCategories),
-            document.DateCreated,
-            document.DateUpdated,
-            document.DateDeleted);
+        try
+        {
+            var category = Category.Load(
+                new CategoryId(document.Id),
+                new UserId(document.UserId),
+                new CategoryName(document.Name),
+                document.CategoryType,
+                document.Description,
+                document.SortOrder,
+                Map(document.SubCategories),
+                document.DateCreated,
+                document.DateUpdated,
+                document.DateDeleted);
 
+            return category;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     /// <summary>
@@ -36,9 +45,21 @@ public static partial class InfrastructureMapper
     /// <returns></returns>
     public static IEnumerable<Category> Map(IEnumerable<CategoryDocument> documents)
     {
-        return documents.Select(Map)
-            .Where(x => x is not null)
-            .Cast<Category>();
+        var categories = new List<Category>();
+
+        foreach (var document in documents)
+        {
+            var category = Map(document);
+
+            if (category is not null)
+                categories.Add(category);
+        }
+
+        return categories;
+
+        //return documents.Select(Map)
+        //    .Where(x => x is not null)
+        //    .Cast<Category>();
     }
 
     /// <summary>
@@ -122,16 +143,24 @@ public static partial class InfrastructureMapper
         if (document is null)
             return null;
 
-        return SubCategory.Load(
-            new SubCategoryId(document.Id),
-            new CategoryId(document.ParentId),
-            new CategoryName(document.Name),
-            document.CategoryType,
-            document.Description,
-            document.SortOrder,
-            document.DateCreated,
-            document.DateUpdated,
-            document.DateDeleted);
+        try
+        {
+            return SubCategory.Load(
+                new SubCategoryId(document.Id),
+                new CategoryId(document.ParentId),
+                new CategoryName(document.Name),
+                document.CategoryType,
+                document.Description,
+                document.SortOrder,
+                document.DateCreated,
+                document.DateUpdated,
+                document.DateDeleted);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     /// <summary>
@@ -141,12 +170,40 @@ public static partial class InfrastructureMapper
     /// <returns></returns>
     public static IEnumerable<SubCategory> Map(IEnumerable<SubCategoryDocument> documents)
     {
-        var subCategories = documents.Select(Map)
-            .Where(x => x is not null)
-            .Cast<SubCategory>();
+        var subCategories = new List<SubCategory>();
 
-        return subCategories
-            .OrderBy(x => x.SortOrder)
-            .ThenBy(x => x.Name);
+        foreach (var document in documents)
+        {
+            try
+            {
+                var subCategory = Map(document);
+
+                if (subCategory is not null)
+                    subCategories.Add(subCategory);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+
+
+        }
+
+        //var subCategories = documents.Select(Map)
+        //    .Where(x => x is not null)
+        //    .Cast<SubCategory>();
+
+        try
+        {
+            return subCategories
+                .OrderBy(x => x.SortOrder)
+                .ThenBy(x => x.Name);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 }

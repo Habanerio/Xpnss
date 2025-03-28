@@ -1,8 +1,8 @@
 using FluentResults;
 using FluentValidation;
-using Habanerio.Xpnss.Shared.DTOs;
 using Habanerio.Xpnss.Categories.Domain.Interfaces;
 using MediatR;
+using Habanerio.Xpnss.Shared.DTOs.Categories;
 
 namespace Habanerio.Xpnss.Categories.Application.Queries.GetCategory;
 

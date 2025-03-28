@@ -14,7 +14,7 @@ public class GetAccountsApiTests(WebApplicationFactory<Apis.App.AppApis.Program>
         var userId = await GetTestUserObjectIdAsync();
 
         // Act
-        var response = await HttpClient.GetAsync(
+        var response = await XpnssApiClient.GetAsync(
             ENDPOINTS_ACCOUNTS_GET_ACCOUNTS.Replace("{userId}", userId.ToString()));
 
         // Assert

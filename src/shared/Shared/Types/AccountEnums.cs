@@ -13,6 +13,7 @@ namespace Habanerio.Xpnss.Shared.Types;
 //    }
 //}
 
+//TODO: Use an "overall" account type, and then use the specific account type
 /// <summary>
 /// Abstract Account Types
 /// </summary>
@@ -208,7 +209,7 @@ public static class AllAccountEnums
                 LoanAccountEnums.LoanAccountKeys.UNKNOWN);
         }
 
-        throw new InvalidOperationException($"'{allAccountKey}' is an unknown type");
+        throw new InvalidOperationException($"{nameof(AllAccountEnums)}: '{allAccountKey}' is an unknown type");
     }
 
     // Could make this a generic

@@ -171,9 +171,9 @@ public class TransactionCreatedIntegrationEventHandler(
             var monthlyTotalResult = await _repository
                 .GetAsync(
                     userId,
+                    entityType,
                     entityId,
                     subEntityId,
-                    entityType,
                     dateOfTransaction.Year,
                     dateOfTransaction.Month,
                     cancellationToken);

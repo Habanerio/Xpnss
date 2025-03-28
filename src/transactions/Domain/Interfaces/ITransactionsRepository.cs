@@ -5,24 +5,31 @@ namespace Habanerio.Xpnss.Transactions.Domain.Interfaces;
 
 public interface ITransactionsRepository
 {
-    Task<Result<TransactionBase>> AddAsync(
-        TransactionBase transaction,
+    Task<Result<Transaction>> AddAsync(
+        Transaction transaction,
         CancellationToken cancellationToken = default);
 
-    Task<Result<IEnumerable<TransactionBase>>> FindAsync(
+    //TODO: Return a PagedResults<T>
+    //TODO: Pass in the SearchRequest
+    Task<Result<(IEnumerable<Transaction> Results, int PageNo, int PageSize, int TotalPages, int TotalCount)>>
+        SearchAsync(
         string userId,
-        string accountId = "",
-        DateTime? startDate = null,
-        DateTime? endDate = null,
+        string forAccountId = "",
+        string forCategoryId = "",
+        string forPayerPayeeId = "",
+        DateTime? fromDate = null,
+        DateTime? toDate = null,
+        int pageNo = 1,
+        int pageSize = 100,
         string userTimeZone = "",
         CancellationToken cancellationToken = default);
 
-    Task<Result<TransactionBase?>> GetAsync(
+    Task<Result<Transaction?>> GetAsync(
         string userId,
         string transactionId,
         CancellationToken cancellationToken = default);
 
-    Task<Result<TransactionBase>> UpdateAsync(
-        TransactionBase transaction,
+    Task<Result<Transaction>> UpdateAsync(
+        Transaction transaction,
         CancellationToken cancellationToken = default);
 }

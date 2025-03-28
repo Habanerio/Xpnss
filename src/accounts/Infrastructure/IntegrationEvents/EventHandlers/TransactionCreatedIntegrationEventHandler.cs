@@ -30,7 +30,7 @@ public class TransactionCreatedIntegrationEventHandler(
             await UpdateAccountBalanceAsync(@event, cancellationToken);
 
             _logger.LogInformation(@event.Id.ToString(),
-                "A '{@transactionType}' Transaction ({@transactionId}) was added to Account {@accountId} for the amount of {@Amount}",
+                "A '{@transactionType}' Transaction ({@transactionId}) was added to Account {@accountId} for the amount of {@TotalAmount}",
                 @event.TransactionType,
                 @event.TransactionId,
                 @event.AccountId,
@@ -52,7 +52,8 @@ public class TransactionCreatedIntegrationEventHandler(
 
         if (accountResult.IsFailed)
             throw new InvalidOperationException(accountResult.Errors[0]?.Message ??
-                $"An error occurred while trying to retrieve Account '{@event.AccountId}' for User '{@event.UserId}'");
+                $"An error occurred while trying to retrieve Account " +
+                $"'{@event.AccountId}' for User '{@event.UserId}'");
 
         if (accountResult.Value is null)
             throw new InvalidOperationException(
@@ -60,7 +61,7 @@ public class TransactionCreatedIntegrationEventHandler(
 
         var account = accountResult.Value;
 
-        account.AddTransactionAmount(new Money(@event.Amount), @event.TransactionType);
+        account.AddTransactionAmount(@event.DateOfTransaction, new Money(@event.Amount), @event.TransactionType);
 
         try
         {
@@ -70,7 +71,8 @@ public class TransactionCreatedIntegrationEventHandler(
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e, "Error occurred while trying to update the Balance for Account '{ExtAcctId}'", @event.AccountId);
+            _logger.LogCritical(e, "Error occurred while trying to update the Balance for Account " +
+                                   "'{ExtAcctId}'", @event.AccountId);
         }
     }
 }

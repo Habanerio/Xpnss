@@ -59,6 +59,8 @@ public class CreditLineAccountTests : TestsBase
             interestRate,
             isDefault,
             sortOrder,
+            0,
+            null,
             dateCreated,
             dateUpdated,
             dateDeleted);
@@ -104,6 +106,8 @@ public class CreditLineAccountTests : TestsBase
                 NewPercentageRate(34),
                 false,
                 AutoFixture.Create<int>(),
+                0,
+                null,
                 AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>()));
@@ -127,6 +131,8 @@ public class CreditLineAccountTests : TestsBase
                 NewPercentageRate(34),
                 false,
                 AutoFixture.Create<int>(),
+                0,
+                null,
                 AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>()));
@@ -182,7 +188,7 @@ public class CreditLineAccountTests : TestsBase
 
         var previousValue = _testClass.Balance;
 
-        _testClass.AddTransactionAmount(value, TransactionEnums.TransactionKeys.DEPOSIT);
+        _testClass.AddTransactionAmount(DateTime.Now, value, TransactionEnums.TransactionKeys.DEPOSIT);
 
         // Assert
         Assert.Equal(previousValue - value, _testClass.Balance);
@@ -198,7 +204,7 @@ public class CreditLineAccountTests : TestsBase
 
         var previousValue = _testClass.Balance;
 
-        _testClass.AddTransactionAmount(value, TransactionEnums.TransactionKeys.PURCHASE);
+        _testClass.AddTransactionAmount(DateTime.Now, value, TransactionEnums.TransactionKeys.PURCHASE);
 
         // Assert
         Assert.Equal(previousValue + value, _testClass.Balance);
@@ -215,7 +221,7 @@ public class CreditLineAccountTests : TestsBase
 
         var previousValue = _testClass.Balance;
 
-        _testClass.RemoveTransactionAmount(value, TransactionEnums.TransactionKeys.DEPOSIT);
+        _testClass.RemoveTransactionAmount(DateTime.Now, value, TransactionEnums.TransactionKeys.DEPOSIT);
 
         // Assert
         Assert.Equal(previousValue + value, _testClass.Balance);
@@ -231,7 +237,7 @@ public class CreditLineAccountTests : TestsBase
 
         var previousValue = _testClass.Balance;
 
-        _testClass.RemoveTransactionAmount(value, TransactionEnums.TransactionKeys.PURCHASE);
+        _testClass.RemoveTransactionAmount(DateTime.Now, value, TransactionEnums.TransactionKeys.PURCHASE);
 
         // Assert
         Assert.Equal(previousValue - value, _testClass.Balance);
@@ -245,7 +251,7 @@ public class CreditLineAccountTests : TestsBase
     public void CannotCall_ApplyTransactionAmount_WithNegativeAmount()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            _testClass.AddTransactionAmount(NewMoney(-1), TransactionEnums.TransactionKeys.DEPOSIT));
+            _testClass.AddTransactionAmount(DateTime.Now, NewMoney(-1), TransactionEnums.TransactionKeys.DEPOSIT));
     }
 
     /// <summary>
@@ -255,7 +261,7 @@ public class CreditLineAccountTests : TestsBase
     public void CannotCall_UndoTransactionAmount_WithNegativeAmount()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            _testClass.RemoveTransactionAmount(NewMoney(-1), TransactionEnums.TransactionKeys.DEPOSIT));
+            _testClass.RemoveTransactionAmount(DateTime.Now, NewMoney(-1), TransactionEnums.TransactionKeys.DEPOSIT));
     }
 
     /// <summary>
@@ -267,7 +273,7 @@ public class CreditLineAccountTests : TestsBase
         _testClass.Delete();
 
         Assert.Throws<InvalidOperationException>(() =>
-            _testClass.AddTransactionAmount(new Money(1), TransactionEnums.TransactionKeys.DEPOSIT));
+            _testClass.AddTransactionAmount(DateTime.Now, new Money(1), TransactionEnums.TransactionKeys.DEPOSIT));
     }
 
     /// <summary>
@@ -279,7 +285,7 @@ public class CreditLineAccountTests : TestsBase
         _testClass.Delete();
 
         Assert.Throws<InvalidOperationException>(() =>
-            _testClass.AddTransactionAmount(new Money(1), TransactionEnums.TransactionKeys.PURCHASE));
+            _testClass.AddTransactionAmount(DateTime.Now, new Money(1), TransactionEnums.TransactionKeys.PURCHASE));
     }
 
 
@@ -292,7 +298,7 @@ public class CreditLineAccountTests : TestsBase
         _testClass.Delete();
 
         Assert.Throws<InvalidOperationException>(() =>
-            _testClass.RemoveTransactionAmount(new Money(1), TransactionEnums.TransactionKeys.PURCHASE));
+            _testClass.RemoveTransactionAmount(DateTime.Now, new Money(1), TransactionEnums.TransactionKeys.PURCHASE));
     }
 
     /// <summary>
@@ -304,7 +310,7 @@ public class CreditLineAccountTests : TestsBase
         _testClass.Delete();
 
         Assert.Throws<InvalidOperationException>(() =>
-            _testClass.RemoveTransactionAmount(new Money(1), TransactionEnums.TransactionKeys.DEPOSIT));
+            _testClass.RemoveTransactionAmount(DateTime.Now, new Money(1), TransactionEnums.TransactionKeys.DEPOSIT));
     }
 
     [Fact]

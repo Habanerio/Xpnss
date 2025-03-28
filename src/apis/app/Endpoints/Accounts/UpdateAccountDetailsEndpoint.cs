@@ -22,7 +22,7 @@ public class UpdateAccountDetailsEndpoint : BaseEndpoint
                     async (
                         [FromRoute] string userId,
                         [FromRoute] string accountId,
-                        [FromBody] UpdateAccountDetailsApiRequest request,
+                        [FromBody] UpdateAccountDetailsRequest request,
                         [FromServices] IAccountsService service,
                         CancellationToken cancellationToken) =>
                     {
@@ -41,7 +41,7 @@ public class UpdateAccountDetailsEndpoint : BaseEndpoint
     public static async Task<IResult> HandleAsync(
         string userId,
         string accountId,
-        UpdateAccountDetailsApiRequest request,
+        UpdateAccountDetailsRequest request,
         IAccountsService service,
         CancellationToken cancellationToken)
     {
@@ -69,7 +69,7 @@ public class UpdateAccountDetailsEndpoint : BaseEndpoint
         return Results.Ok(result.Value);
     }
 
-    public sealed class Validator : AbstractValidator<UpdateAccountDetailsApiRequest>
+    public sealed class Validator : AbstractValidator<UpdateAccountDetailsRequest>
     {
         public Validator()
         {

@@ -42,7 +42,7 @@ public class MongoDbRepository<TDocument> :
 
         var filter = Builders<TDocument>.Filter.In("_id", idsArray);
 
-        var results = await FindAsync(filter, cancellationToken);
+        var results = await FindDocumentsAsync(filter, cancellationToken);
 
         return results ?? Enumerable.Empty<TDocument>();
     }
@@ -147,18 +147,21 @@ public abstract class MongoDbRepository<TDocument, TId> :
     {
         var filter = Builders<TDocument>.Filter.Where(predicate);
 
-        return FindAsync(filter, cancellationToken);
+        return FindDocumentsAsync(filter, cancellationToken);
     }
 
-    public Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)> FindDocumentsAsync(
-        Expression<Func<TDocument, bool>> predicate,
-        int pageNo,
-        int pageSize,
-        CancellationToken cancellationToken = default)
+    public Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)>
+        FindDocumentsAsync(
+            Expression<Func<TDocument, bool>> predicate,
+            int pageNo,
+            int pageSize,
+            bool descending,
+            Expression<Func<TDocument, object>>? orderBy = null,
+            CancellationToken cancellationToken = default)
     {
         var filter = Builders<TDocument>.Filter.Where(predicate);
 
-        return FindDocumentsAsync(filter, pageNo, pageSize, cancellationToken);
+        return FindDocumentsAsync(filter, pageNo, pageSize, descending, orderBy, cancellationToken);
     }
 
 
@@ -168,7 +171,7 @@ public abstract class MongoDbRepository<TDocument, TId> :
     {
         var filter = Builders<TDocument>.Filter.Where(predicate);
 
-        var rslts = await FindAsync(filter, cancellationToken);
+        var rslts = await FindDocumentsAsync(filter, cancellationToken);
 
         return rslts.FirstOrDefault();
     }
@@ -280,7 +283,7 @@ public abstract class MongoDbRepository<TDocument, TId> :
 
     #region - Privates -
 
-    protected async Task<IEnumerable<TDocument>> FindAsync(
+    protected async Task<IEnumerable<TDocument>> FindDocumentsAsync(
         FilterDefinition<TDocument> filter,
         CancellationToken cancellationToken = default)
     {
@@ -305,8 +308,10 @@ public abstract class MongoDbRepository<TDocument, TId> :
 
     internal async Task<(IEnumerable<TDocument> Results, int TotalPages, int TotalCount)> FindDocumentsAsync(
         FilterDefinition<TDocument> filter,
-        int pageNo = 1,
-        int pageSize = 25,
+        int pageNo,
+        int pageSize,
+        bool descending,
+        Expression<Func<TDocument, object>>? orderBy = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(filter);
@@ -315,18 +320,33 @@ public abstract class MongoDbRepository<TDocument, TId> :
 
         var skip = (pageNo - 1) * pageSize;
 
-        var totalCount = await Collection.CountDocumentsAsync(filter, null, cancellationToken);
+        var totalCount = await Collection.CountDocumentsAsync(
+            filter,
+            null,
+            cancellationToken);
 
         if (totalCount == 0)
             return (Enumerable.Empty<TDocument>(), 0, 0);
 
         var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
+        var sortDefinition = descending
+            ? Builders<TDocument>.Sort.Descending(t => t.Id)
+            : Builders<TDocument>.Sort.Ascending(t => t.Id);
+
+        if (orderBy is not null)
+        {
+            if (descending)
+                sortDefinition = Builders<TDocument>.Sort.Descending(orderBy);
+            else
+                sortDefinition = Builders<TDocument>.Sort.Ascending(orderBy);
+        }
+
         var options = new FindOptions<TDocument>
         {
             Skip = skip,
             Limit = pageSize,
-            Sort = Builders<TDocument>.Sort.Ascending(doc => doc.Id)
+            Sort = sortDefinition
         };
 
         var cursor = await Collection.FindAsync(filter, options, cancellationToken);

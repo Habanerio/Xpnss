@@ -11,7 +11,8 @@ namespace Habanerio.Xpnss.PayerPayees.Application.Commands.CreatePayerPayee;
 
 public sealed record CreatePayerPayeeCommand(
     string UserId,
-    string Name) :
+    string PayerPayeeId,
+    string PayerPayeeName) :
     IPayerPayeesCommand<Result<PayerPayeeDto?>>;
 
 /// <summary>
@@ -33,15 +34,16 @@ public class CreatePayerPayeeCommandHandler(IPayerPayeesRepository repository) :
         if (!validationResult.IsValid)
             return Result.Fail(validationResult.Errors[0].ErrorMessage);
 
-        if (string.IsNullOrWhiteSpace(command.Name))
+        if (string.IsNullOrWhiteSpace(command.PayerPayeeName))
             return Result.Fail("Id or Name must be provided");
 
         PayerPayee? payerPayee;
 
-        if (!string.IsNullOrWhiteSpace(command.Name))
+        // If there's an Id, I'm going to assume that it's the correct Id
+        if (!string.IsNullOrWhiteSpace(command.PayerPayeeId))
         {
             var getResult =
-                await _repository.GetByNameAsync(command.UserId, command.Name, cancellationToken);
+                await _repository.GetAsync(command.UserId, command.PayerPayeeId, cancellationToken);
 
             payerPayee = getResult.ValueOrDefault;
 
@@ -51,9 +53,42 @@ public class CreatePayerPayeeCommandHandler(IPayerPayeesRepository repository) :
             }
         }
 
-        payerPayee = PayerPayee.New(
-            new UserId(command.UserId),
-            new PayerPayeeName(command.Name));
+        // Now if the Id fails, then let's see if the name exists ...
+        if (!string.IsNullOrWhiteSpace(command.PayerPayeeName))
+        {
+            var getResult =
+                await _repository.GetByNameAsync(command.UserId, command.PayerPayeeName, cancellationToken);
+
+            payerPayee = getResult.ValueOrDefault;
+
+            if (getResult is { IsSuccess: true, ValueOrDefault: not null })
+            {
+                return Result.Ok(ApplicationMapper.Map(payerPayee));
+            }
+        }
+
+        // So if a PayerPayee can't be found by its Name, and then by its Id, then create a new one.
+        // Going to assume that it's the Id of an existing user Account (?).
+        if (!string.IsNullOrWhiteSpace(command.PayerPayeeId) && !string.IsNullOrWhiteSpace(command.PayerPayeeName))
+        {
+            payerPayee = PayerPayee.Load(
+                new PayerPayeeId(command.PayerPayeeId),
+                new UserId(command.UserId),
+                new PayerPayeeName(command.PayerPayeeName),
+                string.Empty, string.Empty,
+                DateTime.UtcNow, null, null);
+        }
+        else
+        {
+            payerPayee = PayerPayee.New(
+                new UserId(command.UserId),
+                new PayerPayeeName(command.PayerPayeeName));
+        }
+
+        if (payerPayee is null)
+            //TODO: Should log it
+            return Result.Ok<PayerPayeeDto?>(default);
+
 
         var newResult = await _repository.AddAsync(payerPayee, cancellationToken);
 

@@ -35,7 +35,7 @@ public class TransactionDeletedIntegrationEventHandler(
 
         var account = accountResult.Value;
 
-        account.AddTransactionAmount(new Money(@event.Amount), @event.TransactionType);
+        account.AddTransactionAmount(@event.DateOfTransaction, new Money(@event.Amount), @event.TransactionType);
 
         //var isCreditTransaction = TransactionEnums.DoesBalanceIncrease(accountBase.AccountType, TransactionEnums.ToTransactionType(@event.TransactionType));
 

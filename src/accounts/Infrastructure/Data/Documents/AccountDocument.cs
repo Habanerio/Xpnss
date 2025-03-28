@@ -13,7 +13,6 @@ public partial class AccountDocument :
     [BsonElement("user_id")]
     public ObjectId UserId { get; set; }
 
-
     /// <summary>
     /// Account AccountType
     /// </summary>
@@ -99,6 +98,13 @@ public partial class AccountDocument :
     [BsonElement("sort_order")]
     public int SortOrder { get; set; }
 
+    [BsonElement("starting_balance")]
+    public decimal StartingBalance { get; set; }
+
+    [BsonElement("starting_balance_date")]
+    [BsonDateTimeOptions(DateOnly = true)]
+    public DateTime StartingBalanceDate { get; set; }
+
 
     [BsonElement("closed_date")]
     [BsonDateTimeOptions(DateOnly = true)]
@@ -132,11 +138,14 @@ public partial class AccountDocument :
         string extAcctId,
         string accountName,
         decimal balance,
+        DateTime? closedDate,
         string description,
         string displayColor,
         bool isCredit,
         bool isDefault,
-        DateTime? closedDate,
+        int sortOrder,
+        decimal startingBalance,
+        DateTime startingBalanceDate,
         DateTime dateCreated,
         DateTime? dateUpdated,
         DateTime? dateDeleted)
@@ -147,15 +156,22 @@ public partial class AccountDocument :
         BankAccountType = bankAccountType;
         InvestmentAccountType = investmentAccountType;
         LoanAccountType = loanAccountType;
-        ExtAcctId = extAcctId;
-        ClosedDate = closedDate;
-        IsCredit = isCredit;
-        IsDefault = isDefault;
+
         Name = accountName;
         Balance = balance;
+        ClosedDate = closedDate;
         Description = description;
         DisplayColor = displayColor;
+
+        ExtAcctId = extAcctId;
+
         IsCredit = isCredit;
+        IsDefault = isDefault;
+
+        SortOrder = sortOrder;
+        StartingBalance = startingBalance;
+        StartingBalanceDate = startingBalanceDate;
+
         DateCreated = dateCreated;
         DateUpdated = dateUpdated;
         DateDeleted = dateDeleted;

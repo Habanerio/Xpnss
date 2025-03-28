@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Habanerio.Xpnss.Apis.App.AppApis;
-using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.DTOs.Categories;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Habanerio.Xpnss.Tests.Functional.AppApis.Categories;
@@ -25,7 +25,7 @@ public class GetCategoryApiTests(WebApplicationFactory<Program> factory) :
             foreach (var categoryDoc in categoryDocs)
             {
                 // Act
-                var response = await HttpClient.GetAsync(
+                var response = await XpnssApiClient.GetAsync(
                     ENDPOINTS_CATEGORIES_GET_CATEGORY
                         .Replace("{userId}", userId.ToString())
                         .Replace("{categoryId}", categoryDoc.Id.ToString()));

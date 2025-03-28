@@ -20,6 +20,8 @@ public class CashAccountTests : TestsBase
             "#110022",
             true,
             1,
+            0,
+            null,
             DateTime.UtcNow,
             null,
             null);
@@ -51,6 +53,8 @@ public class CashAccountTests : TestsBase
             displayColor,
             isDefault,
             sortOrder,
+            0,
+            null,
             dateCreated,
             dateUpdated,
             dateDeleted);
@@ -82,6 +86,8 @@ public class CashAccountTests : TestsBase
                 "#110022",
                 AutoFixture.Create<bool>(),
                 AutoFixture.Create<int>(),
+                0,
+                null,
                 AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
                 AutoFixture.Create<DateTime?>()));
@@ -100,6 +106,8 @@ public class CashAccountTests : TestsBase
                 "#110022",
                 AutoFixture.Create<bool>(),
                 AutoFixture.Create<int>(),
+                0,
+                null,
                 AutoFixture.Create<DateTime>(),
                 AutoFixture.Create<DateTime?>(),
                 AutoFixture.Create<DateTime?>()));
@@ -150,7 +158,7 @@ public class CashAccountTests : TestsBase
 
         var previousValue = _testClass.Balance;
 
-        _testClass.AddTransactionAmount(value, TransactionEnums.TransactionKeys.DEPOSIT);
+        _testClass.AddTransactionAmount(DateTime.Now, value, TransactionEnums.TransactionKeys.DEPOSIT);
 
         // Assert
         Assert.Equal(previousValue + value, _testClass.Balance);
@@ -166,7 +174,7 @@ public class CashAccountTests : TestsBase
 
         var previousValue = _testClass.Balance;
 
-        _testClass.AddTransactionAmount(value, TransactionEnums.TransactionKeys.PURCHASE);
+        _testClass.AddTransactionAmount(DateTime.Now, value, TransactionEnums.TransactionKeys.PURCHASE);
 
         // Assert
         Assert.Equal(previousValue - value, _testClass.Balance);
@@ -183,7 +191,10 @@ public class CashAccountTests : TestsBase
 
         var previousValue = _testClass.Balance;
 
-        _testClass.RemoveTransactionAmount(value, TransactionEnums.TransactionKeys.DEPOSIT);
+        _testClass.RemoveTransactionAmount(
+            DateTime.Now,
+            value,
+            TransactionEnums.TransactionKeys.DEPOSIT);
 
         // Assert
         Assert.Equal(previousValue - value, _testClass.Balance);
@@ -199,7 +210,10 @@ public class CashAccountTests : TestsBase
 
         var previousValue = _testClass.Balance;
 
-        _testClass.RemoveTransactionAmount(value, TransactionEnums.TransactionKeys.PURCHASE);
+        _testClass.RemoveTransactionAmount(
+            DateTime.Now,
+            value,
+            TransactionEnums.TransactionKeys.PURCHASE);
 
         // Assert
         Assert.Equal(previousValue + value, _testClass.Balance);
@@ -213,7 +227,10 @@ public class CashAccountTests : TestsBase
     public void CannotCall_ApplyTransactionAmount_WithNegativeAmount()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            _testClass.AddTransactionAmount(NewMoney(-1), TransactionEnums.TransactionKeys.DEPOSIT));
+            _testClass.AddTransactionAmount(
+                DateTime.Now,
+                NewMoney(-1),
+                TransactionEnums.TransactionKeys.DEPOSIT));
     }
 
     /// <summary>
@@ -223,6 +240,6 @@ public class CashAccountTests : TestsBase
     public void CannotCall_UndoTransactionAmount_WithNegativeAmount()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            _testClass.RemoveTransactionAmount(NewMoney(-1), TransactionEnums.TransactionKeys.DEPOSIT));
+            _testClass.RemoveTransactionAmount(DateTime.Now, NewMoney(-1), TransactionEnums.TransactionKeys.DEPOSIT));
     }
 }

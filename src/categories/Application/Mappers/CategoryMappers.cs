@@ -1,5 +1,5 @@
-using Habanerio.Xpnss.Shared.DTOs;
 using Habanerio.Xpnss.Categories.Domain.Entities;
+using Habanerio.Xpnss.Shared.DTOs.Categories;
 
 namespace Habanerio.Xpnss.Categories.Application.Mappers;
 

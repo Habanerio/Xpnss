@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using Habanerio.Xpnss.Shared.DTOs;
+using Habanerio.Xpnss.Shared.DTOs.Categories;
 using Habanerio.Xpnss.Shared.Requests;
 using Habanerio.Xpnss.Shared.Requests.Categories;
 using Habanerio.Xpnss.Shared.Types;
@@ -23,14 +23,14 @@ public class CreateCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
         var newCategoryDescription = $"{newCategoryName} Description";
 
         // Arrange
-        var request = new CreateCategoryApiRequest(
+        var request = new CreateCategoryRequest(
             userId.ToString(),
             newCategoryName,
-            CategoryGroupEnums.CategoryKeys.EXPENSE,
+            CategoryGroupEnums.CategoryKeys.EXPENSES,
             newCategoryDescription);
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync(
+        var response = await XpnssApiClient.PostAsJsonAsync(
             ENDPOINTS_CATEGORIES_CREATE_CATEGORY
                 .Replace("{userId}", userId.ToString()),
             request);
@@ -82,14 +82,14 @@ public class CreateCategoryApiTests(WebApplicationFactory<Apis.App.AppApis.Progr
         var newCategoryDescription = $"{newCategoryName} Description";
 
         // Arrange
-        var request = new CreateCategoryApiRequest(
+        var request = new CreateCategoryRequest(
             userId.ToString(),
             newCategoryName,
-            CategoryGroupEnums.CategoryKeys.INCOME,
+            CategoryGroupEnums.CategoryKeys.REVENUE,
             newCategoryDescription);
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync(
+        var response = await XpnssApiClient.PostAsJsonAsync(
             ENDPOINTS_CATEGORIES_CREATE_CATEGORY
                 .Replace("{userId}", userId.ToString()),
             request);
